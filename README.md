@@ -1,1 +1,2 @@
-first init
+# LOADER AND PUBLISER IN MAYA 
+# 근데 이제 USD를 곁들인
