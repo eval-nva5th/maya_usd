@@ -1,8 +1,6 @@
 import os, sys
 import pandas as pd
 
-
-
 def make_dir() :
     root_path = '/nas/eval/show'
     project_name = input(str("project name : "))
