@@ -1,0 +1,9 @@
+Project Name,Asset Type,Asset Name,Task Type,Status,Name,File Path
+Project_205,prop,Diningtable,Model,ip,Diningtable.usda,/nas/eval/show/Project_205/assets/prop/Diningtable/Model/pub/maya/scenes/Diningtable.usda
+Project_205,asset_type,asset_name,task,ip,준수가 usd 넣어주겟지..,/nas/eval/show/Project_205/assets/asset_type/asset_name/task/pub/maya/scenes/준수가 usd 넣어주겟지..
+Project_205,asset_type,asset_name,task,ip,준수가 usd 넣어주겟지..,/nas/eval/show/Project_205/assets/asset_type/asset_name/task/pub/maya/alembic/준수가 usd 넣어주겟지..
+Project_205,asset_type,asset_name,task,ip,준수가 usd 넣어주겟지..,/nas/eval/show/Project_205/assets/asset_type/asset_name/task/pub/maya/data/준수가 usd 넣어주겟지..
+Project_205,character,Hyung,Model,ip,Hyung_model.mb,/nas/eval/show/Project_205/assets/character/Hyung/Model/pub/maya/scenes/Hyung_model.mb
+Project_205,character,Hyung,Model,ip,Hyung_model.usd,/nas/eval/show/Project_205/assets/character/Hyung/Model/pub/maya/scenes/Hyung_model.usd
+Project_205,character,Hyung,Lookdev,ip,Lookdev.mb,/nas/eval/show/Project_205/assets/character/Hyung/Lookdev/pub/maya/scenes/Lookdev.mb
+Project_205,character,Hyung,Lookdev,ip,Hyung_layout.usd,/nas/eval/show/Project_205/assets/character/Hyung/Lookdev/pub/maya/scenes/Hyung_layout.usd

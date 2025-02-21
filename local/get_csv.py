@@ -1,0 +1,46 @@
+import os
+import pandas as pd
+
+directory = '/nas/eval/show'
+
+file_paths = []
+asset_paths = []
+seq_paths = []
+
+for root, dirs, files in os.walk(directory):
+    for file in files:
+        file_path = os.path.join(root, file) 
+        asset_roots = root.split('/')
+        if "assets" in root : 
+            #asset_paths.append([root, file])
+            if len(asset_roots) == 12 and asset_roots[9] == "pub":
+                proj_name = asset_roots[4]
+                file_type = asset_roots[5]
+                asset_type = asset_roots[6]
+                asset_name = asset_roots[7]
+                folder_type = asset_roots[8]
+                program_name = asset_roots[10]
+                idk = asset_roots[11]
+                status = 'ip'
+                #asset_paths.append([proj_name, asset_type, asset_name, folder_type, program_name,idk, file, f"{root}/{file}"])
+                asset_paths.append([proj_name, asset_type, asset_name, folder_type, status, file, f"{root}/{file}"])
+
+        elif "seq" in root :
+            seq_roots = root.split('/')
+            if len(seq_roots) == 12 and seq_roots[9] == "pub" :
+                #/nas/eval/show/Project_205/seq/OPN/OPN_0010/layout/pub/maya/data
+                proj_name = seq_roots[4]
+                file_type = seq_roots[5]
+                seq_name = seq_roots[6]
+                shot_name = seq_roots[7]
+                task_type = seq_roots[8]
+                program_name = seq_roots[10]
+                idk = seq_roots[11]
+                seq_paths.append([proj_name, file_type, seq_name, shot_name, task_type, program_name, idk, file, f"{root}/{file}"])
+        
+df1 = pd.DataFrame(asset_paths, columns=['Project Name', 'Asset Type', 'Asset Name', 'Task Type', 'Status','Name', 'File Path'])
+df2 = pd.DataFrame(seq_paths, columns=['proj name','file type', 'seq name', 'shot name', 'task type', 'program name', 'idk', 'Filename', 'full path'])
+
+# 결과를 CSV 파일로 저장
+df1.to_csv('asset_paths.csv', index=False)
+df2.to_csv('seq_paths.csv', index=False)

@@ -85,10 +85,10 @@ class TaskInfo(Shotgrid) :
             self.task_dict[task_id]['due_date']=due_date
             self.task_dict[task_id]['status']=status
 
-    def on_click_task(self, id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
+    def on_click_task(self, task_id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
 
         for key, inner_dict in self.task_dict.items() :
-            if key == id : 
+            if key == task_id : 
                 return inner_dict
             else :
                 pass
