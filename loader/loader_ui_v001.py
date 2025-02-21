@@ -14,20 +14,17 @@ except ImportError:
         import maya.cmds as cmds
     except ImportError:
         raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
-
 import sys
 
 class UI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("EVAL")
-        self.setGeometry(300,300,400,200)
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
 
-        self.resize(1920, 800)  # 윈도우 기본 크기 설정
-        # self.showMaximized()  # 실행하면 최대 크기로 열리게
+        self.setGeometry(600, 300, 400, 200)
 
     def file_data(self):
         """
@@ -244,7 +241,9 @@ class UI(QMainWindow):
 
         if name and email: #이름과 이메일에 값이 있을 때
             print ("이름과 메일 값이 들어왔다.")
-            self.setCentralWidget(self.make_asset_seq_table())
+            self.resize(1200, 700)  # 메인 화면 크기 조정
+            self.setMinimumSize(1000, 600)  
+            self.setCentralWidget(self.make_asset_seq_table()) # 로그인 창을 메인화면으로 변경
         else: # 이름과 이메일에 값이 없을 때
             popup = QMessageBox()
             popup.setIcon(QMessageBox.Warning)
@@ -368,6 +367,8 @@ class UI(QMainWindow):
         로그인 화면 UI
         """
         widget = QWidget()
+        widget.setFixedSize(400, 200)  # 로그인 창 크기 조절
+
         layout = QVBoxLayout(widget)
 
         # 네임 임력
@@ -379,7 +380,7 @@ class UI(QMainWindow):
         self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
 
         # 로그인 버튼
-        self.login_btn = QPushButton("lOGIN")
+        self.login_btn = QPushButton("LOGIN")
         self.login_btn.clicked.connect(self.on_login_click)
 
         # 레이아웃 설정
