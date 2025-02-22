@@ -30,12 +30,13 @@ class UserInfo(Shotgrid) :
             print("*"*30)
             print(f"확인 완료\nname : {name}\nemail : {email}\nid : {self.id}\ndept : {self.dept}\nposition : {self.pos}")
             print("*"*30)
-
             self.show_loading()
+            return 1
 
         else :
             print("틀림!")
             self.show_error()
+            return 0
 
     def set_userid(self) :
         return self.id
@@ -48,7 +49,6 @@ class UserInfo(Shotgrid) :
         self.name = "" # 새 이름 받기
         self.email = "" # 새 이메일 받기
         #self.is_validate(email, name)
-        pass
 
     def create_local_path(self) :
         pass
