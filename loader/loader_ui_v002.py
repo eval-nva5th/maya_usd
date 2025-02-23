@@ -17,11 +17,12 @@ except ImportError:
 import sys
 import cv2
 import numpy as np
+import shotgun_api3
+from shotgrid_user_task import UserInfo, TaskInfo
 
 class VideoPlayer(QLabel):
     """
     비디오 재생을 위해 만든 함수
-    OpenCV + FFmpeg 설치했음.
     """
     def __init__(self, video_path):
         super().__init__()
@@ -54,6 +55,13 @@ class VideoPlayer(QLabel):
 
 class UI(QMainWindow):
     def __init__(self):
+        sg_url = "https://nashotgrid.shotgrid.autodesk.com"
+        script_name = "test"
+        api_key = "hetgdrcey?8coevsotrgwTnhv"
+        self.user = UserInfo(sg_url, script_name, api_key)
+        self.user_name = ""
+        self.task_info = TaskInfo(sg_url, script_name, api_key)
+        
         super().__init__()
         self.setWindowTitle("EVAL_LOADER")
 
@@ -106,12 +114,12 @@ class UI(QMainWindow):
         """
         외부에서 데이터를 받아서 테이블에 추가하는 함수
         """
-        user_name = "SOONWOOOO"
-        play_blast = r"C:\Users\떼굴\Desktop\project\loder_ui_sample\PB.mov" #mov파일경로
+        user_name = self.user_name
+        play_blast = f"loader/loader_ui_sample/PB.mov" #mov파일경로
         status_color = "red"
         status_text = "진행중"
         comment_text = "뒷작업을 잘 부탁해. 부족해도...............오....디코해..."
-
+        
         return self.previous_work_item(user_name, play_blast, status_color, status_text, comment_text)
 
     def previous_work_item(self, user, pb, status_color, status_text, cmt_txt):
@@ -222,15 +230,15 @@ class UI(QMainWindow):
 
         if version_type == "work":
             data = [
-                (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\logo.jpeg", "v0001", "anim test", "25.02.20, 19:07:04", "InHo"),
-                (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\logo.jpeg", "v0002", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
-                (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\logo.jpeg", "v0003", " ", "25.02.19, 19:07:04", "InHo")
+                (f"loader/loader_ui_sample/logo.jpeg", "v0001", "anim test", "25.02.20, 19:07:04", "InHo"),
+                (f"loader/loader_ui_sample/logo.jpeg", "v0002", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
+                (f"loader/loader_ui_sample/logo.jpeg", "v0003", " ", "25.02.19, 19:07:04", "InHo")
             ]
         if version_type == "pub":
             data = [
-                (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\logo.jpeg", "v0005", "anim test", "25.02.20, 19:07:04", "InHo"),
-                (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\logo.jpeg", "v0006", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
-                (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\logo.jpeg", "v0007", " ", "25.02.19, 19:07:04", "InHo")
+                (f"./loader/loader_ui_sample/logo.jpeg", "v0005", "anim test", "25.02.20, 19:07:04", "InHo"),
+                (f"./loader/loader_ui_sample/logo.jpeg", "v0006", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
+                (f"./loader/loader_ui_sample/logo.jpeg", "v0007", " ", "25.02.19, 19:07:04", "InHo")
             ]
 
         file_table.setRowCount(0)
@@ -331,11 +339,25 @@ class UI(QMainWindow):
         """
         외부에서 데이터를 받아서 task에 추가하는 함수
         """
-        data = [
-            (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\task.jpeg", "SQ03-SH0010", "Animation", "25.02.19 - 25.02.20", "#00CC66"),
-            (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\task.jpeg", "SQ03-SH0020", "Assets", "26.02.19 - 27.02.20", "#FFD700"),
-            (r"C:\Users\떼굴\Desktop\project\loder_ui_sample\task.jpeg", "SQ03-SH0030", "Blocking", "28.02.19 - 01.03.20", "#FF4C4C")
-        ]
+        self.task_info.get_user_task(self.user.get_userid())
+
+        data = []
+        color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"}
+        for task_id, task_data in self.task_info.task_dict.items(): 
+            # 데이터 유효성 검사
+            if not task_data.get("proj_name") or not task_data.get("content") or not task_data.get("shot_name") or not task_data.get("task_type") or not task_data.get("start_date") or not task_data.get("due_date") or not task_data.get("status"):
+                print("마야 스크립트에서 경고 출력 하고 log 파일로 남기기?")
+                print("something wrong with shotgrid data")
+                continue
+            # create table row data 
+            data_element = (
+                f"loader/loader_ui_sample/task.jpeg",
+                f"시퀀스 주세요-{task_data['shot_name']}", 
+                task_data['task_type'], 
+                f"{task_data['start_date']} - {task_data['due_date']}",
+                color_map.get(task_data['status'], "#868e96")
+                )
+            data.append(data_element)
 
         for item in data:
             self.task_table_item(task_table, *item)
@@ -405,16 +427,23 @@ class UI(QMainWindow):
         """
         name = self.name_input.text()
         email = self.email_input.text()
-
         if name and email: #이름과 이메일에 값이 있을 때
-            print ("이름과 메일 값이 들어왔다.")
-            self.resize(1440, 800)  # 메인 화면 크기 조정
-            self.setCentralWidget(self.setup_layout()) # 로그인 창을 메인화면으로 변경
+            is_validate = self.user.is_validate(email, name)
+            if not is_validate:
+                popup = QMessageBox()
+                popup.setIcon(QMessageBox.Warning)
+                popup.setWindowTitle("Failure")
+                popup.setText("아이디 또는 이메일이 일치하지 않습니다")
+                popup.exec()
+            else:
+                self.user_name = name
+                self.resize(1440, 800)  # 메인 화면 크기 조정
+                self.setCentralWidget(self.setup_layout()) # 로그인 창을 메인화면으로 변경
         else: # 이름과 이메일에 값이 없을 때
             popup = QMessageBox()
             popup.setIcon(QMessageBox.Warning)
             popup.setWindowTitle("Failure")
-            popup.setText("로그인 실패")
+            popup.setText("이름과 이메일을 입력해주세요")
             popup.exec()
 
     def login_ui(self):
