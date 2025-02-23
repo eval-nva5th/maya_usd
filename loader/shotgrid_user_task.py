@@ -40,7 +40,18 @@ class UserInfo(Shotgrid) :
     # return 해줄 때는 get_userid가 더 맞을거같아서 바꿉니다
     def get_userid(self) :
         return self.id
-            
+    
+    # asset 파트인지 seq 파트인지 구별을 위해 사용되는 함수
+    def get_user_part(self):
+        asset_dept = {"model", "lookdev", "rig"}
+        seq_dept = {"layout", "anim", "lighting", "comp"}
+
+        if self.dept.lower() in asset_dept :
+            return "asset"
+        elif self.dept.lower() in seq_dept :
+            return "seq"
+        else :
+            return "unkown"
     def show_loading(self) :
         pass
 
