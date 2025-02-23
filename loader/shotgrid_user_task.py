@@ -27,9 +27,9 @@ class UserInfo(Shotgrid) :
             self.id = self.userinfo[0]['id'] # id 받기
             self.dept = self.userinfo[0]['department']['name'] # DEPT 받기
             self.pos = self.userinfo[0]['groups'][0]['name'] # 포지션 받기 
-            print("*"*30)
-            print(f"확인 완료\nname : {name}\nemail : {email}\nid : {self.id}\ndept : {self.dept}\nposition : {self.pos}")
-            print("*"*30)
+            # print("*"*30)
+            # print(f"확인 완료\nname : {name}\nemail : {email}\nid : {self.id}\ndept : {self.dept}\nposition : {self.pos}")
+            # print("*"*30)
             self.show_loading()
             return 1
 
@@ -37,8 +37,8 @@ class UserInfo(Shotgrid) :
             print("틀림!")
             self.show_error()
             return 0
-
-    def set_userid(self) :
+    # return 해줄 때는 get_userid가 더 맞을거같아서 바꿉니다
+    def get_userid(self) :
         return self.id
             
     def show_loading(self) :
@@ -105,11 +105,11 @@ if __name__ == "__main__":
     email = "p2xch@naver.com"
     name = "SEUNGYEON SHIN"
 
-    # user.is_validate(email, name)
-    # user_id = user.set_userid()
-    # task.get_user_task(user_id)
+    user.is_validate(email, name)
+    user_id = user.get_userid()
+    task.get_user_task(user_id)
 
-    # print(task.task_dict)
+    print(task.task_dict)
 
     # task_id = 5853
     # print(task.on_click_task(task_id))
