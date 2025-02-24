@@ -27,9 +27,6 @@ class UserInfo(Shotgrid) :
             self.id = self.userinfo[0]['id'] # id 받기
             self.dept = self.userinfo[0]['department']['name'] # DEPT 받기
             self.pos = self.userinfo[0]['groups'][0]['name'] # 포지션 받기 
-            # print("*"*30)
-            # print(f"확인 완료\nname : {name}\nemail : {email}\nid : {self.id}\ndept : {self.dept}\nposition : {self.pos}")
-            # print("*"*30)
             self.show_loading()
             return 1
 
@@ -37,6 +34,7 @@ class UserInfo(Shotgrid) :
             print("틀림!")
             self.show_error()
             return 0
+        
     # return 해줄 때는 get_userid가 더 맞을거같아서 바꿉니다
     def get_userid(self) :
         return self.id
@@ -63,8 +61,8 @@ class TaskInfo(Shotgrid) :
         #UserInfo에서 갖고온 id를 파라미터로 갖고와 그 아이디에 해당하는 태스크를 딕트 형식으로 저장
 
         id_filter = {'type': 'HumanUser', 'id': user_id}
-        tasks = self.sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list"])
-
+        tasks = self.sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
+        
         for task in tasks :
 
             task_id = task['id']
@@ -76,33 +74,62 @@ class TaskInfo(Shotgrid) :
             start_date = task['start_date']
             due_date = task['due_date']
             status = task['sg_status_list']
+            step = task['step']['name']
 
             self.task_dict[task_id]['proj_name']=proj_name
             self.task_dict[task_id]['content']=task_name
-            self.task_dict[task_id]['shot_name']=shot_name
+            
             self.task_dict[task_id]['task_type']=task_type
             self.task_dict[task_id]['start_date']=start_date
             self.task_dict[task_id]['due_date']=due_date
             self.task_dict[task_id]['status']=status
+            self.task_dict[task_id]['step'] = step
             
             asset_id = task['entity']['id']
-            print(self.task_dict)
-            print(f"태스크 아이디 : {task_id}")                        
-            print(f"해당 태스크에 붙은 에셋 id는 {asset_id}")
+            print("*"*30)
+            print(f"태스크 아이디 : {task_id}")
+
+            self.branch_asset_seq(task_type, task_id, asset_id, shot_name) # asset seq로 딕트 형식/저장방법 분기
+
+    def branch_asset_seq(self, task_type, task_id, asset_id, shot_name) :
+
+        if task_type == "Shot" :
+            print(f"해당 태스크에 붙은 shot id는 {asset_id}")
+            seq_contents = self.sg.find("Shot", [["id", "is", asset_id]], ["tasks", "sg_sequence"])
+            seq_name = seq_contents[0]['sg_sequence']['name']
+
+            self.task_dict[task_id]['shot_name']=shot_name
+            self.task_dict[task_id]['seq_name'] = seq_name
+            # task_infos = seq_contents[0]['tasks']
+
+            print(self.task_dict[task_id])
+
+            self.get_prev_task(task_id, seq_contents)
+        
+        elif task_type == "Asset" :
+            print(f"해당 태스크에 붙은 asset id는 {asset_id}")
+            asset_contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks", "sg_asset_type"])
+            asset_category_name = asset_contents[0]['sg_asset_type']
+            self.task_dict[task_id]['asset_name']=shot_name
+            self.task_dict[task_id]['asset_categ'] = asset_category_name
+            # task_infos = asset_contents[0]['tasks']
             
-            contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks"])
-            #print(contents)
+            print(self.task_dict[task_id])
+
+            self.get_prev_task(task_id, asset_contents)
             
-            for content in contents :
-                for idx, inner in enumerate(content['tasks']):
-                    if inner['id'] == task_id:
-                        if idx > 0:
-                            prev_id = {content['tasks'][idx-1]['id']}
-                            prev_id = list(prev_id)[0]
-                            prev_tasks = self.sg.find("Task", [["id", "is", prev_id]], ["project", "content", "task_assignees"])
-                            #print(prev_tasks)
-                        else:
-                            print("이게 첫번째임!!")
+    def get_prev_task(self, task_id, contents) :
+
+        for content in contents :
+            for idx, inner in enumerate(content['tasks']):
+                if inner['id'] == task_id:
+                    if idx > 0:
+                        prev_id = {content['tasks'][idx-1]['id']}
+                        prev_id = list(prev_id)[0]
+                        prev_tasks = self.sg.find("Task", [["id", "is", prev_id]], ["project", "content", "task_assignees"])
+                        print(prev_tasks)
+                    else:
+                        print("이게 첫번째임!")
 
     def on_click_task(self, id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
 
