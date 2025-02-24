@@ -117,7 +117,7 @@ class UI(QMainWindow):
 
         return widget
 
-    def previous_data(self):
+    def previous_data(self): #############################################순우work
         """
         외부에서 데이터를 받아서 테이블에 추가하는 함수
         """
@@ -138,17 +138,21 @@ class UI(QMainWindow):
         video_widget.setStyleSheet("border: 2px solid #555; border-radius: 5px;")
 
         # 💡 원본 크기 가져오기 (비율 유지)
-        original_size = video_widget.sizeHint()  # 또는 video_widget.size()
+        original_size = video_widget.size()  # 또는 video_widget.size()
+        default_width = original_size.width()/2.5
+        default_height = original_size.height()/2.5
+        # # 💡 적절한 최소 크기 설정 (너무 작지 않게)
+        # min_width = max(450, int(original_size.width() * 1.0))  # 최소 450px 이상
+        # min_height = max(180, int(original_size.height() * 0.5))  # 세로를 더 줄임 (기존보다 30~40% 줄이기)
+        # video_widget.setMinimumSize(min_width, min_height)
 
-        # 💡 적절한 최소 크기 설정 (너무 작지 않게)
-        min_width = max(450, int(original_size.width() * 1.0))  # 최소 450px 이상
-        min_height = max(180, int(original_size.height() * 0.5))  # 세로를 더 줄임 (기존보다 30~40% 줄이기)
-        video_widget.setMinimumSize(min_width, min_height)
+        # # 💡 적절한 최대 크기 설정 (너무 크지 않게 제한)
+        # max_width = max(700, int(original_size.width() * 1.4))  # 가로를 좀 더 키우기
+        # max_height = max(250, int(original_size.height() * 0.6))  # 세로를 더 줄여서 직사각형 느낌 강조
+        # video_widget.setMaximumSize(max_width, max_height)
 
-        # 💡 적절한 최대 크기 설정 (너무 크지 않게 제한)
-        max_width = max(700, int(original_size.width() * 1.4))  # 가로를 좀 더 키우기
-        max_height = max(250, int(original_size.height() * 0.6))  # 세로를 더 줄여서 직사각형 느낌 강조
-        video_widget.setMaximumSize(max_width, max_height)
+        #video_widget.setAspectRatioMode(True)
+        video_widget.setFixedSize(default_width, default_height)
 
         # 💡 비율 유지하며 크기 자동 조정
         video_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -365,30 +369,45 @@ class UI(QMainWindow):
         외부에서 데이터를 받아서 task에 추가하는 함수
         """
         self.task_info.get_user_task(self.user.get_userid())
+        task_dict = self.task_info.get_task_dict()
 
-        data = []
         color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"}
-        for task_id, task_data in self.task_info.task_dict.items(): 
-            # 데이터 유효성 검사
-            if not task_data.get("proj_name") or not task_data.get("content") or not task_data.get("shot_name") or not task_data.get("task_type") or not task_data.get("start_date") or not task_data.get("due_date") or not task_data.get("status"):
-                print("마야 스크립트에서 경고 출력 하고 log 파일로 남기기?")
-                print("something wrong with shotgrid data")
-                continue
-            # create table row data 
-            data_element = (
-                f"loader/loader_ui_sample/task.jpeg",
-                task_data["proj_name"],
-                f"시퀀스 주세요-{task_data['shot_name']}", 
-                task_data['task_type'], 
-                f"{task_data['start_date']} - {task_data['due_date']}",
-                color_map.get(task_data['status'], "#868e96")
-                )
-            data.append(data_element)
 
-        for item in data:
-            self.task_table_item(task_table, *item)
+        for task_id, task_data in task_dict.items() :
 
-    def task_table_item(self, task_table, thumb, project, file_name, type, deadline, status_color):
+            thumb = "loader/loader_ui_sample/task.jpeg"
+            task_name = task_data['content']
+            proj_name = task_data['proj_name']
+            status = task_data['status']
+            step = task_data['step']
+            start_date = task_data['start_date']
+            due_date = task_data['due_date']
+
+            if task_data['task_type'] == 'Shot' : 
+                low_data = task_data['shot_name']
+                high_data = task_data['seq_name']
+                
+            elif task_data['task_type'] == 'Asset' :
+                low_data = task_data['asset_name']
+                high_data = task_data['asset_categ']
+                
+            for k, v in color_map.items() :
+                if status == k :
+                    status_color = v
+            
+            data_set = f"{low_data} | {high_data} | {proj_name}"
+            date_set = f"{start_date} - {due_date}"
+            self.task_table_item(task_table, thumb, task_name, data_set, status_color, step, date_set)
+
+        # for task_id, task_data in self.task_info.task_dict.items(): 
+        #     # 데이터 유효성 검사
+        #     if not task_data.get("proj_name") or not task_data.get("content") or not task_data.get("shot_name") or not task_data.get("task_type") or not task_data.get("start_date") or not task_data.get("due_date") or not task_data.get("status"):
+        #         print("마야 스크립트에서 경고 출력 하고 log 파일로 남기기?")
+        #         print("something wrong with shotgrid data")
+        #         continue
+
+    def task_table_item(self, task_table, thumb, task_name, data_set, status_color, step, date_set):
+
         row = task_table.rowCount()
         task_table.insertRow(row)  # 새로운 행 추가
 
@@ -396,7 +415,8 @@ class UI(QMainWindow):
         task_table.resizeRowsToContents()
 
         # 프로젝트 네임
-        project_name = QLabel(project)
+        task_name = QLabel(task_name)
+        task_name.setStyleSheet("font-size: 16pt;")
 
         # 썸네일
         task_thumb = QLabel()
@@ -419,24 +439,24 @@ class UI(QMainWindow):
         task_status.setPixmap(status_pixmap)
 
         # 작업 유형
-        task_type = QLabel(type)
-        # 마감 기한
-        task_deadline = QLabel(deadline)
-        # 샷 이름
-        task_name = QLabel(file_name)
+        data_set = QLabel(data_set)
+        task_step = QLabel(step)
+        date_set = QLabel(date_set)
 
         # 상태와 작업 유형을 수평 정렬
         status_layout = QHBoxLayout()
         status_layout.addWidget(task_status)  # 빨간 원 (●)
-        status_layout.addWidget(task_type)  # Animation
+        status_layout.addWidget(task_step)  # Animation
         status_layout.addStretch()  # 남은 공간 정렬
 
         # 텍스트 정보 수직 정렬 (샷 이름 + 상태 + 마감 기한)
+        
         text_layout = QVBoxLayout()
-        text_layout.addWidget(project_name) # 프로젝트 이름
-        text_layout.addWidget(task_name)  # 샷 이름
+        text_layout.addWidget(task_name)
         text_layout.addLayout(status_layout)  # 상태 + 작업 유형
-        text_layout.addWidget(task_deadline)  # 마감 기한
+        text_layout.addWidget(data_set)
+        text_layout.addWidget(date_set)
+
 
         widget = QWidget()
         layout = QHBoxLayout()

@@ -7,7 +7,7 @@ def put_into_path():
     app = QApplication([])
     file_dialog = QFileDialog()
     file_dialog.setFileMode(QFileDialog.ExistingFile)
-    file_dialog.setDirectory("/nas/eval") 
+    file_dialog.setDirectory("/nas/eval/승연 테스트용") 
     
     if file_dialog.exec_():
         file_name = file_dialog.selectedFiles()[0]
@@ -51,7 +51,7 @@ def put_into_path():
             shot_name = f"{splited[0]}_{splited[1]}"
             task_type = splited[2]
             #ver = splited[3]
-
+            
             work_type = "work"
             path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/scenes/"
 

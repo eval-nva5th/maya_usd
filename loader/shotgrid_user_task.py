@@ -113,10 +113,13 @@ class TaskInfo(Shotgrid) :
             self.task_dict[task_id]['asset_name']=shot_name
             self.task_dict[task_id]['asset_categ'] = asset_category_name
             # task_infos = asset_contents[0]['tasks']
-            
+
             print(self.task_dict[task_id])
 
             self.get_prev_task(task_id, asset_contents)
+
+    def get_task_dict(self) :
+        return self.task_dict
             
     def get_prev_task(self, task_id, contents) :
 
