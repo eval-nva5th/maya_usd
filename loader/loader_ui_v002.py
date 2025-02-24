@@ -1,14 +1,14 @@
 try :
     from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-    from PySide6.QtWidgets import QVBoxLayout, QLabel, QMessageBox, QMainWindow, QHBoxLayout, QTableWidgetItem
-    from PySide6.QtGui import QPixmap, QPainter, QColor, QImage
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QMessageBox, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+    from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QFont
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
     from PySide6.QtCore import Qt, QTimer
 except ImportError:
     try:
         from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-        from PySide2.QtWidgets import QVBoxLayout, QLabel, QMessageBox, QMainWindow, QHBoxLayout, QTableWidgetItem
-        from PySide2.QtGui import QPixmap, QPainter, QColor, QImage
+        from PySide2.QtWidgets import QVBoxLayout, QLabel, QMessageBox, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+        from PySide2.QtGui import QPixmap, QPainter, QColor, QImage, QFont
         from PySide2.QtWidgets import QHeaderView, QAbstractItemView
         from PySide2.QtCore import Qt, QTimer
         import maya.cmds as cmds
@@ -74,39 +74,46 @@ class UI(QMainWindow):
         """
         # 왼쪽 Task Table UI 생성
         task_container = self.make_task_table()
+        task_container.setMinimumWidth(600)  # TASK 최소 너비 지정, 안하면 너무 작아짐.
+        task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 가로/세로 확장 허용
         # WORK 버전 UI 생성
         work_container = self.make_file_table("work")
         work_label = QLabel("WORK")
+        work_label.setStyleSheet("font-weight: bold;")
+        work_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed) #가로, 세로 고정 크기 조정
         # PUB 버전 UI 생성
         pub_container = self.make_file_table("pub")
         pub_label = QLabel("PUB")
+        pub_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        pub_label.setStyleSheet("font-weight: bold;")
         # PREVIOUS BLAST UI 생성
         previous_container = self.previous_data()
 
         widget = QWidget()
         layout = QHBoxLayout(widget)
 
-        # 버전, 타입 레이아웃
-        v_layout = QVBoxLayout()
-        v_layout.addWidget(work_label)
-        v_layout.addWidget(work_container)
-        v2_layout = QVBoxLayout()
-        v2_layout.addWidget(pub_label)
-        v2_layout.addWidget(pub_container)
-        
-        # work, pub 레이아웃 세팅
-        version_layout = QHBoxLayout()
-        version_layout.addLayout(v_layout)
-        version_layout.addLayout(v2_layout)
+        # 유저 레이아웃
+        user_layout = QHBoxLayout()
+        none_label = QLabel()
+        user_name = QLabel(self.name_input.text())
+        user_name.setStyleSheet("font-weight: bold;")
+        user_name.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        user_name.setAlignment(Qt.AlignRight)
+        user_layout.addWidget(none_label)
+        user_layout.addWidget(user_name)
 
-        # work, pub, pb 레이아웃 세팅
+        # work, pub, pb, 유저이름 레이아웃 세팅
         right_layout = QVBoxLayout()
-        right_layout.addWidget(previous_container)
-        right_layout.addLayout(version_layout)
+        right_layout.addLayout(user_layout)
+        right_layout.addWidget(previous_container, 2)
+        right_layout.addWidget(work_label)
+        right_layout.addWidget(work_container, 2)
+        right_layout.addWidget(pub_label)
+        right_layout.addWidget(pub_container, 1)
 
         # 메인 레이아웃 세팅
-        layout.addWidget(task_container)
-        layout.addLayout(right_layout)
+        layout.addWidget(task_container, 3)
+        layout.addLayout(right_layout, 2)
 
         return widget
 
@@ -115,7 +122,7 @@ class UI(QMainWindow):
         외부에서 데이터를 받아서 테이블에 추가하는 함수
         """
         user_name = self.user_name
-        play_blast = f"loader/loader_ui_sample/PB.mov" #mov파일경로
+        play_blast = f"/home/rapa/다운로드/output1.mov" #mov파일경로
         status_color = "red"
         status_text = "진행중"
         comment_text = "뒷작업을 잘 부탁해. 부족해도...............오....디코해..."
@@ -130,8 +137,27 @@ class UI(QMainWindow):
         video_widget = VideoPlayer(pb)
         video_widget.setStyleSheet("border: 2px solid #555; border-radius: 5px;")
 
+        # 💡 원본 크기 가져오기 (비율 유지)
+        original_size = video_widget.sizeHint()  # 또는 video_widget.size()
+
+        # 💡 적절한 최소 크기 설정 (너무 작지 않게)
+        min_width = max(450, int(original_size.width() * 1.0))  # 최소 450px 이상
+        min_height = max(180, int(original_size.height() * 0.5))  # 세로를 더 줄임 (기존보다 30~40% 줄이기)
+        video_widget.setMinimumSize(min_width, min_height)
+
+        # 💡 적절한 최대 크기 설정 (너무 크지 않게 제한)
+        max_width = max(700, int(original_size.width() * 1.4))  # 가로를 좀 더 키우기
+        max_height = max(250, int(original_size.height() * 0.6))  # 세로를 더 줄여서 직사각형 느낌 강조
+        video_widget.setMaximumSize(max_width, max_height)
+
+        # 💡 비율 유지하며 크기 자동 조정
+        video_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        video_widget.setScaledContents(True)  # 📌 자동으로 크기 조절 (비율 유지)
+
         #정보 라벨
         previous_work = QLabel("PREVIOUS WORK")
+        previous_work.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        previous_work.setStyleSheet("font-weight: bold;")
         user_name = QLabel(user)     
         state_image = QLabel(status_color)      
         state_text = QLabel(status_text)  
@@ -190,21 +216,24 @@ class UI(QMainWindow):
 
         # 테이블 위젯 생성 (초기 행 개수: 0, 3개 컬럼)
         file_table = QTableWidget(0, 3)
-        file_table.setHorizontalHeaderLabels(["version", "file name", "user"])
+        file_table.setHorizontalHeaderLabels(["", "file name", "user"])
         file_table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
         file_table.setEditTriggers(QAbstractItemView.NoEditTriggers) # 편집 비활성화
         file_table.setColumnWidth(0, 80)  # 로고 열 (좁게 설정)
         file_table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
 
         file_table.setAlternatingRowColors(True)
-        file_table.setStyleSheet("alternate-background-color: #2a2a2a; background-color: #1e1e1e;")
-
 
         file_table.setStyleSheet("""
             QTableView::item { border-right: none; }  /* 세로선 숨김 */
             QTableView { border-left: 1px black; }  /* 왼쪽 테두리 복구 */
             QTableWidget::item:selected { background-color: #005f87; color: white; } /* 더 선명한 색상으로 변경 */
         """)
+
+        if version_type == "pub":
+            file_table.setEditTriggers(QTableWidget.NoEditTriggers)  # 수정 비활성화
+            file_table.setSelectionMode(QTableWidget.NoSelection)   # 선택 자체를 막음
+            file_table.setFocusPolicy(Qt.NoFocus)                   # 점선 포커스 없애기
 
         # 테이블 크기 조정
         file_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)  # 로고 고정
@@ -230,9 +259,9 @@ class UI(QMainWindow):
 
         if version_type == "work":
             data = [
-                (f"loader/loader_ui_sample/logo.jpeg", "v0001", "anim test", "25.02.20, 19:07:04", "InHo"),
-                (f"loader/loader_ui_sample/logo.jpeg", "v0002", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
-                (f"loader/loader_ui_sample/logo.jpeg", "v0003", " ", "25.02.19, 19:07:04", "InHo")
+                (f"./loader/loader_ui_sample/logo.jpeg", "v0001", "anim test", "25.02.20, 19:07:04", "InHo"),
+                (f"./loader/loader_ui_sample/logo.jpeg", "v0002", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
+                (f"./loader/loader_ui_sample/logo.jpeg", "v0003", " ", "25.02.19, 19:07:04", "InHo")
             ]
         if version_type == "pub":
             data = [
@@ -252,26 +281,17 @@ class UI(QMainWindow):
         file_table.setRowHeight(row, 80)  # 행 높이 고정
         file_table.resizeRowsToContents()  # 자동 크기 조절 활성화
 
-        # DCC 로고 + 버전 (QVBoxLayout 사용)
-        dcc_widget = QWidget()
-        dcc_layout = QVBoxLayout()
-
+        #DCC 로고
         file_logo = QLabel()
         pixmap = QPixmap(dcc_logo).scaled(80, 50)  # 크기 조절
         file_logo.setPixmap(pixmap)
-        file_version = QLabel(version)
+        file_logo.setScaledContents(True) # 크기에 맞게 이미지가 자동으로 축소/확대됨.
         file_logo.setAlignment(Qt.AlignCenter)
-        file_version.setAlignment(Qt.AlignCenter)
-
-        dcc_layout.addWidget(file_logo)
-        dcc_layout.addWidget(file_version)
-        dcc_layout.setContentsMargins(5, 5, 5, 5)
-        dcc_widget.setLayout(dcc_layout)
-        file_table.setCellWidget(row, 0, dcc_widget)  # 첫 번째 열에 추가
+        file_table.setCellWidget(row, 0, file_logo)  # 첫 번째 열에 추가
 
         # 파일명 (QTableWidgetItem 사용)
-        file_item = QTableWidgetItem(name)
-        file_table.setItem(row, 1, file_item)  # 두 번째 열에 추가
+        file_name = QTableWidgetItem(f"{name}_{version}")
+        file_table.setItem(row, 1, file_name)  # 두 번째 열에 추가
 
         # 담당자 + 저장 날짜 (QVBoxLayout 사용)
         user_widget = QWidget()
@@ -300,10 +320,12 @@ class UI(QMainWindow):
 
         # 테스크 검색, 정렬 UI 생성
         task_label = QLabel("TASK")
+        task_label.setStyleSheet("font-weight: bold;")
         search_input = QLineEdit() # 검색창
         search_input.setPlaceholderText("SEARCH") # 흐릿한 글씨
         search_but = QPushButton("검색") # 검색버튼
         combo_box = QComboBox()
+
 
         # 테스크 검색, 정렬 레이아웃 정렬
         h_layout = QHBoxLayout()
@@ -319,6 +341,7 @@ class UI(QMainWindow):
         # 테이블 크기설정
         task_table.setColumnWidth(0, 180)  # 로고 열 (좁게 설정)
         task_table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
+        task_table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
         task_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)  # 로고 고정
         task_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)  # 파일명 확장
         task_table.setEditTriggers(QAbstractItemView.NoEditTriggers) # 편집 비활성화
@@ -328,6 +351,8 @@ class UI(QMainWindow):
         task_table.verticalHeader().setVisible(False) #행번호 숨김
 
         # UI 레이아웃 적용
+        none_label = QLabel()
+        layout.addWidget(none_label)
         layout.addLayout(h_layout)
         layout.addWidget(task_table)
 
@@ -335,7 +360,7 @@ class UI(QMainWindow):
         self.task_data(task_table)
         return widget  # QWidget 반환
 
-    def task_data(self, task_table):
+    def task_data(self, task_table): #########################################################수정하기###########################################################
         """
         외부에서 데이터를 받아서 task에 추가하는 함수
         """
@@ -352,6 +377,7 @@ class UI(QMainWindow):
             # create table row data 
             data_element = (
                 f"loader/loader_ui_sample/task.jpeg",
+                task_data["proj_name"],
                 f"시퀀스 주세요-{task_data['shot_name']}", 
                 task_data['task_type'], 
                 f"{task_data['start_date']} - {task_data['due_date']}",
@@ -362,12 +388,15 @@ class UI(QMainWindow):
         for item in data:
             self.task_table_item(task_table, *item)
 
-    def task_table_item(self, task_table, thumb, file_name, type, deadline, status_color):
+    def task_table_item(self, task_table, thumb, project, file_name, type, deadline, status_color):
         row = task_table.rowCount()
         task_table.insertRow(row)  # 새로운 행 추가
 
         task_table.setRowHeight(row, 80)  
-        task_table.resizeRowsToContents() 
+        task_table.resizeRowsToContents()
+
+        # 프로젝트 네임
+        project_name = QLabel(project)
 
         # 썸네일
         task_thumb = QLabel()
@@ -404,6 +433,7 @@ class UI(QMainWindow):
 
         # 텍스트 정보 수직 정렬 (샷 이름 + 상태 + 마감 기한)
         text_layout = QVBoxLayout()
+        text_layout.addWidget(project_name) # 프로젝트 이름
         text_layout.addWidget(task_name)  # 샷 이름
         text_layout.addLayout(status_layout)  # 상태 + 작업 유형
         text_layout.addWidget(task_deadline)  # 마감 기한
@@ -437,7 +467,7 @@ class UI(QMainWindow):
                 popup.exec()
             else:
                 self.user_name = name
-                self.resize(1440, 800)  # 메인 화면 크기 조정
+                self.resize(900, 800)  # 메인 화면 크기 조정
                 self.setCentralWidget(self.setup_layout()) # 로그인 창을 메인화면으로 변경
         else: # 이름과 이메일에 값이 없을 때
             popup = QMessageBox()
@@ -455,12 +485,16 @@ class UI(QMainWindow):
         layout = QVBoxLayout(widget)
 
         # 네임 임력
-        self.name_input = QLineEdit()
-        self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
+        self.name_input = QLineEdit("SEUNGYEON SHIN") ################ 말풍선 제거하기
+        # self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
 
         # 이메일 입력
-        self.email_input = QLineEdit()
-        self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
+        self.email_input = QLineEdit("p2xch@naver.com") ################ 말풍선 제거하기
+        # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
+
+        # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작하도록 연결
+        self.email_input.returnPressed.connect(self.on_login_click)
+        self.name_input.returnPressed.connect(self.on_login_click)
 
         # 로그인 버튼
         self.login_btn = QPushButton("LOGIN")
