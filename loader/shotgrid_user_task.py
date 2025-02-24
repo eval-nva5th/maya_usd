@@ -71,7 +71,7 @@ class TaskInfo(Shotgrid) :
             self.task_dict[task_id] = {}
             proj_name = task['project']['name']
             task_name = task['content']
-            asset_name = task['entity']['name']
+            shot_name = task['entity']['name']
             task_type = task['entity']['type']
             start_date = task['start_date']
             due_date = task['due_date']
@@ -79,7 +79,7 @@ class TaskInfo(Shotgrid) :
 
             self.task_dict[task_id]['proj_name']=proj_name
             self.task_dict[task_id]['content']=task_name
-            self.task_dict[task_id]['asset_name']=asset_name
+            self.task_dict[task_id]['shot_name']=shot_name
             self.task_dict[task_id]['task_type']=task_type
             self.task_dict[task_id]['start_date']=start_date
             self.task_dict[task_id]['due_date']=due_date
