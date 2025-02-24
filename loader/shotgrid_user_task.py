@@ -115,9 +115,12 @@ class TaskInfo(Shotgrid) :
             asset_category_name = asset_contents[0]['sg_asset_type']
             self.task_dict[task_id]['asset_name']=shot_name
             self.task_dict[task_id]['asset_categ'] = asset_category_name
-            self.task_dict[task_id]['asset_id'] = asset_id
-        self.on_click_task(task_id)
 
+            self.task_dict[task_id]['asset_id'] = asset_id
+
+    def get_task_dict(self) :
+        return self.task_dict
+    
     def get_prev_task(self, task_id) :
         # 현재 태스크 정보
         current_task = self.task_dict[task_id]
@@ -131,6 +134,7 @@ class TaskInfo(Shotgrid) :
         for task_id, task in self.task_dict.items():
             if task.get("shot_id") == type_name or task.get("asset_id") == type_name :
                 related_tasks.append((task_id, task))
+
 
         # 현재 태스크의 스텝
         current_step = current_task['step'].lower()
