@@ -97,48 +97,73 @@ class TaskInfo(Shotgrid) :
             self.task_dict[task_id]['step'] = step
             
             asset_id = task['entity']['id']
-            print("*"*30)
-            print(f"태스크 아이디 : {task_id}")
+            # print("*"*30)
+            # print(f"태스크 아이디 : {task_id}")
+            # print(f"태스크 이름 : {task_name}")
+            # print(f"태스크 타입 : {task_type}")
 
             self.branch_asset_seq(task_type, task_id, asset_id, shot_name) # asset seq로 딕트 형식/저장방법 분기
 
     def branch_asset_seq(self, task_type, task_id, asset_id, shot_name) :
 
         if task_type == "Shot" :
-            print(f"해당 태스크에 붙은 shot id는 {asset_id}")
+            # print(f"해당 태스크({task_id})에 붙은 shot id는 {asset_id}")
             seq_contents = self.sg.find("Shot", [["id", "is", asset_id]], ["tasks", "sg_sequence"])
             seq_name = seq_contents[0]['sg_sequence']['name']
 
-            self.task_dict[task_id]['shot_name']=shot_name
+            self.task_dict[task_id]['shot_name'] = shot_name
             self.task_dict[task_id]['seq_name'] = seq_name
             # task_infos = seq_contents[0]['tasks']
 
-            print(self.task_dict[task_id])
+            # print(self.task_dict[task_id])
 
             self.get_prev_task(task_id, seq_contents)
         
         elif task_type == "Asset" :
-            print(f"해당 태스크에 붙은 asset id는 {asset_id}")
+            # print(f"해당 태스크({task_id})에 붙은 asset id는 {asset_id}")
             asset_contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks", "sg_asset_type"])
             asset_category_name = asset_contents[0]['sg_asset_type']
             self.task_dict[task_id]['asset_name']=shot_name
             self.task_dict[task_id]['asset_categ'] = asset_category_name
             # task_infos = asset_contents[0]['tasks']
             
-            print(self.task_dict[task_id])
+            # print(self.task_dict[task_id])
 
             self.get_prev_task(task_id, asset_contents)
+            # task_id : 태스크 아이디
             
     def get_prev_task(self, task_id, contents) :
-
+        print(f"get_prev_task 시작 : {contents}")
+        prev_task_map = {
+            "lookdev": "model",
+            "rig": "model",
+            "layout": "matchmove",
+            "light": "anim"
+        }
+        # contents : 어셋에 붙은 태스크들
         for content in contents :
-            for idx, inner in enumerate(content['tasks']):
+            print("*"*30)
+            task_list = content["tasks"]
+            print(f"task_list {task_list}")
+            # print(f"content {content}")
+            for idx, inner in enumerate(task_list):
+                # print(f"inner {inner}")
                 if inner['id'] == task_id:
+                    current_step = self.task_dict[task_id]["step"].lower()
+                    prev_step = prev_task_map.get(current_step, None)
+                    # print(f"current step : {current_step}, prev step : {prev_step}")
+                    # asset에 붙은 태스크 id랑 인자로 받은 태스크 id랑 같으면
                     if idx > 0:
-                        prev_id = {content['tasks'][idx-1]['id']}
-                        prev_id = list(prev_id)[0]
+                        prev_id = content['tasks'][idx-1]['id']
+                        #prev_id = list(prev_id)[0]
                         prev_tasks = self.sg.find("Task", [["id", "is", prev_id]], ["project", "content", "task_assignees"])
-                        print(prev_tasks)
+                        # print(f"태스크 {task_id}의 이전 태스크 : {prev_id}")
+                        # print(f"project name : {prev_tasks[0]['project']['name']}")
+                        # print(f"task name : {prev_tasks[0]['content']}")
+                        # if prev_tasks[0]['task_assignees']:
+                        #     print(f"task assignees : {prev_tasks[0]['task_assignees'][0]['name']}")
+                        # else:
+                        #     print("task assignees : Unassigned")
                     else:
                         print("이게 첫번째임!")
 
@@ -170,6 +195,3 @@ if __name__ == "__main__":
 
     task_id = 5852
     #print(task.on_click_task(task_id))
-
-    
-    
