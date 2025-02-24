@@ -97,83 +97,103 @@ class TaskInfo(Shotgrid) :
             self.task_dict[task_id]['step'] = step
             
             asset_id = task['entity']['id']
-            # print("*"*30)
-            # print(f"태스크 아이디 : {task_id}")
-            # print(f"태스크 이름 : {task_name}")
-            # print(f"태스크 타입 : {task_type}")
 
             self.branch_asset_seq(task_type, task_id, asset_id, shot_name) # asset seq로 딕트 형식/저장방법 분기
 
     def branch_asset_seq(self, task_type, task_id, asset_id, shot_name) :
 
         if task_type == "Shot" :
-            # print(f"해당 태스크({task_id})에 붙은 shot id는 {asset_id}")
             seq_contents = self.sg.find("Shot", [["id", "is", asset_id]], ["tasks", "sg_sequence"])
             seq_name = seq_contents[0]['sg_sequence']['name']
 
             self.task_dict[task_id]['shot_name'] = shot_name
             self.task_dict[task_id]['seq_name'] = seq_name
-            # task_infos = seq_contents[0]['tasks']
-
-            # print(self.task_dict[task_id])
-
-            self.get_prev_task(task_id, seq_contents)
+            self.task_dict[task_id]['shot_id'] = asset_id
         
         elif task_type == "Asset" :
-            # print(f"해당 태스크({task_id})에 붙은 asset id는 {asset_id}")
             asset_contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks", "sg_asset_type"])
             asset_category_name = asset_contents[0]['sg_asset_type']
             self.task_dict[task_id]['asset_name']=shot_name
             self.task_dict[task_id]['asset_categ'] = asset_category_name
-            # task_infos = asset_contents[0]['tasks']
-            
-            # print(self.task_dict[task_id])
+            self.task_dict[task_id]['asset_id'] = asset_id
+        self.on_click_task(task_id)
 
-            self.get_prev_task(task_id, asset_contents)
-            # task_id : 태스크 아이디
-            
-    def get_prev_task(self, task_id, contents) :
-        print(f"get_prev_task 시작 : {contents}")
-        prev_task_map = {
-            "lookdev": "model",
-            "rig": "model",
-            "layout": "matchmove",
-            "light": "anim"
+    def get_prev_task(self, task_id) :
+        # 현재 태스크 정보
+        current_task = self.task_dict[task_id]
+        # something went wrong
+        if not current_task:
+            return None
+        
+        # type_name(shot_id/asset_id)이 같은 태스크들 찾기
+        related_tasks = []
+        type_name = current_task.get("shot_id") or current_task.get("asset_id")
+        for task_id, task in self.task_dict.items():
+            if task.get("shot_id") == type_name or task.get("asset_id") == type_name :
+                related_tasks.append((task_id, task))
+
+        # 현재 태스크의 스텝
+        current_step = current_task['step'].lower()
+
+        # 스텝 매핑 해줄 스텝맵
+        step_map = {
+        "rig": ["model"],
+        "texture": ["model"],
+        "animation": ["layout"],
+        "light": ["animation", "layout"]
         }
-        # contents : 어셋에 붙은 태스크들
-        for content in contents :
-            print("*"*30)
-            task_list = content["tasks"]
-            print(f"task_list {task_list}")
-            # print(f"content {content}")
-            for idx, inner in enumerate(task_list):
-                # print(f"inner {inner}")
-                if inner['id'] == task_id:
-                    current_step = self.task_dict[task_id]["step"].lower()
-                    prev_step = prev_task_map.get(current_step, None)
-                    # print(f"current step : {current_step}, prev step : {prev_step}")
-                    # asset에 붙은 태스크 id랑 인자로 받은 태스크 id랑 같으면
-                    if idx > 0:
-                        prev_id = content['tasks'][idx-1]['id']
-                        #prev_id = list(prev_id)[0]
-                        prev_tasks = self.sg.find("Task", [["id", "is", prev_id]], ["project", "content", "task_assignees"])
-                        # print(f"태스크 {task_id}의 이전 태스크 : {prev_id}")
-                        # print(f"project name : {prev_tasks[0]['project']['name']}")
-                        # print(f"task name : {prev_tasks[0]['content']}")
-                        # if prev_tasks[0]['task_assignees']:
-                        #     print(f"task assignees : {prev_tasks[0]['task_assignees'][0]['name']}")
-                        # else:
-                        #     print("task assignees : Unassigned")
-                    else:
-                        print("이게 첫번째임!")
 
+        # 현재 스텝이 model/layout이면 None
+        if current_step in {"model", "layout"}:
+            return None
+        
+        # 스텝 맵을 사용한 이전 스텝 찾기
+        prev_steps = step_map.get(current_step, None)
+        if not prev_steps:
+            return None
+        
+        # type_name(shot_name/asset_name)이 같은 태스크 리스트에서 이전 스텝인 태스크 아이디 찾기
+        for prev_step in prev_steps:
+            for prev_task_id, prev_task in reversed(related_tasks):
+                if prev_task.get("step").lower() == prev_step:
+                    return prev_task_id
+        return None
+    
     def on_click_task(self, id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
+        prev_task_id = self.get_prev_task(id)
+        current_task_id = id
+        current_dict = {}
+        current_dict["id"] = current_task_id
+        current_dict["proj_name"] = self.task_dict[current_task_id]['proj_name']
+        current_dict["task_type"] = self.task_dict[current_task_id]['task_type'].lower()
+        current_dict["category"] = self.task_dict[current_task_id].get('seq_name') or self.task_dict[current_task_id].get('asset_categ').lower()
+        current_dict["name"] = self.task_dict[current_task_id].get('shot_name') or self.task_dict[current_task_id].get('asset_name').lower()
+        current_dict["step"] = self.task_dict[current_task_id]['step']
 
-        for key, inner_dict in self.task_dict.items() :
-            if key == id : 
-                return inner_dict
-            else :
-                pass
+
+        prev_dict = {}
+        if prev_task_id :
+            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["content", "step", "task_assignees"])
+            prev_task_id = prev_task_data['id']
+            prev_task_name = prev_task_data['content']
+            prev_task_step = prev_task_data['step']['name']
+            prev_task_assignees = [assignee['name'] for assignee in prev_task_data['task_assignees']]
+            prev_task_assignees = ", ".join(prev_task_assignees)
+
+            prev_dict["id"] = prev_task_id
+            prev_dict["name"] = prev_task_name
+            prev_dict["step"] = prev_task_step
+            prev_dict["assignees"] = prev_task_assignees
+            prev_dict["comment"] = "코멘트 들어올 자리"
+        else :
+            prev_dict["id"] = "None"
+            prev_dict["name"] = "None"
+            prev_dict["step"] = "None"
+            prev_dict["assignees"] = "None"
+            prev_dict["comment"] = "None"
+
+        return prev_dict, current_dict
+
 
 #실행
 if __name__ == "__main__":
