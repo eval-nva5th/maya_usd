@@ -95,6 +95,25 @@ class TaskInfo(Shotgrid) :
             self.task_dict[task_id]['start_date']=start_date
             self.task_dict[task_id]['due_date']=due_date
             self.task_dict[task_id]['status']=status
+            
+            asset_id = task['entity']['id']
+            print(self.task_dict)
+            print(f"태스크 아이디 : {task_id}")                        
+            print(f"해당 태스크에 붙은 에셋 id는 {asset_id}")
+            
+            contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks"])
+            #print(contents)
+            
+            for content in contents :
+                for idx, inner in enumerate(content['tasks']):
+                    if inner['id'] == task_id:
+                        if idx > 0:
+                            prev_id = {content['tasks'][idx-1]['id']}
+                            prev_id = list(prev_id)[0]
+                            prev_tasks = self.sg.find("Task", [["id", "is", prev_id]], ["project", "content", "task_assignees"])
+                            #print(prev_tasks)
+                        else:
+                            print("이게 첫번째임!!")
 
     def on_click_task(self, id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
 
@@ -120,10 +139,10 @@ if __name__ == "__main__":
     user_id = user.get_userid()
     task.get_user_task(user_id)
 
-    print(task.task_dict)
+    # print(task.task_dict)
 
-    # task_id = 5853
-    # print(task.on_click_task(task_id))
+    task_id = 5852
+    #print(task.on_click_task(task_id))
 
     
     
