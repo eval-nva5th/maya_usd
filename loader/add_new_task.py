@@ -27,4 +27,4 @@ def create_asset_root_stage(asset_name, dept, payload=False):
 
     asset_root_stage.GetRootLayer().Save()
 create_asset_root_stage("junsu", "model", payload=True)
-create_asset_root_stage("jsw", "layout", payload=False)
+create_asset_root_stage("jsw", "layout", payload=False) 

@@ -442,7 +442,8 @@ class UI(QMainWindow):
             
             data_set = f"{low_data} | {high_data} | {proj_name}"
             date_set = f"{start_date} - {due_date}"
-            self.task_table_item(task_table, thumb, task_name, data_set, status_color, step, date_set)
+            step = f" | {step}"
+            self.task_table_item(task_table, thumb, task_name, data_set, status_color, status, step, date_set)
 
         # for task_id, task_data in self.task_info.task_dict.items(): 
         #     # 데이터 유효성 검사
@@ -451,7 +452,7 @@ class UI(QMainWindow):
         #         print("something wrong with shotgrid data")
         #         continue
 
-    def task_table_item(self, task_table, thumb, task_name, data_set, status_color, step, date_set):
+    def task_table_item(self, task_table, thumb, task_name, data_set, status_color, status, step, date_set):
 
         row = task_table.rowCount()
         task_table.insertRow(row)  # 새로운 행 추가
@@ -460,8 +461,10 @@ class UI(QMainWindow):
         task_table.resizeRowsToContents()
 
         # 프로젝트 네임
+        task_name_layout = QHBoxLayout()
         task_name = QLabel(task_name)
         task_name.setStyleSheet("font-size: 16pt;")
+        task_step = QLabel(step)
 
         # 썸네일
         task_thumb = QLabel()
@@ -485,19 +488,23 @@ class UI(QMainWindow):
 
         # 작업 유형
         data_set = QLabel(data_set)
-        task_step = QLabel(step)
         date_set = QLabel(date_set)
+        status = QLabel(status)
+        status.setStyleSheet("font-size: 10pt; color: grey")
 
         # 상태와 작업 유형을 수평 정렬
         status_layout = QHBoxLayout()
         status_layout.addWidget(task_status)  # 빨간 원 (●)
+        status_layout.addWidget(status)
+        
         status_layout.addWidget(task_step)  # Animation
         status_layout.addStretch()  # 남은 공간 정렬
 
         # 텍스트 정보 수직 정렬 (샷 이름 + 상태 + 마감 기한)
         
         text_layout = QVBoxLayout()
-        text_layout.addWidget(task_name)
+        
+        #text_layout.addWidget(task_name)
         text_layout.addLayout(status_layout)  # 상태 + 작업 유형
         text_layout.addWidget(data_set)
         text_layout.addWidget(date_set)
