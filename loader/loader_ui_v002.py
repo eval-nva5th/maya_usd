@@ -19,6 +19,8 @@ import cv2
 import numpy as np
 import shotgun_api3
 from shotgrid_user_task import UserInfo, TaskInfo
+import os
+import time
 
 class VideoPlayer(QLabel):
     """
@@ -61,6 +63,7 @@ class UI(QMainWindow):
         self.user = UserInfo(sg_url, script_name, api_key)
         self.user_name = ""
         self.task_info = TaskInfo(sg_url, script_name, api_key)
+        self.prefix_path = "/nas/eval/show"
         
         super().__init__()
         self.setWindowTitle("EVAL_LOADER")
@@ -259,15 +262,57 @@ class UI(QMainWindow):
         version_type: "work" 또는 "pub" 데이터를 구분하여 로드
         table: 데이터를 추가할 QTableWidget 객체
         """
+        # user_part에는 seq, asset이 들어갑니다
+        # user_dept가 model, lookdev, rig일때는 asset
+        # user_dept가 layout, anim, lighting, comp일때는 seq
+        project_name = "태스크 테이블에서 가져올 프로젝트 이름"
+        user_part = self.user.get_user_part()
+        asset_type = "태스크에서 에셋 타입 가져와야되나 어떻게 생각해?"
+        asset_name = "어디서 가져와야되는지 모르겠는 asset_name"
+        task_type = "태스크 테이블에서 가져올 태스크 타입"
+        seq_name = "태스크 테이블에서 가져올 시퀀스 이름"
+        shot_name = "태스크 테이블에서 가져올 샷 이름"
+        # pub/maya/scenes전까지
+        if user_part == "asset":
+            file_path = f"{self.prefix_path}/{project_name}/{user_part}/{asset_type}/{asset_name}/{task_type}"
+        elif user_part == "seq":
+            file_path = f"{self.prefix_path}/{project_name}/{user_part}/{seq_name}/{shot_name}/{task_type}"    
+
+
         data = []
 
         if version_type == "work":
+            file_path = f"{file_path}/work/maya/scenes"
+            try:
+                # file_path에 있는 파일 리스트 가져와서 데이터 바인딩
+                files = os.listdir(file_path)
+                for file in files:
+                    fpath = f"{file_path}/{file}"
+                    timestamp = os.path.getmtime(fpath)
+                    date = time.strftime('%y.%m.%d' , time.localtime(timestamp))
+                    mtime = time.strftime('%H:%M:%S', time.localtime(timestamp))
+                    file_name, ext = os.path.splitext(file)
+                    # username 이거 필요할까?
+                    # filename + version 어떻게 생각해?
+
+            except FileNotFoundError:
+                file_name = f"경로 {file_path}가 존재하지 않습니다"
+            except PermissionError:
+                file_name = f"경로 {file_path}에 접근할 수 없습니다"
             data = [
                 (f"./loader/loader_ui_sample/logo.jpeg", "v0001", "anim test", "25.02.20, 19:07:04", "InHo"),
                 (f"./loader/loader_ui_sample/logo.jpeg", "v0002", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
                 (f"./loader/loader_ui_sample/logo.jpeg", "v0003", " ", "25.02.19, 19:07:04", "InHo")
             ]
         if version_type == "pub":
+            file_path = f"{file_path}/pub/maya/scenes"
+            try:
+                # file_path에 있는 파일 리스트 가져와서 데이터 바인딩
+                
+                pass
+            except:
+                # 경로가 없을 때
+                pass
             data = [
                 (f"./loader/loader_ui_sample/logo.jpeg", "v0005", "anim test", "25.02.20, 19:07:04", "InHo"),
                 (f"./loader/loader_ui_sample/logo.jpeg", "v0006", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
