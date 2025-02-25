@@ -442,7 +442,7 @@ class UI(QMainWindow):
             
             data_set = f"{low_data} | {high_data} | {proj_name}"
             date_set = f"{start_date} - {due_date}"
-            step = f" | {step}"
+            step = f"                           {step}"
             self.task_table_item(task_table, thumb, task_name, data_set, status_color, status, step, date_set)
 
         # for task_id, task_data in self.task_info.task_dict.items(): 
@@ -460,11 +460,15 @@ class UI(QMainWindow):
         task_table.setRowHeight(row, 80)  
         task_table.resizeRowsToContents()
 
-        # 프로젝트 네임
-        task_name_layout = QHBoxLayout()
         task_name = QLabel(task_name)
         task_name.setStyleSheet("font-size: 16pt;")
         task_step = QLabel(step)
+        task_step.setStyleSheet("color: grey")
+
+        # 프로젝트 네임
+        task_name_layout = QHBoxLayout()
+        task_name_layout.addWidget(task_name)
+        task_name_layout.addWidget(task_step)
 
         # 썸네일
         task_thumb = QLabel()
@@ -497,14 +501,15 @@ class UI(QMainWindow):
         status_layout.addWidget(task_status)  # 빨간 원 (●)
         status_layout.addWidget(status)
         
-        status_layout.addWidget(task_step)  # Animation
+        #status_layout.addWidget(task_step)  # Animation
         status_layout.addStretch()  # 남은 공간 정렬
 
         # 텍스트 정보 수직 정렬 (샷 이름 + 상태 + 마감 기한)
         
         text_layout = QVBoxLayout()
-        
+
         #text_layout.addWidget(task_name)
+        text_layout.addLayout(task_name_layout)
         text_layout.addLayout(status_layout)  # 상태 + 작업 유형
         text_layout.addWidget(data_set)
         text_layout.addWidget(date_set)
