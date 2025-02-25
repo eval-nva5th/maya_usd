@@ -208,27 +208,51 @@ class TaskInfo(Shotgrid) :
             published_file = self.sg.find_one("PublishedFile", filters, fields)
             comment = published_file.get('description', 'No Description')
             
-            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["content", "step", "task_assignees", "sg_status_list"])
+            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["project","content", "entity","step", "task_assignees", "sg_status_list"])
+            prev_task_proj = prev_task_data['project']['name']
+
+            entity_type = prev_task_data['entity']['type']
+            entity_id = prev_task_data['entity']['id']
+            if entity_type == "Shot":
+                entity_data = self.sg.find_one("Shot", [["id", "is", entity_id]], ["sg_sequence"])
+                prev_task_category = entity_data.get("sg_sequence", {}).get("name", "No Sequence")
+
+            elif entity_type == "Asset":
+                entity_data = self.sg.find_one("Asset", [["id", "is", entity_id]], ["sg_asset_type"])
+                prev_task_category = entity_data.get("sg_asset_type", "No Asset Type")
+            
+            prev_task_name = prev_task_data['entity'].get('name') or prev_task_data['entity'].get('name')
             prev_task_id = prev_task_data['id']
-            prev_task_name = prev_task_data['content']
+            prev_task_task_name = prev_task_data['content']
             prev_task_step = prev_task_data['step']['name']
             prev_task_assignees = [assignee['name'] for assignee in prev_task_data['task_assignees']]
             prev_task_status = prev_task_data['sg_status_list']
             prev_task_assignees = ", ".join(prev_task_assignees)
 
             prev_dict["id"] = prev_task_id
-            prev_dict["name"] = prev_task_name
-            prev_dict["step"] = prev_task_step
+            prev_dict["proj_name"] = prev_task_proj
+            prev_dict["type_name"] = entity_type.lower()
+            prev_dict["category"] = prev_task_category.lower()
+            prev_dict["name"] = prev_task_name            
+
+            prev_dict["task_name"] = prev_task_task_name
+            prev_dict["step"] = prev_task_step.lower()
             prev_dict["assignees"] = prev_task_assignees
             prev_dict["status"] = prev_task_status
             prev_dict["comment"] = comment
         else :
             prev_dict["id"] = "None"
+            prev_dict["proj_name"] = "None"
+            prev_dict["type_name"] = "None"
+            prev_dict["category"] = "None"
             prev_dict["name"] = "None"
+
+            prev_dict["task_name"] = "None"
             prev_dict["step"] = "None"
             prev_dict["assignees"] = "None"
             prev_dict["status"] = "None"
             prev_dict["comment"] = "None"
+        print(prev_dict)
 
         return prev_dict, current_dict
 

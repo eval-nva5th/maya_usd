@@ -550,14 +550,13 @@ class UI(QMainWindow):
         prev_task_data, current_task_data = self.task_info.on_click_task(clicked_task_id)
         prev_task_id = prev_task_data['id']
 
-        print(prev_task_data)
         self.update_prev_work(prev_task_data)
         
 
     def update_prev_work(self, prev_task_data):
         if prev_task_data['id'] != "None":
             prev_task_id = prev_task_data['id']
-            prev_task_name = prev_task_data['name']
+            prev_task_name = prev_task_data['task_name']
             prev_task_assignee = prev_task_data['assignees']
             prev_task_status = prev_task_data['status']
             prev_task_step = prev_task_data['step']
