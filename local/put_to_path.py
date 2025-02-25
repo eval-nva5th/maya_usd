@@ -21,11 +21,11 @@ def put_into_path():
             set_type_str = "assets"
             raw, _ = os.path.splitext(os.path.basename(file_name))
             splited = raw.split('_')
-
-            asset_name = splited[0]
-            task_type = splited[1]
-            #ver = splited[2]
-            work_type = "work"
+            index = len(splited)
+            task_type = splited[index-2]
+            ver = splited[index-1]
+            asset_name = raw.replace(f"_{task_type}_{ver}", "")
+            work_type = "pub"
 
             asset_type = input("asset type (prop: 1, vehicle: 2, character: 3, environment: 4) : ")
             
@@ -52,7 +52,7 @@ def put_into_path():
             task_type = splited[2]
             #ver = splited[3]
             
-            work_type = "work"
+            work_type = "pub"
             path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/scenes/"
 
             if not os.path.exists(path):

@@ -419,7 +419,6 @@ class UI(QMainWindow):
         color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"}
 
         for task_id, task_data in task_dict.items() :
-
             thumb = "loader/loader_ui_sample/task.jpeg"
             task_name = task_data['content']
             proj_name = task_data['proj_name']
