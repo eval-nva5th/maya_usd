@@ -306,7 +306,7 @@ class TaskInfo(Shotgrid) :
     def set_file_list(self, path) :
         
         data_list = []
-        
+        file.split[-3:0]
         for file in os.listdir(path): # 확장자에 따라서 넣는거 해야함!!!
             
             file_path = os.path.join(path, file)

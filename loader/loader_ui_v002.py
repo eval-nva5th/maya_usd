@@ -232,39 +232,22 @@ class UI(QMainWindow):
         widget = QWidget()  # 새 UI 위젯 생성
         layout = QVBoxLayout(widget)
 
-        # 테이블 위젯 생성 (초기 행 개수: 0, 3개 컬럼)
-        self.file_table = QTableWidget(0, 3)
-        self.file_table.setHorizontalHeaderLabels(["로고", "파일 이름", "최근 수정일"])
-        self.file_table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
-        self.file_table.setEditTriggers(QAbstractItemView.NoEditTriggers) # 편집 비활성화
-        self.file_table.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
-        self.file_table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
-        self.file_table.verticalHeader().setDefaultSectionSize(30)
-
-        self.file_table.setAlternatingRowColors(True)
-
-        self.file_table.setStyleSheet("""
-            QTableView::item { border-right: none; }  /* 세로선 숨김 */
-            QTableView { border-left: 1px black; }  /* 왼쪽 테두리 복구 */
-            QTableWidget::item:selected { background-color: #005f87; color: white; } /* 더 선명한 색상으로 변경 */
-        """)
-
         if version_type == "pub":
-            self.file_table.setEditTriggers(QTableWidget.NoEditTriggers)  # 수정 비활성화
-            self.file_table.setSelectionMode(QTableWidget.NoSelection)   # 선택 자체를 막음
-            self.file_table.setFocusPolicy(Qt.NoFocus)                   # 점선 포커스 없애기
+            self.pub_table = QTableWidget(0, 3)
+            table = self.pub_table  # Assign to pub_table
+        elif version_type == "work":
+            self.work_table = QTableWidget(0, 3)
+            table = self.work_table  # Assign to work_table
 
-        # 테이블 크기 조정
-        self.file_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)  # 로고 고정
-        self.file_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)  # 파일명 확장
-        self.file_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)  # 담당자 최소 크기 맞춤
-        self.file_table.verticalHeader().setVisible(False) # 행 번호 숨기기
-        self.file_table.resizeRowsToContents()  # 행 크기 자동 조정
-        self.file_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 가로 스크롤바 항상 숨김
-        self.file_table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 세로 스크롤바 넘치면 표시
+        table.setHorizontalHeaderLabels(["로고", "파일 이름", "최근 수정일"])
+        table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
+        table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
+        table.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
+        table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
+        table.verticalHeader().setDefaultSectionSize(30)
 
-        # UI 레이아웃 적용
-        layout.addWidget(self.file_table)
+        table.setAlternatingRowColors(True)
+        layout.addWidget(table)
 
         file_path = ""
         file_list = ["NULL"]
@@ -296,13 +279,19 @@ class UI(QMainWindow):
                 (f"/nas/sam/config/config/icons/pixar_usd_publish.png", "NULL", "25-02-20")
             ]
 
-        self.file_table.setRowCount(0)
-        for item in data:
-            self.file_table_item(*item)
+        if version_type == "work":
+            self.work_table.setRowCount(0)  # Clear the work table rows
+            for item in data:
+                self.file_table_item(self.work_table, *item)  # Update the work table
+
+        elif version_type == "pub":
+            self.pub_table.setRowCount(0)  # Clear the pub table rows
+            for item in data:
+                self.file_table_item(self.pub_table, *item)  # Update the pub table
     
-    def file_table_item(self, dcc_logo, file_name, edited_time):
-        row = self.file_table.rowCount()
-        self.file_table.insertRow(row)  # 새로운 행 추가
+    def file_table_item(self, table_widget, dcc_logo, file_name, edited_time):
+        row = table_widget.rowCount()
+        table_widget.insertRow(row)  # 새로운 행 추가
 
         #DCC 로고
         file_logo = QLabel()
@@ -310,16 +299,16 @@ class UI(QMainWindow):
         file_logo.setPixmap(pixmap)
         #file_logo.setScaledContents(True) # 크기에 맞게 이미지가 자동으로 축소/확대됨.
         file_logo.setAlignment(Qt.AlignCenter)
-        self.file_table.setCellWidget(row, 0, file_logo)  # 첫 번째 열에 추가
+        table_widget.setCellWidget(row, 0, file_logo)  # 첫 번째 열에 추가
 
         # 파일명 (QTableWidgetItem 사용)
         name_table = QTableWidgetItem(f"{file_name}")
-        self.file_table.setItem(row, 1, name_table)  # 두 번째 열에 추가
+        table_widget.setItem(row, 1, name_table)  # 두 번째 열에 추가
         print(file_name)
 
         # 저장 날짜 
         time_table = QTableWidgetItem(f"{edited_time}")
-        self.file_table.setItem(row, 2, time_table)  # 세 번째 열에 추가
+        table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
         print(edited_time)
 
     def make_task_table(self):
