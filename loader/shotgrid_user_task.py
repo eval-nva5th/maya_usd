@@ -17,10 +17,12 @@ class UserInfo(Shotgrid) :
     def is_validate(self, email, name) :
         self.email = email
         self.name = name
-        name_filter = ['name', 'is', self.name]
+        kname_filter = ['sg_korean_name', 'is', self.name]
+        #name_filter = ['name', 'is', self.name]
         email_filter = ['email', 'is', self.email]
-        self.userinfo = self.sg.find('HumanUser', [name_filter, email_filter], ["id", "name", "department", "groups"])
-        #print(self.userinfo)
+        self.userinfo = self.sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
+
+        print(self.userinfo)
         
         if not len(self.userinfo) == 0 :
             self.id = self.userinfo[0]['id'] # id 받기
@@ -288,6 +290,8 @@ class TaskInfo(Shotgrid) :
         print(f"pub path : {pub_path}")
         pub_list = self.set_file_list(pub_path)
         print(f"the list in pub {pub_list}")
+
+        return pub_path, pub_list
         
     def get_work_files(self, task_id) :
         path = self.set_path_items(task_id)
@@ -295,7 +299,10 @@ class TaskInfo(Shotgrid) :
         print(f"work path : {work_path}")
         work_list = self.set_file_list(work_path)
         print(f"the list in work {work_list}")
+
+        return work_path, work_list
         
+        ##### 여기서 ext 나눠서 
     def set_file_list(self, path) :
         
         data_list = []
@@ -305,8 +312,10 @@ class TaskInfo(Shotgrid) :
             file_path = os.path.join(path, file)
         
             last_time = os.path.getmtime(file_path) # 최근 수정일 아이거쓰면좋을거같은데 뭔가애매해.
-            last_time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(last_time))
-        
+            last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
+            #data_list.append(file)
+            #data_list.append(last_time_str)
+
             data_list.append([file, last_time_str]) 
                 
         return data_list
@@ -320,8 +329,8 @@ if __name__ == "__main__":
     user = UserInfo(sg_url, script_name, api_key)
     task = TaskInfo(sg_url, script_name, api_key)
 
-    email = "1115kjs@naver.com"
-    name = "Junsu Kim"
+    email = "p2xch@naver.com"
+    name = "신승연"
 
     user.is_validate(email, name)
     user_id = user.get_userid()
