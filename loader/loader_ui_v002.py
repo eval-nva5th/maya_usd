@@ -67,6 +67,7 @@ class UI(QMainWindow):
         
         super().__init__()
         self.setWindowTitle("EVAL_LOADER")
+        self.center_window()
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
@@ -142,26 +143,17 @@ class UI(QMainWindow):
         video_widget = VideoPlayer(pb)
         video_widget.setStyleSheet("border: 2px solid #555; border-radius: 5px;")
 
-        # 💡 원본 크기 가져오기 (비율 유지)
+        # 원본 크기 가져오기 (비율 유지)
         original_size = video_widget.size()  # 또는 video_widget.size()
         default_width = original_size.width()/2.5
         default_height = original_size.height()/2.5
-        # # 💡 적절한 최소 크기 설정 (너무 작지 않게)
-        # min_width = max(450, int(original_size.width() * 1.0))  # 최소 450px 이상
-        # min_height = max(180, int(original_size.height() * 0.5))  # 세로를 더 줄임 (기존보다 30~40% 줄이기)
-        # video_widget.setMinimumSize(min_width, min_height)
-
-        # # 💡 적절한 최대 크기 설정 (너무 크지 않게 제한)
-        # max_width = max(700, int(original_size.width() * 1.4))  # 가로를 좀 더 키우기
-        # max_height = max(250, int(original_size.height() * 0.6))  # 세로를 더 줄여서 직사각형 느낌 강조
-        # video_widget.setMaximumSize(max_width, max_height)
 
         #video_widget.setAspectRatioMode(True)
         video_widget.setFixedSize(default_width, default_height)
 
-        # 💡 비율 유지하며 크기 자동 조정
+        # 비율 유지하며 크기 자동 조정
         video_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        video_widget.setScaledContents(True)  # 📌 자동으로 크기 조절 (비율 유지)
+        video_widget.setScaledContents(True)  # 자동으로 크기 조절 (비율 유지)
 
         #정보 라벨
         previous_work = QLabel("PREVIOUS WORK")
@@ -416,7 +408,8 @@ class UI(QMainWindow):
         self.task_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)  # 로고 고정
         self.task_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)  # 파일명 확장
         self.task_table.setEditTriggers(QAbstractItemView.NoEditTriggers) # 편집 비활성화
-        self.task_table.resizeRowsToContents()  # 행 크기 자동 조정
+        self.task_table.resizeRowsToContents()
+        self.task_table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.task_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 가로 스크롤바 항상 숨김
         self.task_table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 세로 스크롤바 넘치면 표시
         self.task_table.verticalHeader().setVisible(False) #행번호 숨김
@@ -431,7 +424,7 @@ class UI(QMainWindow):
         self.task_data(self.task_table)
         return widget  # QWidget 반환
 
-    def task_data(self, task_table): #########################################################수정하기###########################################################
+    def task_data(self, task_table):
         """
         외부에서 데이터를 받아서 task에 추가하는 함수
         """
@@ -441,7 +434,6 @@ class UI(QMainWindow):
         self.color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"}
 
         for task_id, task_data in task_dict.items() :
-
             thumb = "loader/loader_ui_sample/task.jpeg"
             task_name = task_data['content']
             proj_name = task_data['proj_name']
@@ -461,10 +453,9 @@ class UI(QMainWindow):
             for k, v in self.color_map.items() :
                 if status == k :
                     status_color = v
-            
+
             data_set = f"{low_data} | {high_data} | {proj_name}"
             date_set = f"{start_date} - {due_date}"
-            step = f"                           {step}"
             self.task_table_item(task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set)
 
     def task_table_item(self, task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set):
@@ -481,6 +472,7 @@ class UI(QMainWindow):
         task_name.setStyleSheet("font-size: 16pt;")
         task_step = QLabel(step)
         task_step.setStyleSheet("color: grey")
+        task_step.setAlignment(Qt.AlignRight)
 
         # 프로젝트 네임
         task_name_layout = QHBoxLayout()
@@ -521,8 +513,6 @@ class UI(QMainWindow):
         #status_layout.addWidget(task_step)  # Animation
         status_layout.addStretch()  # 남은 공간 정렬
 
-        # 텍스트 정보 수직 정렬 (샷 이름 + 상태 + 마감 기한)
-        
         text_layout = QVBoxLayout()
 
         #text_layout.addWidget(task_name)
@@ -602,8 +592,9 @@ class UI(QMainWindow):
                 popup.exec()
             else:
                 self.user_name = name
-                self.resize(900, 800)  # 메인 화면 크기 조정
+                self.resize(1000, 800)  # 메인 화면 크기 조정
                 self.setCentralWidget(self.setup_layout()) # 로그인 창을 메인화면으로 변경
+                self.center_window()
         else: # 이름과 이메일에 값이 없을 때
             popup = QMessageBox()
             popup.setIcon(QMessageBox.Warning)
@@ -642,6 +633,13 @@ class UI(QMainWindow):
 
         return widget # 생성된 창 반환
     
+    def center_window(self):
+        frame_geometry = self.frameGeometry()  # 창의 프레임 가져오기
+        screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
+        screen_geometry = screen.availableGeometry().center()  # 화면의 중앙 좌표
+        frame_geometry.moveCenter(screen_geometry)  # 창의 중심을 화면 중심으로 이동
+        self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동
+
 if __name__ == "__main__":
     # 앱 실행
     app = QApplication([])

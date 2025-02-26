@@ -1,11 +1,15 @@
 import os
 import pandas as pd
 
-directory = '/nas/eval/show'
+directory = '/nas/eval/show/eval'
 
 file_paths = []
 asset_paths = []
 seq_paths = []
+asset_path_short = []
+in_asset_path = set()
+task_path = []
+pub_path = []
 
 for root, dirs, files in os.walk(directory):
     for file in files:
@@ -21,9 +25,13 @@ for root, dirs, files in os.walk(directory):
                 folder_type = asset_roots[8]
                 program_name = asset_roots[10]
                 idk = asset_roots[11]
+                
                 status = 'ip'
                 #asset_paths.append([proj_name, asset_type, asset_name, folder_type, program_name,idk, file, f"{root}/{file}"])
-                asset_paths.append([proj_name, asset_type, asset_name, folder_type, status, file, f"{root}/{file}"])
+                #task_path.append([task_name, asset_name, new_folder_type, status])
+                #asset_path_short.append([asset_name, asset_type, folder_type])
+                pub_path.append([file, published_file_type , task_name, asset_name, description, root_path ,f"{root}/{file}"])
+                #in_asset_path.add((asset_name, asset_type))
 
         elif "seq" in root :
             seq_roots = root.split('/')
@@ -38,8 +46,13 @@ for root, dirs, files in os.walk(directory):
                 idk = seq_roots[11]
                 seq_paths.append([proj_name, file_type, seq_name, shot_name, task_type, program_name, idk, file, f"{root}/{file}"])
         
-df1 = pd.DataFrame(asset_paths, columns=['Project Name', 'Asset Type', 'Asset Name', 'Task Type', 'Status','Name', 'File Path'])
-df2 = pd.DataFrame(seq_paths, columns=['proj name','file type', 'seq name', 'shot name', 'task type', 'program name', 'idk', 'Filename', 'full path'])
+#df1 = pd.DataFrame(asset_paths, columns=['Project Name', 'Asset Type', 'Asset Name', 'Pipeline Step', 'Status','Name', 'File Path'])
+
+#df2 = pd.DataFrame(seq_paths, columns=['proj name','file type', 'seq name', 'shot name', 'task type', 'program name', 'idk', 'Filename', 'full path'])
+#df3 = pd.DataFrame(asset_path_short, columns = ['asset name', 'asset type', 'folder type'])
+#df4 = pd.DataFrame(in_asset_path, columns = ['asset name', 'type'])
+#task_path_df = pd.DataFrame(task_path, columns=['task_name', 'asset_name', 'new_folder_type', 'status'])
+pub_path_df = pd.DataFrame(pub_path, columns=['Published File Name', 'Published File Type', 'Task', 'Link','Description', 'Path Cache', 'Local Path'])
 
 # 결과를 CSV 파일로 저장
 df1.to_csv('asset_paths.csv', index=False)

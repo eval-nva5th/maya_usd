@@ -1,13 +1,12 @@
 import os, sys
-import pandas as pd
 
 def make_dir() :
-    root_path = '/nas/eval/show'
+    root_path = '/nas/show/eval'
     project_name = input(str("project name : "))
 
-    set_type = input(str("work type (assets = 1 seq = 2) : "))
+    set_type = input(str("work type (asset = 1 seq = 2) : "))
     if set_type == "1" :
-        set_type_str = "assets"
+        set_type_str = "asset"
         asset_type = input("asset type (prop : 1 vehicle 2 character 3 environment 4) : ")
         if asset_type == "1" :
             asset_type = "prop"
@@ -18,7 +17,7 @@ def make_dir() :
         elif asset_type == "4" :
             asset_type = "environment"
         asset_name = input(str("asset name (space with _): "))       
-        task_types = ["modelling", "rigging", "lookdev"]
+        task_types = ["model", "rig", "lookdev"]
         work_types = ["work", "pub"]
         for work_type in work_types :
             if work_type == "work" : 
