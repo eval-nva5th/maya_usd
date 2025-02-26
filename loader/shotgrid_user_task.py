@@ -259,21 +259,26 @@ class TaskInfo(Shotgrid) :
 
 #실행
 if __name__ == "__main__":
-    sg_url = "https://nashotgrid.shotgrid.autodesk.com"
-    script_name = "test"
-    api_key = "hetgdrcey?8coevsotrgwTnhv"
+    sg_url = "https://hi.shotgrid.autodesk.com/"
+    script_name = "Admin_SY"
+    api_key = "kbuilvikxtf5v^bfrivDgqhxh"
 
     user = UserInfo(sg_url, script_name, api_key)
-    task = TaskInfo(sg_url, script_name, api_key)
+    #task = TaskInfo(sg_url, script_name, api_key)
 
-    email = "p2xch@naver.com"
-    name = "SEUNGYEON SHIN"
+    email = "f8d783@kw.ac.kr"
+    name = "Soonwoo Jang"
 
     user.is_validate(email, name)
     user_id = user.get_userid()
-    task.get_user_task(user_id)
+    print(user_id)
+    print(user.id)
+    print(user.dept)
+    print(user.pos)
+
+    #task.get_user_task(user_id)
 
     # print(task.task_dict)
 
-    task_id = 5852
-    #print(task.on_click_task(task_id))
+    #task_id = 5852
+    #print(task.on_click_task(task_id)) 

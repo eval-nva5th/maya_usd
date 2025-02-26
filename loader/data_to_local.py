@@ -77,5 +77,5 @@ if __name__ == "__main__":
     task.get_user_task(user_id)
     
     task_id = 5901
-    #get_pub_files(task_id)
-    #get_work_files(task_id)
+    get_pub_files(task_id)
+    get_work_files(task_id)
