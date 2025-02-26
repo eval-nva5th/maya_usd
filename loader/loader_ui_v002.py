@@ -124,11 +124,13 @@ class UI(QMainWindow):
         """
         외부에서 데이터를 받아서 테이블에 추가하는 함수
         """
-        user_name = self.user_name
+        user_name = "No data"
         play_blast = f"/home/rapa/다운로드/output1.mov" #mov파일경로
-        status_color = "red"
-        status_text = "진행중"
-        comment_text = "뒷작업을 잘 부탁해. 부족해도...............오....디코해..."
+        status_text = "fin"
+        for k, v in self.color_map.items() :
+            if status_text == k :
+                status_color = v
+        comment_text = "No data for previous work"
         
         return self.previous_work_item(user_name, play_blast, status_color, status_text, comment_text)
 
@@ -165,12 +167,12 @@ class UI(QMainWindow):
         previous_work = QLabel("PREVIOUS WORK")
         previous_work.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         previous_work.setStyleSheet("font-weight: bold;")
-        user_name = QLabel(user)     
-        state_image = QLabel(status_color)      
-        state_text = QLabel(status_text)  
+        self.user_name = QLabel(user)     
+        self.state_image = QLabel(status_color)      
+        self.state_text = QLabel(status_text)  
         comment_label = QLabel("COMMENT")     
-        comment_text = QLabel(f'" {cmt_txt} "')
-        comment_text.setWordWrap(True)
+        self.comment_text = QLabel(f'" {cmt_txt} "')
+        self.comment_text.setWordWrap(True)
 
         # 원 색칠
         status_pixmap = QPixmap(10, 10)  # 작은 원 크기 설정
@@ -180,29 +182,45 @@ class UI(QMainWindow):
         painter.setPen(QColor(status_color))  # 테두리도 빨간색
         painter.drawEllipse(0, 0, 10, 10)  # (x, y, width, height) 원 그리기
         painter.end()
-        state_image.setPixmap(status_pixmap)
+        self.state_image.setPixmap(status_pixmap)
 
         # 공간 라벨
-        null_label = QLabel()
+        self.null_label = QLabel()
         # 상태 레이아웃
         state_layout = QHBoxLayout()
-        state_layout.addWidget(state_image)
-        state_layout.addWidget(state_text)
+        state_layout.addWidget(self.state_image)
+        state_layout.addWidget(self.state_text)
         state_layout.addStretch()
+
+        #### StyleSheet1
+        state_widget = QWidget()
+        state_widget.setLayout(state_layout)
+        state_widget.setStyleSheet("border: 1px solid black;")
+        self.user_name.setStyleSheet("border: 1px solid black;")
+
         # 정보 레이아웃
         info_layout = QVBoxLayout()
-        info_layout.addWidget(user_name)
-        info_layout.addLayout(state_layout)
+        info_layout.addWidget(self.user_name)
+        info_layout.addWidget(state_widget)
+        #info_layout.addLayout(state_layout)
         info_layout.addWidget(comment_label)
-        info_layout.addWidget(comment_text)
+        info_layout.addWidget(self.comment_text)
+        
         # 넓히기 위한 레이아웃
         null_layout = QVBoxLayout()
-        null_layout.addWidget(null_label)
+        null_layout.addWidget(self.null_label)
         null_layout.addLayout(info_layout)
+        
+        #### StyleSheet2
+        null_widget = QWidget()
+        null_widget.setLayout(null_layout)
+        null_widget.setStyleSheet("border: 1px solid black;")
+        
         # PB 레이아웃
         pre_layout = QHBoxLayout()
         pre_layout.addWidget(video_widget)
-        pre_layout.addLayout(null_layout)
+        # pre_layout.addLayout(null_layout)
+        pre_layout.addWidget(null_widget)
 
         widget = QWidget()
         layout = QVBoxLayout()
@@ -384,29 +402,33 @@ class UI(QMainWindow):
         h_layout.addWidget(combo_box)
 
         # 테이블 위젯 생성 (초기 행 개수: 0, 2개 컬럼)
-        task_table = QTableWidget(0, 2)
-        task_table.setHorizontalHeaderLabels(["Thumbnail", "Task Info"])
+        self.task_table = QTableWidget(0, 3)
+        self.task_table.setHorizontalHeaderLabels(["Task ID","Thumbnail", "Task Info"])
+        self.task_table.setColumnHidden(0, True) # Task ID 숨김
+
+        # 테이블 이벤트 처리
+        self.task_table.cellClicked.connect(self.on_cell_clicked)
 
         # 테이블 크기설정
-        task_table.setColumnWidth(0, 180)  # 로고 열 (좁게 설정)
-        task_table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
-        task_table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
-        task_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)  # 로고 고정
-        task_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)  # 파일명 확장
-        task_table.setEditTriggers(QAbstractItemView.NoEditTriggers) # 편집 비활성화
-        task_table.resizeRowsToContents()  # 행 크기 자동 조정
-        task_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 가로 스크롤바 항상 숨김
-        task_table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 세로 스크롤바 넘치면 표시
-        task_table.verticalHeader().setVisible(False) #행번호 숨김
+        self.task_table.setColumnWidth(0, 180)  # 로고 열 (좁게 설정)
+        self.task_table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
+        self.task_table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
+        self.task_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)  # 로고 고정
+        self.task_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)  # 파일명 확장
+        self.task_table.setEditTriggers(QAbstractItemView.NoEditTriggers) # 편집 비활성화
+        self.task_table.resizeRowsToContents()  # 행 크기 자동 조정
+        self.task_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 가로 스크롤바 항상 숨김
+        self.task_table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 세로 스크롤바 넘치면 표시
+        self.task_table.verticalHeader().setVisible(False) #행번호 숨김
 
         # UI 레이아웃 적용
         none_label = QLabel()
         layout.addWidget(none_label)
         layout.addLayout(h_layout)
-        layout.addWidget(task_table)
+        layout.addWidget(self.task_table)
 
         # 테스크 데이터 업데이트 
-        self.task_data(task_table)
+        self.task_data(self.task_table)
         return widget  # QWidget 반환
 
     def task_data(self, task_table): #########################################################수정하기###########################################################
@@ -416,7 +438,7 @@ class UI(QMainWindow):
         self.task_info.get_user_task(self.user.get_userid())
         task_dict = self.task_info.get_task_dict()
 
-        color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"}
+        self.color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"}
 
         for task_id, task_data in task_dict.items() :
             thumb = "loader/loader_ui_sample/task.jpeg"
@@ -435,26 +457,21 @@ class UI(QMainWindow):
                 low_data = task_data['asset_name']
                 high_data = task_data['asset_categ']
                 
-            for k, v in color_map.items() :
+            for k, v in self.color_map.items() :
                 if status == k :
                     status_color = v
             
             data_set = f"{low_data} | {high_data} | {proj_name}"
             date_set = f"{start_date} - {due_date}"
             step = f"                           {step}"
-            self.task_table_item(task_table, thumb, task_name, data_set, status_color, status, step, date_set)
+            self.task_table_item(task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set)
 
-        # for task_id, task_data in self.task_info.task_dict.items(): 
-        #     # 데이터 유효성 검사
-        #     if not task_data.get("proj_name") or not task_data.get("content") or not task_data.get("shot_name") or not task_data.get("task_type") or not task_data.get("start_date") or not task_data.get("due_date") or not task_data.get("status"):
-        #         print("마야 스크립트에서 경고 출력 하고 log 파일로 남기기?")
-        #         print("something wrong with shotgrid data")
-        #         continue
-
-    def task_table_item(self, task_table, thumb, task_name, data_set, status_color, status, step, date_set):
+    def task_table_item(self, task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set):
 
         row = task_table.rowCount()
         task_table.insertRow(row)  # 새로운 행 추가
+        
+        task_table.setItem(row, 0, QTableWidgetItem(str(task_id)))
 
         task_table.setRowHeight(row, 80)  
         task_table.resizeRowsToContents()
@@ -526,6 +543,47 @@ class UI(QMainWindow):
 
         # 행 높이를 조정하여 잘리지 않도록 설정
         task_table.setRowHeight(row, 80)
+
+    def on_cell_clicked(self, row, col):
+        clicked_task_id = int(self.task_table.item(row, 0).text())
+        prev_task_data, current_task_data = self.task_info.on_click_task(clicked_task_id)
+        prev_task_id = prev_task_data['id']
+
+        self.update_prev_work(prev_task_data)
+        
+
+    def update_prev_work(self, prev_task_data):
+        if prev_task_data['id'] != "None":
+            prev_task_id = prev_task_data['id']
+            prev_task_name = prev_task_data['task_name']
+            prev_task_assignee = prev_task_data['assignees']
+            prev_task_status = prev_task_data['status']
+            prev_task_step = prev_task_data['step']
+            prev_task_comment = prev_task_data['comment']
+        else :
+            prev_task_id = "No data"
+            prev_task_name = "No data"
+            prev_task_assignee = "No data"
+            prev_task_status = "fin"
+            prev_task_step = "No data"
+            prev_task_comment = "No data for previous work"
+
+        self.user_name.setText(prev_task_assignee)
+        self.state_text.setText(prev_task_status)
+        self.comment_text.setText(f'" {prev_task_comment} "')
+        self.null_label.setText(prev_task_step)
+        # status color update
+        for k, v in self.color_map.items() :
+            if prev_task_status == k :
+                status_color = v
+        status_pixmap = QPixmap(10, 10)  # 작은 원 크기 설정
+        status_pixmap.fill(QColor("transparent"))  # 배경 투명
+        painter = QPainter(status_pixmap)
+        painter.setBrush(QColor(status_color))  # 빨간색 (Hex 코드 사용 가능)
+        painter.setPen(QColor(status_color))  # 테두리도 빨간색
+        painter.drawEllipse(0, 0, 10, 10)  # (x, y, width, height) 원 그리기
+        painter.end()
+        self.state_image.setPixmap(status_pixmap)
 
     def on_login_click(self):
         """

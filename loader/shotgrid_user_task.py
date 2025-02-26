@@ -130,15 +130,39 @@ class TaskInfo(Shotgrid) :
         
         # type_name(shot_id/asset_id)이 같은 태스크들 찾기
         related_tasks = []
-        type_name = current_task.get("shot_id") or current_task.get("asset_id")
-        for task_id, task in self.task_dict.items():
-            if task.get("shot_id") == type_name or task.get("asset_id") == type_name :
-                related_tasks.append((task_id, task))
+        type_id = current_task.get("shot_id") or current_task.get("asset_id")
 
+        filters = [
+            {
+                "filter_operator": "or",
+                "filters": [
+                    ["entity", "is", {"type": "Shot", "id": type_id}],
+                    ["entity", "is", {"type": "Asset", "id": type_id}]
+                ]
+            }
+        ]
 
+        # 가져올 필드 목록
+        fields = ["id", "content", "step", "sg_status_list", "task_assignees"]
+
+        # ShotGrid API에서 태스크 조회
+        tasks = self.sg.find("Task", filters, fields)
+
+        for task in tasks:
+            task_assignees = " ,".join([assignee['name'] for assignee in task['task_assignees']])
+            t = {}
+            t["content"] = task['content']
+            t["step"] = task['step']['name']
+            t["status"] = task['sg_status_list']
+            t["assignees"] = task_assignees
+            related_tasks.append((task['id'], t))     
+
+        # for task_id, task in self.task_dict.items():
+        #     if task.get("shot_id") == type_id or task.get("asset_id") == type_id :
+        #         related_tasks.append((task_id, task))
+        
         # 현재 태스크의 스텝
         current_step = current_task['step'].lower()
-
         # 스텝 매핑 해줄 스텝맵
         step_map = {
         "rig": ["model"],
@@ -162,7 +186,7 @@ class TaskInfo(Shotgrid) :
                 if prev_task.get("step").lower() == prev_step:
                     return prev_task_id
         return None
-    
+
     def on_click_task(self, id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
         prev_task_id = self.get_prev_task(id)
         current_task_id = id
@@ -175,26 +199,60 @@ class TaskInfo(Shotgrid) :
         current_dict["step"] = self.task_dict[current_task_id]['step']
 
 
+
         prev_dict = {}
         if prev_task_id :
-            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["content", "step", "task_assignees"])
+            fields = ["id", "code", "description", "published_file_type", "entity"]
+            filters = [["task", "is", {"type": "Task", "id": prev_task_id}]]  # 원하는 필터를 추가할 수 있음 (예: 특정 프로젝트, 특정 파일 타입 등)
+
+            published_file = self.sg.find_one("PublishedFile", filters, fields)
+            comment = published_file.get('description', 'No Description')
+            
+            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["project","content", "entity","step", "task_assignees", "sg_status_list"])
+            prev_task_proj = prev_task_data['project']['name']
+
+            entity_type = prev_task_data['entity']['type']
+            entity_id = prev_task_data['entity']['id']
+            if entity_type == "Shot":
+                entity_data = self.sg.find_one("Shot", [["id", "is", entity_id]], ["sg_sequence"])
+                prev_task_category = entity_data.get("sg_sequence", {}).get("name", "No Sequence")
+
+            elif entity_type == "Asset":
+                entity_data = self.sg.find_one("Asset", [["id", "is", entity_id]], ["sg_asset_type"])
+                prev_task_category = entity_data.get("sg_asset_type", "No Asset Type")
+            
+            prev_task_name = prev_task_data['entity'].get('name') or prev_task_data['entity'].get('name')
             prev_task_id = prev_task_data['id']
-            prev_task_name = prev_task_data['content']
+            prev_task_task_name = prev_task_data['content']
             prev_task_step = prev_task_data['step']['name']
             prev_task_assignees = [assignee['name'] for assignee in prev_task_data['task_assignees']]
+            prev_task_status = prev_task_data['sg_status_list']
             prev_task_assignees = ", ".join(prev_task_assignees)
 
             prev_dict["id"] = prev_task_id
-            prev_dict["name"] = prev_task_name
-            prev_dict["step"] = prev_task_step
+            prev_dict["proj_name"] = prev_task_proj
+            prev_dict["type_name"] = entity_type.lower()
+            prev_dict["category"] = prev_task_category.lower()
+            prev_dict["name"] = prev_task_name            
+
+            prev_dict["task_name"] = prev_task_task_name
+            prev_dict["step"] = prev_task_step.lower()
             prev_dict["assignees"] = prev_task_assignees
-            prev_dict["comment"] = "코멘트 들어올 자리"
+            prev_dict["status"] = prev_task_status
+            prev_dict["comment"] = comment
         else :
             prev_dict["id"] = "None"
+            prev_dict["proj_name"] = "None"
+            prev_dict["type_name"] = "None"
+            prev_dict["category"] = "None"
             prev_dict["name"] = "None"
+
+            prev_dict["task_name"] = "None"
             prev_dict["step"] = "None"
             prev_dict["assignees"] = "None"
+            prev_dict["status"] = "None"
             prev_dict["comment"] = "None"
+        print(prev_dict)
 
         return prev_dict, current_dict
 
