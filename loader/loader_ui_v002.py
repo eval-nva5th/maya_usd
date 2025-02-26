@@ -370,6 +370,23 @@ class UI(QMainWindow):
         # 행 높이 조정
         file_table.setRowHeight(row, 80)
 
+    def search_task(self):
+        search_text = self.search_input.text().strip().lower()
+
+        for row in range(self.task_table.rowCount()):
+            item = self.task_table.cellWidget(row, 1)  # Task Info 컬럼의 내용을 가져옴
+            if item:
+                labels = item.findChildren(QLabel)  # QLabel들 가져오기
+                match = False
+                for label in labels:
+                    if search_text in label.text().lower():  # 검색어가 포함된 경우
+                        match = True
+                        break
+
+                self.task_table.setRowHidden(row, not match)  # 일치하지 않으면 숨김
+        print(search_text)
+        self.search_input.clear()
+
     def make_task_table(self):
         """
         Task UI (테이블 목록) 생성
@@ -380,17 +397,16 @@ class UI(QMainWindow):
         # 테스크 검색, 정렬 UI 생성
         task_label = QLabel("TASK")
         task_label.setStyleSheet("font-weight: bold;")
-        search_input = QLineEdit() # 검색창
-        search_input.setPlaceholderText("SEARCH") # 흐릿한 글씨
-        search_but = QPushButton("검색") # 검색버튼
+        self.search_input = QLineEdit() # 검색창
+        self.search_input.setPlaceholderText("SEARCH") # 흐릿한 글씨
+        self.search_but = QPushButton("검색") # 검색버튼
         combo_box = QComboBox()
-
 
         # 테스크 검색, 정렬 레이아웃 정렬
         h_layout = QHBoxLayout()
         h_layout.addWidget(task_label)
-        h_layout.addWidget(search_input)
-        h_layout.addWidget(search_but)
+        h_layout.addWidget(self.search_input)
+        h_layout.addWidget(self.search_but)
         h_layout.addWidget(combo_box)
 
         # 테이블 위젯 생성 (초기 행 개수: 0, 2개 컬럼)
@@ -400,6 +416,9 @@ class UI(QMainWindow):
 
         # 테이블 이벤트 처리
         self.task_table.cellClicked.connect(self.on_cell_clicked)
+
+        self.search_but.clicked.connect(self.search_task)
+        self.search_input.returnPressed.connect(self.search_task)
 
         # 테이블 크기설정
         self.task_table.setColumnWidth(0, 180)  # 로고 열 (좁게 설정)
