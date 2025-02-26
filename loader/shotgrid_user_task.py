@@ -208,7 +208,7 @@ class TaskInfo(Shotgrid) :
             published_file = self.sg.find_one("PublishedFile", filters, fields)
             comment = published_file.get('description', 'No Description')
             
-            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["project","content", "entity","step", "task_assignees", "sg_status_list"])
+            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["project","content", "entity","step", "task_assignees","task_reviewers", "sg_status_list"])
             prev_task_proj = prev_task_data['project']['name']
 
             entity_type = prev_task_data['entity']['type']
@@ -226,8 +226,10 @@ class TaskInfo(Shotgrid) :
             prev_task_task_name = prev_task_data['content']
             prev_task_step = prev_task_data['step']['name']
             prev_task_assignees = [assignee['name'] for assignee in prev_task_data['task_assignees']]
+            prev_task_reviewers = [reviewer['name'] for reviewer in prev_task_data['task_reviewers']]
             prev_task_status = prev_task_data['sg_status_list']
             prev_task_assignees = ", ".join(prev_task_assignees)
+            prev_task_reviewers = ", ".join(prev_task_reviewers)
 
             prev_dict["id"] = prev_task_id
             prev_dict["proj_name"] = prev_task_proj
@@ -238,6 +240,7 @@ class TaskInfo(Shotgrid) :
             prev_dict["task_name"] = prev_task_task_name
             prev_dict["step"] = prev_task_step.lower()
             prev_dict["assignees"] = prev_task_assignees
+            prev_dict["reviewers"] = prev_task_reviewers
             prev_dict["status"] = prev_task_status
             prev_dict["comment"] = comment
         else :
@@ -250,6 +253,7 @@ class TaskInfo(Shotgrid) :
             prev_dict["task_name"] = "None"
             prev_dict["step"] = "None"
             prev_dict["assignees"] = "None"
+            prev_dict["reviewers"] = "None"
             prev_dict["status"] = "None"
             prev_dict["comment"] = "None"
         print(prev_dict)
