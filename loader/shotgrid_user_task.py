@@ -1,7 +1,5 @@
 from shotgun_api3 import Shotgun 
-
-#self.sg 가 부모인 클래스를 만들고
-#거기서 저는 유저인포(sg) / 
+import os, sys, time
 
 class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
     def __init__(self, sg_url, script_name, api_key):
@@ -19,9 +17,12 @@ class UserInfo(Shotgrid) :
     def is_validate(self, email, name) :
         self.email = email
         self.name = name
-        name_filter = ['name', 'is', name]
-        email_filter = ['email', 'is', email]
-        self.userinfo = self.sg.find('HumanUser', [name_filter, email_filter], ["id", "name", "department", "groups"])
+        kname_filter = ['sg_korean_name', 'is', self.name]
+        #name_filter = ['name', 'is', self.name]
+        email_filter = ['email', 'is', self.email]
+        self.userinfo = self.sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
+
+        print(self.userinfo)
         
         if not len(self.userinfo) == 0 :
             self.id = self.userinfo[0]['id'] # id 받기
@@ -260,24 +261,87 @@ class TaskInfo(Shotgrid) :
 
         return prev_dict, current_dict
 
+    def set_path_items(self,task_id) :
+        '''
+        task_id와 그 task에 붙은 task_dict를 기반으로 파일패스를 생성해 task와 연결되는 디렉토리 내의 파일을 리스트의 형식으로 담아온다.
+        pub과 work로 분기하였으며 파일이름과 함께 생성일과 최근 수정일도 time 라이브러리를 사용해 가져옴 (논의 필요)
+        그리고 이거 다른 파일에 붙여야하는데 어디다 붙일지 모르겠어서 일단 팠어요.
+        '''  
+        root_path = '/nas/eval/show'
+        
+        task_dict = self.task_dict[task_id]
+        project_name = task_dict['proj_name']
+        task_type = task_dict['task_type']
+        
+        if task_type == "Asset"  : 
+            asset_categ = task_dict['asset_categ']
+            task_step = task_dict['step']
+            task_type = "assets"
+            asset_name = task_dict['asset_name']
+        
+            path = f"{root_path}/{project_name}/{task_type}/{asset_categ}/{asset_name}/{task_step}"
+            
+        else : #seq 일 때
+            pass
+        
+        lower_path =path.lower()
+    
+        return lower_path
+    
+    def get_pub_files(self, task_id) :
+        path = self.set_path_items(task_id)
+        pub_path = f"{path}/pub/maya/scenes"
+        print(f"pub path : {pub_path}")
+        pub_list = self.set_file_list(pub_path)
+        print(f"the list in pub {pub_list}")
+
+        return pub_path, pub_list
+        
+    def get_work_files(self, task_id) :
+        path = self.set_path_items(task_id)
+        work_path = f"{path}/work/maya/scenes"
+        print(f"work path : {work_path}")
+        work_list = self.set_file_list(work_path)
+        print(f"the list in work {work_list}")
+
+        return work_path, work_list
+        
+        ##### 여기서 ext 나눠서 
+    def set_file_list(self, path) :
+        
+        data_list = []
+        file.split[-3:0]
+        for file in os.listdir(path): # 확장자에 따라서 넣는거 해야함!!!
+            
+            file_path = os.path.join(path, file)
+        
+            last_time = os.path.getmtime(file_path) # 최근 수정일 아이거쓰면좋을거같은데 뭔가애매해.
+            last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
+            #data_list.append(file)
+            #data_list.append(last_time_str)
+
+            data_list.append([file, last_time_str]) 
+                
+        return data_list
 
 #실행
 if __name__ == "__main__":
-    sg_url = "https://nashotgrid.shotgrid.autodesk.com"
-    script_name = "test"
-    api_key = "hetgdrcey?8coevsotrgwTnhv"
+    sg_url = "https://hi.shotgrid.autodesk.com/"
+    script_name = "Admin_SY"
+    api_key = "kbuilvikxtf5v^bfrivDgqhxh"
 
     user = UserInfo(sg_url, script_name, api_key)
     task = TaskInfo(sg_url, script_name, api_key)
 
     email = "p2xch@naver.com"
-    name = "SEUNGYEON SHIN"
+    name = "신승연"
 
     user.is_validate(email, name)
     user_id = user.get_userid()
+    print(f"user info : {user.name} | {user.email} | {user.id} | {user.dept} | {user.pos}")
     task.get_user_task(user_id)
 
-    # print(task.task_dict)
-
-    task_id = 5852
-    #print(task.on_click_task(task_id))
+    for task_id, value in task.task_dict.items() :
+        print(f"task id : {task_id} | task name : {value['content']}")
+        task.get_pub_files(task_id)
+        task.get_work_files(task_id)
