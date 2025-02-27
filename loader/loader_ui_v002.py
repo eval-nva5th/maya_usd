@@ -77,9 +77,10 @@ class UI(QMainWindow):
         레이아웃 세팅
         """
         # 왼쪽 Task Table UI 생성
-        task_container = self.make_task_table()
-        task_container.setMinimumWidth(600)  # TASK 최소 너비 지정, 안하면 너무 작아짐.
-        task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 가로/세로 확장 허용
+        self.task_container = self.make_task_table()
+        self.task_container.setMinimumWidth(570)
+        self.task_container.setMaximumWidth(570)  # TASK 최소 너비 지정, 안하면 너무 작아짐.
+        self.task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 가로/세로 확장 허용
         # WORK 버전 UI 생성
         work_container = self.make_file_table("work")
         work_label = QLabel("WORK")
@@ -107,17 +108,17 @@ class UI(QMainWindow):
         user_layout.addWidget(user_name)
 
         # work, pub, pb, 유저이름 레이아웃 세팅
-        right_layout = QVBoxLayout()
-        right_layout.addLayout(user_layout)
-        right_layout.addWidget(previous_container, 2)
-        right_layout.addWidget(work_label)
-        right_layout.addWidget(work_container, 2)
-        right_layout.addWidget(pub_label)
-        right_layout.addWidget(pub_container, 1)
+        self.right_layout = QVBoxLayout()
+        self.right_layout.addLayout(user_layout)
+        self.right_layout.addWidget(previous_container, 2)
+        self.right_layout.addWidget(work_label)
+        self.right_layout.addWidget(work_container, 2)
+        self.right_layout.addWidget(pub_label)
+        self.right_layout.addWidget(pub_container, 1)
 
         # 메인 레이아웃 세팅
-        layout.addWidget(task_container, 3)
-        layout.addLayout(right_layout, 2)
+        layout.addWidget(self.task_container, 3)
+        layout.addLayout(self.right_layout, 2)
 
         return widget
 
@@ -131,7 +132,7 @@ class UI(QMainWindow):
         for k, v in self.color_map.items() :
             if status_text == k :
                 status_color = v
-        comment_text = "No data for previous work"
+        comment_text = "나는 나와의 싸움에서 졌다. 하지만 이긴것도 나다\n-장순우-"
         
         return self.previous_work_item(user_name, play_blast, status_color, status_text, comment_text)
 
@@ -159,13 +160,72 @@ class UI(QMainWindow):
         previous_work = QLabel("PREVIOUS WORK")
         previous_work.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         previous_work.setStyleSheet("font-weight: bold;")
-        self.user_name = QLabel(user)     
-        self.state_image = QLabel(status_color)      
-        self.state_text = QLabel(status_text)  
-        comment_label = QLabel("COMMENT")     
+
+        # Prev Work 정보 테이블
+        self.info_table = QTableWidget(4, 3)
+        self.info_table.verticalHeader().setVisible(False)  # 번호(인덱스) 숨기기
+        self.info_table.horizontalHeader().setVisible(False)  # 가로 헤더 숨기기
+        self.info_table.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)  # 크기 조정 허용
+        self.info_table.setMinimumHeight(self.info_table.sizeHint().height())  # 최소 높이 조정
+        self.info_table.setMaximumHeight(self.info_table.sizeHint().height())  # 최대 높이도 맞춤
+        self.info_table.resizeRowsToContents()
+        self.info_table.resizeColumnsToContents()
+        self.info_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.info_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.info_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        self.info_table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
+        self.info_table.setSelectionMode(QAbstractItemView.NoSelection)  # 선택 불가
+        self.info_table.setShowGrid(False)
+
+        # 강제로 높이를 내부 아이템 크기에 맞춤
+        self.info_table.setFixedHeight(self.info_table.verticalHeader().length() + 16)
+
+        self.info_table.setStyleSheet("""
+            QTableWidget {
+                border: none;
+                background: transparent;
+            }
+            QTableWidget::item {
+                border: none;
+                background: transparent;
+            }
+        """)
+
+        # 데이터 삽입
+        labels = ["Dept", "Assignee", "Reviewer", "Status"]
+
+        for row, label in enumerate(labels):
+            self.info_table.setItem(row, 0, QTableWidgetItem(label))  # 0열 (항목명) 추가
+
+            item = QTableWidgetItem(":")  # 1열 (콜론 `:`) 아이템 생성
+            item.setTextAlignment(Qt.AlignCenter)  # 가운데 정렬 적용
+            self.info_table.setItem(row, 1, item)  # 1열에 아이템 추가
+
+        self.dept_name = QTableWidgetItem("No data")
+        self.user_name = QTableWidgetItem(user)
+        self.reviewer_text = QTableWidgetItem("Not Assigned")
+        
+        self.info_table.setItem(0, 2, self.dept_name)   # Dept
+        self.info_table.setItem(1, 2, self.user_name)  # Assignee
+        self.info_table.setItem(2, 2, self.reviewer_text)  # Reviewer
+        # self.info_table.setItem(3, 2, self.state_text)  # Status
+
+        # COMMENT 영역
+        comment_label = QLabel("Comment  :")
+        comment_label.setStyleSheet("padding-left: 1px;")
+        comment_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)  # 왼쪽 정렬 + 수직 중앙 정렬
+        comment_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # 가로/세로 모두 텍스트에 맞춤
+        comment_label.adjustSize()  # 크기를 텍스트에 딱 맞게 조정
+
         self.comment_text = QLabel(f'" {cmt_txt} "')
+        self.comment_text.setStyleSheet("padding-top: 2px;padding-left: 1px;")
+        self.comment_text.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         self.comment_text.setWordWrap(True)
 
+        self.state_image = QLabel(status_color)      
+        # self.state_text = QLabel(status_text)  
+        
+        
         # 원 색칠
         status_pixmap = QPixmap(10, 10)  # 작은 원 크기 설정
         status_pixmap.fill(QColor("transparent"))  # 배경 투명
@@ -176,43 +236,42 @@ class UI(QMainWindow):
         painter.end()
         self.state_image.setPixmap(status_pixmap)
 
-        # 공간 라벨
-        self.null_label = QLabel()
-        # 상태 레이아웃
-        state_layout = QHBoxLayout()
-        state_layout.addWidget(self.state_image)
-        state_layout.addWidget(self.state_text)
-        state_layout.addStretch()
+        status_wdidget = QWidget()
+        status_layout = QHBoxLayout(status_wdidget)
+        status_layout.setContentsMargins(0, 0, 0, 0)
+        status_layout.setSpacing(2)
 
-        #### StyleSheet1
-        state_widget = QWidget()
-        state_widget.setLayout(state_layout)
-        state_widget.setStyleSheet("border: 1px solid black;")
-        self.user_name.setStyleSheet("border: 1px solid black;")
+        # 상태 아이콘 QLabel
+        status_icon_label = QLabel()
+        # status_icon_label.setStyleSheet("border : 1px solid black")
+        status_icon_label.setPixmap(status_pixmap)
 
-        # 정보 레이아웃
+        # 아이콘 크기 제한 (픽셀 크기에 맞게 조정)
+        icon_size = status_pixmap.size()
+        status_icon_label.setFixedSize(icon_size)  # 원본 크기에 맞게 고정
+
+        status_text_label = QLabel(status_text)
+        # status_text_label.setStyleSheet("border : 1px solid black")
+
+        # 레이아웃에 아이콘과 텍스트 추가
+        status_layout.addWidget(status_icon_label)
+        status_layout.addWidget(status_text_label)
+
+        self.info_table.setCellWidget(3, 2, status_wdidget)
+
+
         info_layout = QVBoxLayout()
-        info_layout.addWidget(self.user_name)
-        info_layout.addWidget(state_widget)
-        #info_layout.addLayout(state_layout)
+        info_layout.setSpacing(0)
+        # info_layout.addWidget(previous_work)
+        info_layout.addWidget(self.info_table)
         info_layout.addWidget(comment_label)
         info_layout.addWidget(self.comment_text)
-        
-        # 넓히기 위한 레이아웃
-        null_layout = QVBoxLayout()
-        null_layout.addWidget(self.null_label)
-        null_layout.addLayout(info_layout)
-        
-        #### StyleSheet2
-        null_widget = QWidget()
-        null_widget.setLayout(null_layout)
-        null_widget.setStyleSheet("border: 1px solid black;")
-        
+
         # PB 레이아웃
         pre_layout = QHBoxLayout()
+        pre_layout.setSpacing(20)
         pre_layout.addWidget(video_widget)
-        # pre_layout.addLayout(null_layout)
-        pre_layout.addWidget(null_widget)
+        pre_layout.addLayout(info_layout)
 
         widget = QWidget()
         layout = QVBoxLayout()
@@ -335,8 +394,8 @@ class UI(QMainWindow):
 
         # 테이블 위젯 생성 (초기 행 개수: 0, 2개 컬럼)
         self.task_table = QTableWidget(0, 3)
-        self.task_table.setHorizontalHeaderLabels(["Task ID","Thumbnail", "Task Info"])
-        self.task_table.setColumnHidden(0, True) # Task ID 숨김
+        self.task_table.setHorizontalHeaderLabels(["Thumbnail", "Task Info", "Task ID"])
+        self.task_table.setColumnHidden(2, True) # Task ID 숨김
 
         # 테이블 이벤트 처리
         self.task_table.cellClicked.connect(self.on_cell_clicked)
@@ -361,13 +420,11 @@ class UI(QMainWindow):
         layout.addWidget(self.task_table)
 
         # 테스크 데이터 업데이트 
-        self.task_data(self.task_table)
+        self.populate_task_dict()
         return widget  # QWidget 반환
 
-    def task_data(self, task_table):
-        """
-        외부에서 데이터를 받아서 task에 추가하는 함수
-        """
+    # self.task_dict 순회 하면서 data 가공 후 add_task_to_table()
+    def populate_task_dict(self):
         self.task_info.get_user_task(self.user.get_userid())
         task_dict = self.task_info.get_task_dict()
 
@@ -396,17 +453,17 @@ class UI(QMainWindow):
 
             data_set = f"{low_data} | {high_data} | {proj_name}"
             date_set = f"{start_date} - {due_date}"
-            self.task_table_item(task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set)
+            self.add_task_to_table(task_id, thumb, task_name, data_set, status_color, status, step, date_set)
 
-    def task_table_item(self, task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set):
-
-        row = task_table.rowCount()
-        task_table.insertRow(row)  # 새로운 행 추가
+    # self.task_table에 data binding
+    def add_task_to_table(self, task_id, thumb, task_name, data_set, status_color, status, step, date_set):
+        row = self.task_table.rowCount()
+        self.task_table.insertRow(row)
         
-        task_table.setItem(row, 0, QTableWidgetItem(str(task_id)))
+        self.task_table.setItem(row, 2, QTableWidgetItem(str(task_id)))
 
-        task_table.setRowHeight(row, 80)  
-        task_table.resizeRowsToContents()
+        self.task_table.setRowHeight(row, 80)  
+        self.task_table.resizeRowsToContents()
 
         task_name = QLabel(task_name)
         task_name.setStyleSheet("font-size: 16pt;")
@@ -425,9 +482,9 @@ class UI(QMainWindow):
         task_thumb.setPixmap(pixmap.scaled(120, 70))  # 크기 조절
         task_thumb.setAlignment(Qt.AlignCenter)  # 이미지를 중앙 정렬
         task_thumb.setScaledContents(True)  # QLabel 크기에 맞게 이미지 조정
-        task_table.setCellWidget(row, 0, task_thumb)
+        self.task_table.setCellWidget(row, 0, task_thumb)
 
-        # 상태 표시 (● 빨간색 원)
+        # 상태 표시 (●)
         task_status = QLabel()
         status_pixmap = QPixmap(12, 12)  # 작은 원 크기 설정
         status_pixmap.fill(QColor("transparent"))  # 배경 투명
@@ -447,15 +504,11 @@ class UI(QMainWindow):
 
         # 상태와 작업 유형을 수평 정렬
         status_layout = QHBoxLayout()
-        status_layout.addWidget(task_status)  # 빨간 원 (●)
+        status_layout.addWidget(task_status)
         status_layout.addWidget(status)
-        
-        #status_layout.addWidget(task_step)  # Animation
-        status_layout.addStretch()  # 남은 공간 정렬
+        status_layout.addStretch() 
 
         text_layout = QVBoxLayout()
-
-        #text_layout.addWidget(task_name)
         text_layout.addLayout(task_name_layout)
         text_layout.addLayout(status_layout)  # 상태 + 작업 유형
         text_layout.addWidget(data_set)
@@ -469,14 +522,13 @@ class UI(QMainWindow):
         widget.setLayout(layout)
 
         # 테이블 위젯 추가
-        task_table.setCellWidget(row, 1, widget)
-
+        self.task_table.setCellWidget(row, 1, widget)
         # 행 높이를 조정하여 잘리지 않도록 설정
-        task_table.setRowHeight(row, 80)
+        self.task_table.setRowHeight(row, 80)
 
-    def on_cell_clicked(self, row, col):
-        clicked_task_id = int(self.task_table.item(row, 0).text())
-        #################################################################### 승연의 할일 : 여기다가 이제 task 클릭 이벤트 시 일단 뽑음 
+    def on_cell_clicked(self, row, _):
+        clicked_task_id = int(self.task_table.item(row, 2).text())
+        print(clicked_task_id)
         pub_path, pub_list = self.task_info.get_pub_files(clicked_task_id)
         self.version_file_data('pub', pub_path, pub_list)
 
@@ -488,11 +540,31 @@ class UI(QMainWindow):
 
         self.update_prev_work(prev_task_data)
 
+        print(f"현재 창 크기 - 너비: {self.width()}px, 높이: {self.height()}px")
+
+        # Task container 크기 출력
+        if hasattr(self, 'task_container'):
+            print(f"Task Container 크기 - 너비: {self.task_container.width()}px, 높이: {self.task_container.height()}px")
+        else:
+            print("Task Container가 초기화되지 않았습니다.")
+
+        # Right container 크기 출력
+        if hasattr(self, 'right_layout'):
+            right_container = self.right_layout.parentWidget()  # 부모 위젯 가져오기
+            if right_container:
+                print(f"Right Container 크기 - 너비: {right_container.width()}px, 높이: {right_container.height()}px")
+            else:
+                print("Right Container의 부모 위젯이 없습니다.")
+        else:
+            print("Right Layout이 초기화되지 않았습니다.")
+        
+
     def update_prev_work(self, prev_task_data):
         if prev_task_data['id'] != "None":
             prev_task_id = prev_task_data['id']
             prev_task_name = prev_task_data['task_name']
             prev_task_assignee = prev_task_data['assignees']
+            prev_task_reviewers = prev_task_data['reviewers']
             prev_task_status = prev_task_data['status']
             prev_task_step = prev_task_data['step']
             prev_task_comment = prev_task_data['comment']
@@ -500,18 +572,22 @@ class UI(QMainWindow):
             prev_task_id = "No data"
             prev_task_name = "No data"
             prev_task_assignee = "No data"
+            prev_task_reviewers = "No data"
             prev_task_status = "fin"
             prev_task_step = "No data"
             prev_task_comment = "No data for previous work"
 
+        # 테이블 업데이트
+        self.dept_name.setText(prev_task_step)
         self.user_name.setText(prev_task_assignee)
-        self.state_text.setText(prev_task_status)
+        self.reviewer_text.setText(prev_task_reviewers)
         self.comment_text.setText(f'" {prev_task_comment} "')
-        self.null_label.setText(prev_task_step)
+
         # status color update
         for k, v in self.color_map.items() :
             if prev_task_status == k :
                 status_color = v
+        
         status_pixmap = QPixmap(10, 10)  # 작은 원 크기 설정
         status_pixmap.fill(QColor("transparent"))  # 배경 투명
         painter = QPainter(status_pixmap)
@@ -519,7 +595,29 @@ class UI(QMainWindow):
         painter.setPen(QColor(status_color))  # 테두리도 빨간색
         painter.drawEllipse(0, 0, 10, 10)  # (x, y, width, height) 원 그리기
         painter.end()
-        self.state_image.setPixmap(status_pixmap)
+
+        # self.state_image.setPixmap(status_pixmap)
+
+        # 기존 위젯 제거 후 새로 추가
+        status_widget = QWidget()
+        status_layout = QHBoxLayout(status_widget)
+        status_layout.setContentsMargins(0, 0, 0, 0)
+        status_layout.setSpacing(2)
+
+        # 상태 아이콘 QLabel
+        status_icon_label = QLabel()
+        status_icon_label.setPixmap(status_pixmap)
+        status_icon_label.setFixedSize(status_pixmap.size())  # 아이콘 크기 고정
+
+        # 상태 텍스트 QLabel
+        status_text_label = QLabel(prev_task_status)
+
+        # 레이아웃에 아이콘과 텍스트 추가
+        status_layout.addWidget(status_icon_label)
+        status_layout.addWidget(status_text_label)
+
+        # 기존 셀 위젯 제거 후 새 위젯 설정
+        self.info_table.setCellWidget(3, 2, status_widget)
 
     def on_login_click(self):
         """
@@ -537,7 +635,7 @@ class UI(QMainWindow):
                 popup.exec()
             else:
                 self.user_name = name
-                self.resize(1000, 800)  # 메인 화면 크기 조정
+                self.resize(1200, 800)  # 메인 화면 크기 조정
                 self.setCentralWidget(self.setup_layout()) # 로그인 창을 메인화면으로 변경
                 self.center_window()
         else: # 이름과 이메일에 값이 없을 때
@@ -586,10 +684,9 @@ class UI(QMainWindow):
         self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동
 
 if __name__ == "__main__":
-    # 앱 실행
     app = QApplication([])
     print ("UI 인스턴스 생성 시작")
-    ui = UI()  # UI 클래스 실행
+    ui = UI() 
     print ("UI 인스턴스 생성 완료")
-    ui.show() # 최고 짱짱 순우
+    ui.show() 
     app.exec()
