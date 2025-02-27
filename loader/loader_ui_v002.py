@@ -239,7 +239,7 @@ class UI(QMainWindow):
             self.work_table = QTableWidget(0, 3)
             table = self.work_table  # Assign to work_table
 
-        table.setHorizontalHeaderLabels(["로고", "파일 이름", "최근 수정일"])
+        table.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
         table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
         table.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
@@ -261,33 +261,33 @@ class UI(QMainWindow):
         if version_type == "work" :
             if not file_path == "" :
                 for file in file_list :
-                    data.append((f"/nas/sam/config/config/icons/pixar_usd_publish.png", file[0], file[1]))
+                    data.append((file[0], file[1], file[2]))
             else : 
-                data = [(f"/nas/sam/config/config/icons/pixar_usd_publish.png", "no work yet", "25-02-20")]
+                data = [(f"/nas/eval/elements/null.png", "no work yet", "")]
 
         elif version_type == "pub" :
             if not file_path == "" :
                 for file in file_list :
-                    data.append((f"/nas/sam/config/config/icons/pixar_usd_publish.png", file[0], file[1]))
+                    data.append((file[0], file[1], file[2]))
             else : 
                 data = [
-                    (f"/nas/sam/config/config/icons/pixar_usd_publish.png", "no pub yet", "25-02-20")
+                    (f"/nas/eval/elements/null.png", "no pub yet", "")
                 ]
         else :
-            print("뭐임")
+            print("something went wrong")
             data = [
-                (f"/nas/sam/config/config/icons/pixar_usd_publish.png", "NULL", "25-02-20")
+                (f"/nas/eval/elements/null.png", "something went wrong", "")
             ]
 
         if version_type == "work":
-            self.work_table.setRowCount(0)  # Clear the work table rows
+            self.work_table.setRowCount(0)
             for item in data:
-                self.file_table_item(self.work_table, *item)  # Update the work table
+                self.file_table_item(self.work_table, *item)
 
         elif version_type == "pub":
-            self.pub_table.setRowCount(0)  # Clear the pub table rows
+            self.pub_table.setRowCount(0)
             for item in data:
-                self.file_table_item(self.pub_table, *item)  # Update the pub table
+                self.file_table_item(self.pub_table, *item)
     
     def file_table_item(self, table_widget, dcc_logo, file_name, edited_time):
         row = table_widget.rowCount()
@@ -295,7 +295,7 @@ class UI(QMainWindow):
 
         #DCC 로고
         file_logo = QLabel()
-        pixmap = QPixmap(dcc_logo).scaled(30, 30)  # 크기 조절
+        pixmap = QPixmap(dcc_logo).scaled(25, 25)  # 크기 조절
         file_logo.setPixmap(pixmap)
         #file_logo.setScaledContents(True) # 크기에 맞게 이미지가 자동으로 축소/확대됨.
         file_logo.setAlignment(Qt.AlignCenter)
@@ -461,7 +461,6 @@ class UI(QMainWindow):
         text_layout.addWidget(data_set)
         text_layout.addWidget(date_set)
 
-
         widget = QWidget()
         layout = QHBoxLayout()
 
@@ -557,11 +556,11 @@ class UI(QMainWindow):
         layout = QVBoxLayout(widget)
 
         # 네임 임력
-        self.name_input = QLineEdit("신승연") ################ 말풍선 제거하기
+        self.name_input = QLineEdit("장순우") ################ 말풍선 제거하기
         # self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
 
         # 이메일 입력
-        self.email_input = QLineEdit("p2xch@naver.com") ################ 말풍선 제거하기
+        self.email_input = QLineEdit("f8d783@kw.ac.kr") ################ 말풍선 제거하기
         # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
 
         # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작하도록 연결

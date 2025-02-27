@@ -105,11 +105,13 @@ class TaskInfo(Shotgrid) :
 
         if task_type == "Shot" :
             seq_contents = self.sg.find("Shot", [["id", "is", asset_id]], ["tasks", "sg_sequence"])
+            print(seq_contents)
             seq_name = seq_contents[0]['sg_sequence']['name']
 
             self.task_dict[task_id]['shot_name'] = shot_name
             self.task_dict[task_id]['seq_name'] = seq_name
             self.task_dict[task_id]['shot_id'] = asset_id
+            print(shot_name, seq_name, asset_id)
         
         elif task_type == "Asset" :
             asset_contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks", "sg_asset_type"])
@@ -276,13 +278,19 @@ class TaskInfo(Shotgrid) :
             asset_name = task_dict['asset_name']
         
             path = f"{root_path}/{project_name}/{task_type}/{asset_categ}/{asset_name}/{task_step}"
+            path =path.lower()
             
-        else : #seq 일 때
-            pass
+        elif task_type == "Shot" : #seq 일 때 이거 수정해야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            task_type_str = "seq"
+            shot_name = task_dict['shot_name']
+            seq_name = task_dict['seq_name']
+            task_step = task_dict['step']
+            task_step = task_step.lower()
+            shot_id = task_dict['shot_id']
+
+            path = f"{root_path}/{project_name}/{task_type_str}/{seq_name}/{shot_name}/{task_step}"
         
-        lower_path =path.lower()
-    
-        return lower_path
+        return path
     
     def get_pub_files(self, task_id) :
         path = self.set_path_items(task_id)
@@ -306,17 +314,20 @@ class TaskInfo(Shotgrid) :
     def set_file_list(self, path) :
         
         data_list = []
-        file.split[-3:0]
-        for file in os.listdir(path): # 확장자에 따라서 넣는거 해야함!!!
-            
-            file_path = os.path.join(path, file)
         
+        for file in os.listdir(path): # 확장자에 따라서 넣는거 해야함!!!
+            _, ext = file.split('.')
+            if ext == "usd" :
+                ext_image = "/nas/eval/elements/usd_logo"
+            elif ext == "ma" or "mb" :
+                ext_image = "/nas/eval/elements/maya_logo"
+            file_path = os.path.join(path, file)
             last_time = os.path.getmtime(file_path) # 최근 수정일 아이거쓰면좋을거같은데 뭔가애매해.
             last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
             #data_list.append(file)
             #data_list.append(last_time_str)
 
-            data_list.append([file, last_time_str]) 
+            data_list.append([ext_image, file, last_time_str]) 
                 
         return data_list
 
@@ -329,8 +340,8 @@ if __name__ == "__main__":
     user = UserInfo(sg_url, script_name, api_key)
     task = TaskInfo(sg_url, script_name, api_key)
 
-    email = "p2xch@naver.com"
-    name = "신승연"
+    email = "f8d783@kw.ac.kr"
+    name = "장순우"
 
     user.is_validate(email, name)
     user_id = user.get_userid()
