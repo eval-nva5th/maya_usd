@@ -57,9 +57,9 @@ class VideoPlayer(QLabel):
 
 class UI(QMainWindow):
     def __init__(self):
-        sg_url = "https://nashotgrid.shotgrid.autodesk.com"
-        script_name = "test"
-        api_key = "hetgdrcey?8coevsotrgwTnhv"
+        sg_url = "https://hi.shotgrid.autodesk.com/"
+        script_name = "Admin_SY"
+        api_key = "kbuilvikxtf5v^bfrivDgqhxh"
         self.user = UserInfo(sg_url, script_name, api_key)
         self.user_name = ""
         self.task_info = TaskInfo(sg_url, script_name, api_key)
@@ -228,147 +228,88 @@ class UI(QMainWindow):
         File UI (테이블 목록) 생성
         version_type: "work" 또는 "pub"
         """
+        
         widget = QWidget()  # 새 UI 위젯 생성
         layout = QVBoxLayout(widget)
 
-        # 테이블 위젯 생성 (초기 행 개수: 0, 3개 컬럼)
-        file_table = QTableWidget(0, 3)
-        file_table.setHorizontalHeaderLabels(["", "file name", "user"])
-        file_table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
-        file_table.setEditTriggers(QAbstractItemView.NoEditTriggers) # 편집 비활성화
-        file_table.setColumnWidth(0, 80)  # 로고 열 (좁게 설정)
-        file_table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
-
-        file_table.setAlternatingRowColors(True)
-
-        file_table.setStyleSheet("""
-            QTableView::item { border-right: none; }  /* 세로선 숨김 */
-            QTableView { border-left: 1px black; }  /* 왼쪽 테두리 복구 */
-            QTableWidget::item:selected { background-color: #005f87; color: white; } /* 더 선명한 색상으로 변경 */
-        """)
-
         if version_type == "pub":
-            file_table.setEditTriggers(QTableWidget.NoEditTriggers)  # 수정 비활성화
-            file_table.setSelectionMode(QTableWidget.NoSelection)   # 선택 자체를 막음
-            file_table.setFocusPolicy(Qt.NoFocus)                   # 점선 포커스 없애기
+            self.pub_table = QTableWidget(0, 3)
+            table = self.pub_table  # Assign to pub_table
+        elif version_type == "work":
+            self.work_table = QTableWidget(0, 3)
+            table = self.work_table  # Assign to work_table
 
-        # 테이블 크기 조정
-        file_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)  # 로고 고정
-        file_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)  # 파일명 확장
-        file_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)  # 담당자 최소 크기 맞춤
-        file_table.verticalHeader().setVisible(False) # 행 번호 숨기기
-        file_table.resizeRowsToContents()  # 행 크기 자동 조정
-        file_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 가로 스크롤바 항상 숨김
-        file_table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 세로 스크롤바 넘치면 표시
+        table.setHorizontalHeaderLabels(["로고", "파일 이름", "최근 수정일"])
+        table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
+        table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
+        table.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
+        table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
+        table.verticalHeader().setDefaultSectionSize(30)
 
-        # UI 레이아웃 적용
-        layout.addWidget(file_table)
-        self.version_file_data(version_type, file_table)
+        table.setAlternatingRowColors(True)
+        layout.addWidget(table)
+
+        file_path = ""
+        file_list = ["NULL"]
+        self.version_file_data(version_type, file_path, file_list)
 
         return widget  # QWidget 반환
     
-    def version_file_data(self, version_type, file_table):
-        """
-        version_type: "work" 또는 "pub" 데이터를 구분하여 로드
-        table: 데이터를 추가할 QTableWidget 객체
-        """
-        # user_part에는 seq, asset이 들어갑니다
-        # user_dept가 model, lookdev, rig일때는 asset
-        # user_dept가 layout, anim, lighting, comp일때는 seq
-        project_name = "태스크 테이블에서 가져올 프로젝트 이름"
-        user_part = self.user.get_user_part()
-        asset_type = "태스크에서 에셋 타입 가져와야되나 어떻게 생각해?"
-        asset_name = "어디서 가져와야되는지 모르겠는 asset_name"
-        task_type = "태스크 테이블에서 가져올 태스크 타입"
-        seq_name = "태스크 테이블에서 가져올 시퀀스 이름"
-        shot_name = "태스크 테이블에서 가져올 샷 이름"
-        # pub/maya/scenes전까지
-        if user_part == "asset":
-            file_path = f"{self.prefix_path}/{project_name}/{user_part}/{asset_type}/{asset_name}/{task_type}"
-        elif user_part == "seq":
-            file_path = f"{self.prefix_path}/{project_name}/{user_part}/{seq_name}/{shot_name}/{task_type}"    
-
-
+    def version_file_data(self, version_type, file_path, file_list):
         data = []
 
+        if version_type == "work" :
+            if not file_path == "" :
+                for file in file_list :
+                    data.append((f"/nas/sam/config/config/icons/pixar_usd_publish.png", file[0], file[1]))
+            else : 
+                data = [(f"/nas/sam/config/config/icons/pixar_usd_publish.png", "no work yet", "25-02-20")]
+
+        elif version_type == "pub" :
+            if not file_path == "" :
+                for file in file_list :
+                    data.append((f"/nas/sam/config/config/icons/pixar_usd_publish.png", file[0], file[1]))
+            else : 
+                data = [
+                    (f"/nas/sam/config/config/icons/pixar_usd_publish.png", "no pub yet", "25-02-20")
+                ]
+        else :
+            print("뭐임")
+            data = [
+                (f"/nas/sam/config/config/icons/pixar_usd_publish.png", "NULL", "25-02-20")
+            ]
+
         if version_type == "work":
-            file_path = f"{file_path}/work/maya/scenes"
-            try:
-                # file_path에 있는 파일 리스트 가져와서 데이터 바인딩
-                files = os.listdir(file_path)
-                for file in files:
-                    fpath = f"{file_path}/{file}"
-                    timestamp = os.path.getmtime(fpath)
-                    date = time.strftime('%y.%m.%d' , time.localtime(timestamp))
-                    mtime = time.strftime('%H:%M:%S', time.localtime(timestamp))
-                    file_name, ext = os.path.splitext(file)
-                    # username 이거 필요할까?
-                    # filename + version 어떻게 생각해?
+            self.work_table.setRowCount(0)  # Clear the work table rows
+            for item in data:
+                self.file_table_item(self.work_table, *item)  # Update the work table
 
-            except FileNotFoundError:
-                file_name = f"경로 {file_path}가 존재하지 않습니다"
-            except PermissionError:
-                file_name = f"경로 {file_path}에 접근할 수 없습니다"
-            data = [
-                (f"./loader/loader_ui_sample/logo.jpeg", "v0001", "anim test", "25.02.20, 19:07:04", "InHo"),
-                (f"./loader/loader_ui_sample/logo.jpeg", "v0002", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
-                (f"./loader/loader_ui_sample/logo.jpeg", "v0003", " ", "25.02.19, 19:07:04", "InHo")
-            ]
-        if version_type == "pub":
-            file_path = f"{file_path}/pub/maya/scenes"
-            try:
-                # file_path에 있는 파일 리스트 가져와서 데이터 바인딩
-                
-                pass
-            except:
-                # 경로가 없을 때
-                pass
-            data = [
-                (f"./loader/loader_ui_sample/logo.jpeg", "v0005", "anim test", "25.02.20, 19:07:04", "InHo"),
-                (f"./loader/loader_ui_sample/logo.jpeg", "v0006", "feedback implemented", "25.02.20, 9:07:04", "InHo"),
-                (f"./loader/loader_ui_sample/logo.jpeg", "v0007", " ", "25.02.19, 19:07:04", "InHo")
-            ]
-
-        file_table.setRowCount(0)
-        for item in data:
-            self.file_table_item(file_table, *item)
+        elif version_type == "pub":
+            self.pub_table.setRowCount(0)  # Clear the pub table rows
+            for item in data:
+                self.file_table_item(self.pub_table, *item)  # Update the pub table
     
-    def file_table_item(self, file_table, dcc_logo, version, name, storage_time, user_name):
-        row = file_table.rowCount()
-        file_table.insertRow(row)  # 새로운 행 추가
-
-        file_table.setRowHeight(row, 80)  # 행 높이 고정
-        file_table.resizeRowsToContents()  # 자동 크기 조절 활성화
+    def file_table_item(self, table_widget, dcc_logo, file_name, edited_time):
+        row = table_widget.rowCount()
+        table_widget.insertRow(row)  # 새로운 행 추가
 
         #DCC 로고
         file_logo = QLabel()
-        pixmap = QPixmap(dcc_logo).scaled(80, 50)  # 크기 조절
+        pixmap = QPixmap(dcc_logo).scaled(30, 30)  # 크기 조절
         file_logo.setPixmap(pixmap)
-        file_logo.setScaledContents(True) # 크기에 맞게 이미지가 자동으로 축소/확대됨.
+        #file_logo.setScaledContents(True) # 크기에 맞게 이미지가 자동으로 축소/확대됨.
         file_logo.setAlignment(Qt.AlignCenter)
-        file_table.setCellWidget(row, 0, file_logo)  # 첫 번째 열에 추가
+        table_widget.setCellWidget(row, 0, file_logo)  # 첫 번째 열에 추가
 
         # 파일명 (QTableWidgetItem 사용)
-        file_name = QTableWidgetItem(f"{name}_{version}")
-        file_table.setItem(row, 1, file_name)  # 두 번째 열에 추가
+        name_table = QTableWidgetItem(f"{file_name}")
+        table_widget.setItem(row, 1, name_table)  # 두 번째 열에 추가
+        print(file_name)
 
-        # 담당자 + 저장 날짜 (QVBoxLayout 사용)
-        user_widget = QWidget()
-        user_layout = QVBoxLayout()
-        file_user_name = QLabel(user_name)
-        file_save_time = QLabel(storage_time)
-        file_user_name.setAlignment(Qt.AlignRight)
-        file_save_time.setAlignment(Qt.AlignRight)
-
-        user_layout.addWidget(file_user_name)
-        user_layout.addWidget(file_save_time)
-        user_layout.setContentsMargins(5, 5, 5, 5)
-
-        user_widget.setLayout(user_layout)
-        file_table.setCellWidget(row, 2, user_widget)  # 세 번째 열에 추가
-
-        # 행 높이 조정
-        file_table.setRowHeight(row, 80)
+        # 저장 날짜 
+        time_table = QTableWidgetItem(f"{edited_time}")
+        table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
+        print(edited_time)
 
     def make_task_table(self):
         """
@@ -384,7 +325,6 @@ class UI(QMainWindow):
         search_input.setPlaceholderText("SEARCH") # 흐릿한 글씨
         search_but = QPushButton("검색") # 검색버튼
         combo_box = QComboBox()
-
 
         # 테스크 검색, 정렬 레이아웃 정렬
         h_layout = QHBoxLayout()
@@ -537,11 +477,17 @@ class UI(QMainWindow):
 
     def on_cell_clicked(self, row, col):
         clicked_task_id = int(self.task_table.item(row, 0).text())
+        #################################################################### 승연의 할일 : 여기다가 이제 task 클릭 이벤트 시 일단 뽑음 
+        pub_path, pub_list = self.task_info.get_pub_files(clicked_task_id)
+        self.version_file_data('pub', pub_path, pub_list)
+
+        work_path , work_list = self.task_info.get_work_files(clicked_task_id)
+        self.version_file_data('work', work_path, work_list)
+
         prev_task_data, current_task_data = self.task_info.on_click_task(clicked_task_id)
         prev_task_id = prev_task_data['id']
 
         self.update_prev_work(prev_task_data)
-        
 
     def update_prev_work(self, prev_task_data):
         if prev_task_data['id'] != "None":
@@ -611,7 +557,7 @@ class UI(QMainWindow):
         layout = QVBoxLayout(widget)
 
         # 네임 임력
-        self.name_input = QLineEdit("SEUNGYEON SHIN") ################ 말풍선 제거하기
+        self.name_input = QLineEdit("신승연") ################ 말풍선 제거하기
         # self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
 
         # 이메일 입력
