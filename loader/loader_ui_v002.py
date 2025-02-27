@@ -420,13 +420,11 @@ class UI(QMainWindow):
         layout.addWidget(self.task_table)
 
         # 테스크 데이터 업데이트 
-        self.task_data(self.task_table)
+        self.populate_task_dict()
         return widget  # QWidget 반환
 
-    def task_data(self, task_table):
-        """
-        외부에서 데이터를 받아서 task에 추가하는 함수
-        """
+    # self.task_dict 순회 하면서 data 가공 후 add_task_to_table()
+    def populate_task_dict(self):
         self.task_info.get_user_task(self.user.get_userid())
         task_dict = self.task_info.get_task_dict()
 
@@ -455,17 +453,17 @@ class UI(QMainWindow):
 
             data_set = f"{low_data} | {high_data} | {proj_name}"
             date_set = f"{start_date} - {due_date}"
-            self.task_table_item(task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set)
+            self.add_task_to_table(task_id, thumb, task_name, data_set, status_color, status, step, date_set)
 
-    def task_table_item(self, task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set):
-
-        row = task_table.rowCount()
-        task_table.insertRow(row)  # 새로운 행 추가
+    # self.task_table에 data binding
+    def add_task_to_table(self, task_id, thumb, task_name, data_set, status_color, status, step, date_set):
+        row = self.task_table.rowCount()
+        self.task_table.insertRow(row)
         
-        task_table.setItem(row, 2, QTableWidgetItem(str(task_id)))
+        self.task_table.setItem(row, 2, QTableWidgetItem(str(task_id)))
 
-        task_table.setRowHeight(row, 80)  
-        task_table.resizeRowsToContents()
+        self.task_table.setRowHeight(row, 80)  
+        self.task_table.resizeRowsToContents()
 
         task_name = QLabel(task_name)
         task_name.setStyleSheet("font-size: 16pt;")
@@ -484,9 +482,9 @@ class UI(QMainWindow):
         task_thumb.setPixmap(pixmap.scaled(120, 70))  # 크기 조절
         task_thumb.setAlignment(Qt.AlignCenter)  # 이미지를 중앙 정렬
         task_thumb.setScaledContents(True)  # QLabel 크기에 맞게 이미지 조정
-        task_table.setCellWidget(row, 0, task_thumb)
+        self.task_table.setCellWidget(row, 0, task_thumb)
 
-        # 상태 표시 (● 빨간색 원)
+        # 상태 표시 (●)
         task_status = QLabel()
         status_pixmap = QPixmap(12, 12)  # 작은 원 크기 설정
         status_pixmap.fill(QColor("transparent"))  # 배경 투명
@@ -506,15 +504,11 @@ class UI(QMainWindow):
 
         # 상태와 작업 유형을 수평 정렬
         status_layout = QHBoxLayout()
-        status_layout.addWidget(task_status)  # 빨간 원 (●)
+        status_layout.addWidget(task_status)
         status_layout.addWidget(status)
-        
-        #status_layout.addWidget(task_step)  # Animation
-        status_layout.addStretch()  # 남은 공간 정렬
+        status_layout.addStretch() 
 
         text_layout = QVBoxLayout()
-
-        #text_layout.addWidget(task_name)
         text_layout.addLayout(task_name_layout)
         text_layout.addLayout(status_layout)  # 상태 + 작업 유형
         text_layout.addWidget(data_set)
@@ -529,14 +523,13 @@ class UI(QMainWindow):
         widget.setLayout(layout)
 
         # 테이블 위젯 추가
-        task_table.setCellWidget(row, 1, widget)
-
+        self.task_table.setCellWidget(row, 1, widget)
         # 행 높이를 조정하여 잘리지 않도록 설정
-        task_table.setRowHeight(row, 80)
+        self.task_table.setRowHeight(row, 80)
 
-    def on_cell_clicked(self, row, col):
-        clicked_task_id = int(self.task_table.item(row, 0).text())
-        #################################################################### 승연의 할일 : 여기다가 이제 task 클릭 이벤트 시 일단 뽑음 
+    def on_cell_clicked(self, row, _):
+        clicked_task_id = int(self.task_table.item(row, 2).text())
+        print(clicked_task_id)
         pub_path, pub_list = self.task_info.get_pub_files(clicked_task_id)
         self.version_file_data('pub', pub_path, pub_list)
 
