@@ -21,6 +21,7 @@ import shotgun_api3
 from shotgrid_user_task import UserInfo, TaskInfo
 import os
 import time
+import sys, subprocess
 
 class VideoPlayer(QLabel):
     """
@@ -294,16 +295,24 @@ class UI(QMainWindow):
         if version_type == "pub":
             self.pub_table = QTableWidget(0, 3)
             table = self.pub_table  # Assign to pub_table
+            table.setSelectionMode(QAbstractItemView.NoSelection)
+            #table.setEnabled(False)
+            table.setEditTriggers(QTableWidget.NoEditTriggers)  # 수정 비활성화
+            table.setFocusPolicy(Qt.NoFocus)   
+
         elif version_type == "work":
             self.work_table = QTableWidget(0, 3)
+            #self.work_table.cellClicked.connect(self.on_work_cell_clicked)
             table = self.work_table  # Assign to work_table
-
+            
         table.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
         table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
         table.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
-        table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
+        table.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
+        table.setColumnWidth(2,126)
         table.verticalHeader().setDefaultSectionSize(30)
+        table.verticalHeader().setVisible(False)
 
         table.setAlternatingRowColors(True)
         layout.addWidget(table)
@@ -320,35 +329,39 @@ class UI(QMainWindow):
         if version_type == "work" :
             if not file_path == "" :
                 for file in file_list :
-                    data.append((file[0], file[1], file[2]))
+                    data.append((file[0], file[1], file[2], file[3]))
             else : 
-                data = [(f"/nas/eval/elements/null.png", "no work yet", "")]
+                data = [(f"/nas/eval/elements/null.png", "no work yet", "", "")]
 
         elif version_type == "pub" :
             if not file_path == "" :
                 for file in file_list :
-                    data.append((file[0], file[1], file[2]))
+                    data.append((file[0], file[1], file[2], file[3]))
             else : 
                 data = [
-                    (f"/nas/eval/elements/null.png", "no pub yet", "")
+                    (f"/nas/eval/elements/null.png", "no pub yet", "", "")
                 ]
         else :
             print("something went wrong")
             data = [
-                (f"/nas/eval/elements/null.png", "something went wrong", "")
+                (f"/nas/eval/elements/null.png", "something went wrong", "", "")
             ]
 
         if version_type == "work":
             self.work_table.setRowCount(0)
+            
+            #self.work_table.cellClicked.connect(self.on_work_cell_clicked)
             for item in data:
                 self.file_table_item(self.work_table, *item)
-
+            
         elif version_type == "pub":
             self.pub_table.setRowCount(0)
             for item in data:
                 self.file_table_item(self.pub_table, *item)
     
-    def file_table_item(self, table_widget, dcc_logo, file_name, edited_time):
+    def file_table_item(self, table_widget, dcc_logo, file_name, edited_time, full_path):
+        print(full_path)
+        table_widget.cellClicked.connect(lambda row, col: self.on_work_cell_clicked(row, col, full_path))
         row = table_widget.rowCount()
         table_widget.insertRow(row)  # 새로운 행 추가
 
@@ -369,6 +382,11 @@ class UI(QMainWindow):
         time_table = QTableWidgetItem(f"{edited_time}")
         table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
         print(edited_time)
+
+    def on_work_cell_clicked(self, row, col, full_path) :
+    # item과 관련된 작업을 처리
+        print(f"Row: {row}, Column: {col}, Item: {full_path}")
+        #subprocess.run(["maya", "-file", full_path], check=True) 
 
     def make_task_table(self):
         """
@@ -635,7 +653,7 @@ class UI(QMainWindow):
                 popup.exec()
             else:
                 self.user_name = name
-                self.resize(1200, 800)  # 메인 화면 크기 조정
+                self.resize(1100, 800)  # 메인 화면 크기 조정
                 self.setCentralWidget(self.setup_layout()) # 로그인 창을 메인화면으로 변경
                 self.center_window()
         else: # 이름과 이메일에 값이 없을 때

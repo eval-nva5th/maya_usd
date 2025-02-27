@@ -330,7 +330,7 @@ class TaskInfo(Shotgrid) :
             #data_list.append(file)
             #data_list.append(last_time_str)
 
-            data_list.append([ext_image, file, last_time_str]) 
+            data_list.append([ext_image, file, last_time_str, file_path]) 
                 
         return data_list
 
