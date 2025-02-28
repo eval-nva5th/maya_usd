@@ -95,12 +95,12 @@ class UI(QMainWindow):
         # WORK 버전 UI 생성
         work_container = self.make_file_table("WORK")
         work_label = QLabel("WORK")
-        work_label.setStyleSheet("font-weight : bold;")
+        work_label.setStyleSheet("font-weight : bold;padding-left: 10px;")
         work_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         # PUB 버전 UI 생성
         pub_container = self.make_file_table("PUB")
         pub_label = QLabel("PUB")
-        pub_label.setStyleSheet("font-weight : bold;")
+        pub_label.setStyleSheet("font-weight : bold;padding-left: 10px;")
         pub_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         # PREVIOUS BLAST UI 생성
         previous_container = self.previous_data()
@@ -270,7 +270,6 @@ class UI(QMainWindow):
 
         self.info_table.setCellWidget(3, 2, status_wdidget)
 
-
         info_layout = QVBoxLayout()
         info_layout.setSpacing(0)
         # info_layout.addWidget(previous_work)
@@ -374,12 +373,12 @@ class UI(QMainWindow):
         # 파일명 (QTableWidgetItem 사용)
         name_table = QTableWidgetItem(f"{file_name}")
         table_widget.setItem(row, 1, name_table)  # 두 번째 열에 추가
-        print(file_name)
+        # print(file_name)
 
         # 저장 날짜 
         time_table = QTableWidgetItem(f"{edited_time}")
         table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
-        print(edited_time)
+        # print(edited_time)
 
     def on_sort_changed(self):
         """
@@ -430,7 +429,7 @@ class UI(QMainWindow):
                         break
 
                 self.task_table.setRowHidden(row, not match)  # 일치하지 않으면 숨김
-        self.search_input.clear()
+        # self.search_input.clear()
 
     def make_task_table(self):
         """
@@ -464,6 +463,7 @@ class UI(QMainWindow):
         self.task_table.cellClicked.connect(self.on_cell_clicked)
         self.search_but.clicked.connect(self.search_task)
         self.search_input.returnPressed.connect(self.search_task)
+        self.search_input.textChanged.connect(self.search_task)
         self.sort_combo.currentIndexChanged.connect(self.on_sort_changed)
 
         # 테이블 크기설정
@@ -625,7 +625,6 @@ class UI(QMainWindow):
 
     def on_cell_clicked(self, row, _):
         clicked_task_id = int(self.task_table.item(row, 2).text())
-        print(clicked_task_id)
         pub_path, pub_list = self.task_info.get_pub_files(clicked_task_id)
         self.version_file_data('PUB', pub_path, pub_list)
 

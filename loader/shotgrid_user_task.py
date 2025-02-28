@@ -54,7 +54,7 @@ class UserInfo(Shotgrid) :
         pass
 
     def show_error(self) :
-        print("에러창 실행")
+        # print("에러창 실행")
         self.name = "" # 새 이름 받기
         self.email = "" # 새 이메일 받기
         #self.is_validate(email, name)
@@ -74,12 +74,11 @@ class TaskInfo(Shotgrid) :
 
         id_filter = {'type': 'HumanUser', 'id': user_id}
         tasks = self.sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
-        
-        for task in tasks :
-            print(f"할당된 태스크 정보를 가져오는 중입니다 ...")
+        total_tasks = len(tasks)
+        print(f"할당된 태스크 정보를 가져오는 중입니다 ... 총 {total_tasks}개")
+        for i, task in enumerate(tasks, start=1) :
+            print(f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
             current_task_id = task['id']
-            prev_task_id = self.get_prev_task(id)
-            self.task_dict[current_task_id] = {}
             proj_name = task['project']['name']
             task_name = task['content']
             shot_name = task['entity']['name']
@@ -90,6 +89,7 @@ class TaskInfo(Shotgrid) :
             status = task['sg_status_list']
             step = task['step']['name']
 
+            self.task_dict[current_task_id] = {}
             self.task_dict[current_task_id]['proj_name']=proj_name
             self.task_dict[current_task_id]['content']=task_name
             
@@ -98,85 +98,82 @@ class TaskInfo(Shotgrid) :
             self.task_dict[current_task_id]['due_date']=due_date
             self.task_dict[current_task_id]['status']=status
             self.task_dict[current_task_id]['step'] = step
-            self.task_dict[current_task_id]['prev_task_id'] = prev_task_id
             
             self.branch_asset_seq(task_type, current_task_id, asset_id, shot_name) # asset seq로 딕트 형식/저장방법 분기
+            prev_task_id = self.get_prev_task(current_task_id)
+            self.task_dict[current_task_id]['prev_task_id'] = prev_task_id
+    
+            if prev_task_id :
+                # ShotGrid에서 Description data 가져오기 
+                fields = ["id", "code", "description", "published_file_type", "entity"]
+                filters = [["task", "is", {"type": "Task", "id": prev_task_id}]]
 
-        print("이전 태스크 정보를 가져오는 중입니다 ...")
-        if prev_task_id :
-            # ShotGrid에서 Description data 가져오기 
-            fields = ["id", "code", "description", "published_file_type", "entity"]
-            filters = [["task", "is", {"type": "Task", "id": prev_task_id}]]
+                published_file = self.sg.find_one("PublishedFile", filters, fields)
+                comment = published_file.get('description', 'No Description')
 
-            published_file = self.sg.find_one("PublishedFile", filters, fields)
-            comment = published_file.get('description', 'No Description')
+                # ShotGrid에서 Previous Task data 가져오기
+                prev_task_data = self.sg.find_one(
+                                                "Task", 
+                                                [["id", "is", prev_task_id]], 
+                                                ["project","content", "entity","step", "task_assignees","task_reviewers", "sg_status_list"]
+                                                )
+                
+                prev_task_proj = prev_task_data['project']['name']
+                entity_type = prev_task_data['entity']['type']
+                entity_id = prev_task_data['entity']['id']
+                if entity_type == "Shot":
+                    entity_data = self.sg.find_one("Shot", [["id", "is", entity_id]], ["sg_sequence"])
+                    prev_task_category = entity_data.get("sg_sequence", {}).get("name", "No Sequence")
 
-            # ShotGrid에서 Previous Task data 가져오기
-            prev_task_data = self.sg.find_one(
-                                            "Task", 
-                                            [["id", "is", prev_task_id]], 
-                                            ["project","content", "entity","step", "task_assignees","task_reviewers", "sg_status_list"]
-                                            )
+                elif entity_type == "Asset":
+                    entity_data = self.sg.find_one("Asset", [["id", "is", entity_id]], ["sg_asset_type"])
+                    prev_task_category = entity_data.get("sg_asset_type", "No Asset Type")
+                
+                prev_task_name = prev_task_data['entity'].get('name') or prev_task_data['entity'].get('name')
+                prev_task_id = prev_task_data['id']
+                prev_task_task_name = prev_task_data['content']
+                prev_task_step = prev_task_data['step']['name']
+                prev_task_assignees = [assignee['name'] for assignee in prev_task_data['task_assignees']]
+                prev_task_reviewers = [reviewer['name'] for reviewer in prev_task_data['task_reviewers']]
+                prev_task_status = prev_task_data['sg_status_list']
+                prev_task_assignees = ", ".join(prev_task_assignees)
+                prev_task_reviewers = ", ".join(prev_task_reviewers)
+
+                self.prev_task_dict[prev_task_id] = {}
+                self.prev_task_dict[prev_task_id]["proj_name"] = prev_task_proj
+                self.prev_task_dict[prev_task_id]["type_name"] = entity_type.lower()
+                self.prev_task_dict[prev_task_id]["category"] = prev_task_category.lower()
+                self.prev_task_dict[prev_task_id]["name"] = prev_task_name            
+
+                self.prev_task_dict[prev_task_id]["task_name"] = prev_task_task_name
+                self.prev_task_dict[prev_task_id]["step"] = prev_task_step.lower()
+                self.prev_task_dict[prev_task_id]["assignees"] = prev_task_assignees
+                self.prev_task_dict[prev_task_id]["reviewers"] = prev_task_reviewers
+                self.prev_task_dict[prev_task_id]["status"] = prev_task_status
+                self.prev_task_dict[prev_task_id]["comment"] = comment
+            else :
+                self.prev_task_dict[prev_task_id]["id"] = "None"
+                self.prev_task_dict[prev_task_id]["proj_name"] = "None"
+                self.prev_task_dict[prev_task_id]["type_name"] = "None"
+                self.prev_task_dict[prev_task_id]["category"] = "None"
+                self.prev_task_dict[prev_task_id]["name"] = "None"
+
+                self.prev_task_dict[prev_task_id]["task_name"] = "None"
+                self.prev_task_dict[prev_task_id]["step"] = "None"
+                self.prev_task_dict[prev_task_id]["assignees"] = "None"
+                self.prev_task_dict[prev_task_id]["reviewers"] = "None"
+                self.prev_task_dict[prev_task_id]["status"] = "None"
+                self.prev_task_dict[prev_task_id]["comment"] = "None"
             
-            prev_task_proj = prev_task_data['project']['name']
-            entity_type = prev_task_data['entity']['type']
-            entity_id = prev_task_data['entity']['id']
-            if entity_type == "Shot":
-                entity_data = self.sg.find_one("Shot", [["id", "is", entity_id]], ["sg_sequence"])
-                prev_task_category = entity_data.get("sg_sequence", {}).get("name", "No Sequence")
-
-            elif entity_type == "Asset":
-                entity_data = self.sg.find_one("Asset", [["id", "is", entity_id]], ["sg_asset_type"])
-                prev_task_category = entity_data.get("sg_asset_type", "No Asset Type")
-            
-            prev_task_name = prev_task_data['entity'].get('name') or prev_task_data['entity'].get('name')
-            prev_task_id = prev_task_data['id']
-            prev_task_task_name = prev_task_data['content']
-            prev_task_step = prev_task_data['step']['name']
-            prev_task_assignees = [assignee['name'] for assignee in prev_task_data['task_assignees']]
-            prev_task_reviewers = [reviewer['name'] for reviewer in prev_task_data['task_reviewers']]
-            prev_task_status = prev_task_data['sg_status_list']
-            prev_task_assignees = ", ".join(prev_task_assignees)
-            prev_task_reviewers = ", ".join(prev_task_reviewers)
-
-            self.prev_task_dict["id"] = prev_task_id
-            self.prev_task_dict["proj_name"] = prev_task_proj
-            self.prev_task_dict["type_name"] = entity_type.lower()
-            self.prev_task_dict["category"] = prev_task_category.lower()
-            self.prev_task_dict["name"] = prev_task_name            
-
-            self.prev_task_dict["task_name"] = prev_task_task_name
-            self.prev_task_dict["step"] = prev_task_step.lower()
-            self.prev_task_dict["assignees"] = prev_task_assignees
-            self.prev_task_dict["reviewers"] = prev_task_reviewers
-            self.prev_task_dict["status"] = prev_task_status
-            self.prev_task_dict["comment"] = comment
-        else :
-            self.prev_task_dict["id"] = "None"
-            self.prev_task_dict["proj_name"] = "None"
-            self.prev_task_dict["type_name"] = "None"
-            self.prev_task_dict["category"] = "None"
-            self.prev_task_dict["name"] = "None"
-
-            self.prev_task_dict["task_name"] = "None"
-            self.prev_task_dict["step"] = "None"
-            self.prev_task_dict["assignees"] = "None"
-            self.prev_task_dict["reviewers"] = "None"
-            self.prev_task_dict["status"] = "None"
-            self.prev_task_dict["comment"] = "None"
-        print("기다려주셔서 감사합니다 땡큐")
-
     def branch_asset_seq(self, task_type, task_id, asset_id, shot_name) :
 
         if task_type == "Shot" :
             seq_contents = self.sg.find("Shot", [["id", "is", asset_id]], ["tasks", "sg_sequence"])
-            print(seq_contents)
             seq_name = seq_contents[0]['sg_sequence']['name']
 
             self.task_dict[task_id]['shot_name'] = shot_name
             self.task_dict[task_id]['seq_name'] = seq_name
             self.task_dict[task_id]['shot_id'] = asset_id
-            print(shot_name, seq_name, asset_id)
         
         elif task_type == "Asset" :
             asset_contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks", "sg_asset_type"])
@@ -196,10 +193,10 @@ class TaskInfo(Shotgrid) :
         if not current_task:
             return None
         
-        # type_name(shot_id/asset_id)이 같은 태스크들 찾기
+        # type_id(shot_id/asset_id)이 같은 태스크들 찾기
         related_tasks = []
         type_id = current_task.get("shot_id") or current_task.get("asset_id")
-
+        # print(type_id)
         filters = [
             {
                 "filter_operator": "or",
@@ -265,8 +262,22 @@ class TaskInfo(Shotgrid) :
         current_dict["name"] = self.task_dict[current_task_id].get('shot_name') or self.task_dict[current_task_id].get('asset_name').lower()
         current_dict["step"] = self.task_dict[current_task_id]['step']
 
+        prev_task_dict = {}
+        prev_task_id = self.task_dict[current_task_id]['prev_task_id']
+        prev_task = self.prev_task_dict[prev_task_id]
+        prev_task_dict["id"] = prev_task_id
+        prev_task_dict["proj_name"] = prev_task['proj_name']
+        prev_task_dict["type_name"] = prev_task['type_name']
+        prev_task_dict["category"] = prev_task['category']
+        prev_task_dict["name"] = prev_task['name']            
 
-        return current_dict
+        prev_task_dict["task_name"] = prev_task['task_name']
+        prev_task_dict["step"] = prev_task['step']
+        prev_task_dict["assignees"] = prev_task['assignees']
+        prev_task_dict["reviewers"] = prev_task['reviewers']
+        prev_task_dict["status"] = prev_task['status']
+        prev_task_dict["comment"] = prev_task['comment']
+        return prev_task_dict, current_dict
 
     def set_path_items(self,task_id) :
         '''
@@ -304,18 +315,18 @@ class TaskInfo(Shotgrid) :
     def get_pub_files(self, task_id) :
         path = self.set_path_items(task_id)
         pub_path = f"{path}/pub/maya/scenes"
-        print(f"pub path : {pub_path}")
+        #print(f"pub path : {pub_path}")
         pub_list = self.set_file_list(pub_path)
-        print(f"the list in pub {pub_list}")
+        #print(f"the list in pub {pub_list}")
 
         return pub_path, pub_list
         
     def get_work_files(self, task_id) :
         path = self.set_path_items(task_id)
         work_path = f"{path}/work/maya/scenes"
-        print(f"work path : {work_path}")
+        #print(f"work path : {work_path}")
         work_list = self.set_file_list(work_path)
-        print(f"the list in work {work_list}")
+        #print(f"the list in work {work_list}")
 
         return work_path, work_list
         
@@ -352,11 +363,11 @@ if __name__ == "__main__":
     name = "장순우"
 
     user.is_validate(email, name)
-    # user_id = user.get_userid()
-    print(f"user info : {user.name} | {user.email} | {user.id} | {user.dept} | {user.pos}")
-    task.get_user_task(user.id)
+    user_id = user.get_userid()
+    # print(f"user info : {user.name} | {user.email} | {user.id} | {user.dept} | {user.pos}")
+    task.get_user_task(user_id)
 
     for task_id, value in task.task_dict.items() :
-        print(f"task id : {task_id} | task name : {value['content']}")
+        # print(f"task id : {task_id} | task name : {value['content']}")
         task.get_pub_files(task_id)
         task.get_work_files(task_id)
