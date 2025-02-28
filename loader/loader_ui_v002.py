@@ -1,6 +1,6 @@
 try :
-    from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-    from PySide6.QtWidgets import QVBoxLayout, QLabel, QMessageBox, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+    from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox, QDialog
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QMessageBox, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy, QToolButton
     from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QFont
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
     from PySide6.QtCore import Qt, QTimer
@@ -25,8 +25,7 @@ import shotgun_api3
 from shotgrid_user_task import UserInfo, TaskInfo
 import os
 import time
-from pprint import pprint
-from copy import deepcopy  # 객체 깊은 복사 추가
+import sys, subprocess
 
 class VideoPlayer(QLabel):
     """
@@ -63,6 +62,78 @@ class VideoPlayer(QLabel):
 
         self.setPixmap(pixmap)
 
+class CustomDialog(QDialog):
+    def __init__(self, full_path, file_name):
+        super().__init__()
+
+        # Set up the dialog layout
+        # Create two LineEdits
+        self.line_edit = QLineEdit(self)
+        self.line_edit.setText(file_name)
+        self.line_edit.setFixedWidth(300)
+        self.switch = QToolButton(self)
+        self.switch.setCheckable(True)
+
+        self.switch.setText(".mb")
+        self.switch.setStyleSheet("""
+            QToolButton {
+                background-color: #ccc;
+                border-radius: 10px;
+                padding: 5px;
+                color: white;
+                background-color : #a47864;
+                            
+            }
+            QToolButton:checked {
+                background-color: #6667AB;
+            }
+            QToolButton:!checked {
+                background-color: #a47864;
+            }
+        """)
+
+        self.switch.clicked.connect(self.on_toggle)
+
+        self.create_button = QPushButton("Create", self)
+        self.exit_button = QPushButton("Exit", self)
+        
+        self.create_button.clicked.connect(lambda: self.on_click_create(full_path))
+        self.exit_button.clicked.connect(self.on_click_exit)
+
+        text_layout = QHBoxLayout()
+        text_layout.addWidget(self.line_edit)
+        text_layout.addWidget(self.switch)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.create_button)
+        button_layout.addWidget(self.exit_button)
+
+        full_layout = QVBoxLayout()
+        full_layout.addLayout(text_layout)
+        full_layout.addLayout(button_layout)
+
+        self.setLayout(full_layout)
+        self.setWindowTitle("create new work file")
+        
+    def on_toggle(self):
+        if self.switch.isChecked():
+            self.switch.setText(".ma")
+        else:
+            self.switch.setText(".mb")
+
+    def on_click_create(self, full_path):
+        line_edit_text = self.line_edit.text()
+        ext = self.switch.text()
+        run_path = f"{full_path}/{line_edit_text}{ext}"
+        print(run_path)
+        self.dialog_flag = False
+        self.accept()  # Close the dialog
+
+    def on_click_exit(self) :
+        print("종료")
+        self.dialog_flag = False
+        self.accept()
+
 class UI(QMainWindow):
     def __init__(self):
         sg_url = "https://hi.shotgrid.autodesk.com/"
@@ -82,7 +153,7 @@ class UI(QMainWindow):
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
-
+ 
     def setup_layout(self):
         """
         레이아웃 세팅
@@ -307,13 +378,15 @@ class UI(QMainWindow):
         elif version_type == "WORK":
             self.work_table = QTableWidget(0, 3)
             table = self.work_table  # Assign to work_table
-
+            
         table.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
         table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
         table.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
-        table.setColumnWidth(1, 300)  # 파일명 열 (길게 설정)
+        table.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
+        table.setColumnWidth(2,126)
         table.verticalHeader().setDefaultSectionSize(30)
+        table.verticalHeader().setVisible(False)
 
         table.setAlternatingRowColors(True)
         layout.addWidget(table)
@@ -326,30 +399,49 @@ class UI(QMainWindow):
     
     def version_file_data(self, version_type, file_path, file_list):
         data = []
+        if version_type == "WORK":
+            try:
+                self.work_table.cellClicked.disconnect()
+            except TypeError:
+                print("이상하네")
+                pass  # Ignore if there are no connections yet
+            except RuntimeError:
+                print("cellClicked 시그널이 연결되지 않았음")
+        
+        if version_type == "PUB":
+            try:
+                self.pub_table.cellClicked.disconnect()
+            except TypeError:
+                print("이상하네2")
+                pass  # Ignore if there are no connections yet
+            except RuntimeError:
+                print("cellClicked 시그널이 연결되지 않았음")
 
         if version_type == "WORK" :
             if not file_path == "" :
                 for file in file_list :
-                    data.append((file[0], file[1], file[2]))
+                    data.append((file[0], file[1], file[2], file[3]))
             else : 
-                data = [(f"/nas/eval/elements/null.png", "no work yet", "")]
+                data = [(f"/nas/eval/elements/null.png", "no work yet", "", "")]
 
         elif version_type == "PUB" :
             if not file_path == "" :
                 for file in file_list :
-                    data.append((file[0], file[1], file[2]))
+                    data.append((file[0], file[1], file[2], file[3]))
             else : 
                 data = [
-                    (f"/nas/eval/elements/null.png", "no pub yet", "")
+                    (f"/nas/eval/elements/null.png", "no pub yet", "", "")
                 ]
         else :
             print("something went wrong")
             data = [
-                (f"/nas/eval/elements/null.png", "something went wrong", "")
+                (f"/nas/eval/elements/null.png", "something went wrong", "", "")
             ]
 
         if version_type == "WORK":
             self.work_table.setRowCount(0)
+            
+            #self.work_table.cellClicked.connect(self.on_work_cell_clicked)
             for item in data:
                 self.file_table_item(self.work_table, *item)
 
@@ -358,7 +450,8 @@ class UI(QMainWindow):
             for item in data:
                 self.file_table_item(self.pub_table, *item)
     
-    def file_table_item(self, table_widget, dcc_logo, file_name, edited_time):
+    def file_table_item(self, table_widget, dcc_logo, file_name, edited_time, full_path):
+        
         row = table_widget.rowCount()
         table_widget.insertRow(row)  # 새로운 행 추가
 
@@ -380,6 +473,21 @@ class UI(QMainWindow):
         table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
         # print(edited_time)
 
+        table_widget.cellClicked.connect(lambda row, col : self.on_work_cell_clicked(row, col, table_widget.item(row,col), full_path))
+
+    def on_work_cell_clicked(self, row, col, item, full_path) :
+    # item과 관련된 작업을 처리
+        if item.text() ==  "Double Click for new work file" :
+            print("여기서 아이템 생성 시작")
+            print(full_path)
+            path_slice = full_path.split('/')
+            file_name =  f"{path_slice[7]}_{path_slice[8]}_v001"
+            dialog = CustomDialog(full_path, file_name)
+            dialog.exec()
+
+        else :
+            print(f"Row: {row}, Column: {col}, Item: {full_path}")
+            #subprocess.run(["maya", "-file", full_path], check=True) 
     def on_sort_changed(self):
         """
         콤보박스 선택 변경 시 정렬 수행
@@ -498,7 +606,7 @@ class UI(QMainWindow):
         self.color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"}
 
         for task_id, task_data in task_dict.items() :
-            thumb = "loader/loader_ui_sample/task.jpeg"
+            
             task_name = task_data['content']
             proj_name = task_data['proj_name']
             status = task_data['status']
@@ -509,10 +617,13 @@ class UI(QMainWindow):
             if task_data['task_type'] == 'Shot' : 
                 low_data = task_data['shot_name']
                 high_data = task_data['seq_name']
-                
+                thumb = f"/nas/eval/show/{proj_name}/seq/{high_data}/{low_data}/{step}/pub/maya/data/{low_data}_{step}_v001.jpg"
+                print(thumb)
+
             elif task_data['task_type'] == 'Asset' :
                 low_data = task_data['asset_name']
                 high_data = task_data['asset_categ']
+                thumb = f"/nas/eval/show/{proj_name}/asset/{high_data}/{low_data}/{step}/pub/maya/data/{low_data}_{step}_v001.jpg"
                 
             for k, v in self.color_map.items() :
                 if status == k :
@@ -731,7 +842,7 @@ class UI(QMainWindow):
                 popup.exec()
             else:
                 self.user_name = name
-                self.resize(1200, 800)  # 메인 화면 크기 조정
+                self.resize(1100, 800)  # 메인 화면 크기 조정
                 self.setCentralWidget(self.setup_layout()) # 로그인 창을 메인화면으로 변경
                 self.center_window()
 

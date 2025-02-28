@@ -7,7 +7,7 @@ def put_into_path():
     app = QApplication([])
     file_dialog = QFileDialog()
     file_dialog.setFileMode(QFileDialog.ExistingFile)
-    file_dialog.setDirectory("/nas/eval/승연 테스트용") 
+    file_dialog.setDirectory("/nas/sy_test_folder") 
     
     if file_dialog.exec_():
         file_name = file_dialog.selectedFiles()[0]
@@ -43,7 +43,7 @@ def put_into_path():
 
             if not os.path.exists(path):
                 os.makedirs(path)
-        
+
         elif set_type == "2":
             raw, _ = os.path.splitext(os.path.basename(file_name))
             splited = raw.split('_')
@@ -53,9 +53,9 @@ def put_into_path():
             task_type = splited[2]
             #ver = splited[3]
             
-            work_types = ["pub", "work"]
+            work_types = ["pub"]
             for work_type in work_types :
-                path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/scenes/"
+                path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/data/"
 
                 if not os.path.exists(path):
                     os.makedirs(path)

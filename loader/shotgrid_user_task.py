@@ -21,7 +21,6 @@ class UserInfo(Shotgrid) :
         #name_filter = ['name', 'is', self.name]
         email_filter = ['email', 'is', self.email]
         self.userinfo = self.sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
-
         
         if not len(self.userinfo) == 0 :
             self.id = self.userinfo[0]['id'] # id 받기
@@ -300,7 +299,7 @@ class TaskInfo(Shotgrid) :
             path = f"{root_path}/{project_name}/{task_type}/{asset_categ}/{asset_name}/{task_step}"
             path =path.lower()
             
-        elif task_type == "Shot" : #seq 일 때 이거 수정해야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        elif task_type == "Shot" :
             task_type_str = "seq"
             shot_name = task_dict['shot_name']
             seq_name = task_dict['seq_name']
@@ -315,19 +314,17 @@ class TaskInfo(Shotgrid) :
     def get_pub_files(self, task_id) :
         path = self.set_path_items(task_id)
         pub_path = f"{path}/pub/maya/scenes"
-        #print(f"pub path : {pub_path}")
         pub_list = self.set_file_list(pub_path)
-        #print(f"the list in pub {pub_list}")
-
+        if len(pub_list) == 0 :
+            pub_list.append(["/nas/eval/elements/null.png", "No Published File yet", "", pub_path])
         return pub_path, pub_list
         
     def get_work_files(self, task_id) :
         path = self.set_path_items(task_id)
         work_path = f"{path}/work/maya/scenes"
-        #print(f"work path : {work_path}")
         work_list = self.set_file_list(work_path)
-        #print(f"the list in work {work_list}")
-
+        if len(work_list) == 0 :
+            work_list.append(["/nas/eval/elements/null.png", "Double Click for new work file", "", work_path])
         return work_path, work_list
         
         ##### 여기서 ext 나눠서 
@@ -343,10 +340,8 @@ class TaskInfo(Shotgrid) :
             file_path = os.path.join(path, file)
             last_time = os.path.getmtime(file_path) # 최근 수정일 아이거쓰면좋을거같은데 뭔가애매해.
             last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
-            #data_list.append(file)
-            #data_list.append(last_time_str)
 
-            data_list.append([ext_image, file, last_time_str]) 
+            data_list.append([ext_image, file, last_time_str, file_path]) 
                 
         return data_list
 
@@ -368,6 +363,5 @@ if __name__ == "__main__":
     task.get_user_task(user_id)
 
     for task_id, value in task.task_dict.items() :
-        # print(f"task id : {task_id} | task name : {value['content']}")
         task.get_pub_files(task_id)
         task.get_work_files(task_id)
