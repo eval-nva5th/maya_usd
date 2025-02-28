@@ -13,9 +13,10 @@ def put_into_path():
         file_name = file_dialog.selectedFiles()[0]
 
         root_path = "/nas/eval/show"
-        project_name = input("project name : ")
-
-        set_type = input("work type (assets = 1, seq = 2) : ")
+        project_name = "eval"
+        #project_name = input("project name : ")
+        set_type = "2"
+        #set_type = input("work type (assets = 1, seq = 2) : ")
 
         if set_type == "1":
             set_type_str = "assets"
@@ -42,7 +43,7 @@ def put_into_path():
 
             if not os.path.exists(path):
                 os.makedirs(path)
-
+        
         elif set_type == "2":
             raw, _ = os.path.splitext(os.path.basename(file_name))
             splited = raw.split('_')
@@ -52,19 +53,20 @@ def put_into_path():
             task_type = splited[2]
             #ver = splited[3]
             
-            work_type = "pub"
-            path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/scenes/"
+            work_types = ["pub", "work"]
+            for work_type in work_types :
+                path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/scenes/"
 
-            if not os.path.exists(path):
-                os.makedirs(path)
+                if not os.path.exists(path):
+                    os.makedirs(path)
 
-        destination_file = os.path.join(path, os.path.basename(file_name))
-        shutil.copy2(file_name, destination_file)
-        
-        print(f"옮겨짐 {destination_file}")
+                destination_file = os.path.join(path, os.path.basename(file_name))
+                shutil.copy2(file_name, destination_file)
+                
+                print(f"옮겨짐 {destination_file}")
     
-    else:
-        print("무언가문제가잇음")
+        else:
+            print("무언가문제가잇음")
 
 # 함수 실행
 if __name__ == "__main__":

@@ -17,10 +17,12 @@ class UserInfo(Shotgrid) :
     def is_validate(self, email, name) :
         self.email = email
         self.name = name
-        name_filter = ['name', 'is', self.name]
+        kname_filter = ['sg_korean_name', 'is', self.name]
+        #name_filter = ['name', 'is', self.name]
         email_filter = ['email', 'is', self.email]
-        self.userinfo = self.sg.find('HumanUser', [name_filter, email_filter], ["id", "name", "department", "groups"])
-        #print(self.userinfo)
+        self.userinfo = self.sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
+
+        print(self.userinfo)
         
         if not len(self.userinfo) == 0 :
             self.id = self.userinfo[0]['id'] # id 받기
@@ -103,11 +105,13 @@ class TaskInfo(Shotgrid) :
 
         if task_type == "Shot" :
             seq_contents = self.sg.find("Shot", [["id", "is", asset_id]], ["tasks", "sg_sequence"])
+            print(seq_contents)
             seq_name = seq_contents[0]['sg_sequence']['name']
 
             self.task_dict[task_id]['shot_name'] = shot_name
             self.task_dict[task_id]['seq_name'] = seq_name
             self.task_dict[task_id]['shot_id'] = asset_id
+            print(shot_name, seq_name, asset_id)
         
         elif task_type == "Asset" :
             asset_contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks", "sg_asset_type"])
@@ -207,7 +211,7 @@ class TaskInfo(Shotgrid) :
             published_file = self.sg.find_one("PublishedFile", filters, fields)
             comment = published_file.get('description', 'No Description')
             
-            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["project","content", "entity","step", "task_assignees", "sg_status_list"])
+            prev_task_data = self.sg.find_one("Task", [["id", "is", prev_task_id]], ["project","content", "entity","step", "task_assignees","task_reviewers", "sg_status_list"])
             prev_task_proj = prev_task_data['project']['name']
 
             entity_type = prev_task_data['entity']['type']
@@ -225,8 +229,10 @@ class TaskInfo(Shotgrid) :
             prev_task_task_name = prev_task_data['content']
             prev_task_step = prev_task_data['step']['name']
             prev_task_assignees = [assignee['name'] for assignee in prev_task_data['task_assignees']]
+            prev_task_reviewers = [reviewer['name'] for reviewer in prev_task_data['task_reviewers']]
             prev_task_status = prev_task_data['sg_status_list']
             prev_task_assignees = ", ".join(prev_task_assignees)
+            prev_task_reviewers = ", ".join(prev_task_reviewers)
 
             prev_dict["id"] = prev_task_id
             prev_dict["proj_name"] = prev_task_proj
@@ -237,6 +243,7 @@ class TaskInfo(Shotgrid) :
             prev_dict["task_name"] = prev_task_task_name
             prev_dict["step"] = prev_task_step.lower()
             prev_dict["assignees"] = prev_task_assignees
+            prev_dict["reviewers"] = prev_task_reviewers
             prev_dict["status"] = prev_task_status
             prev_dict["comment"] = comment
         else :
@@ -249,6 +256,7 @@ class TaskInfo(Shotgrid) :
             prev_dict["task_name"] = "None"
             prev_dict["step"] = "None"
             prev_dict["assignees"] = "None"
+            prev_dict["reviewers"] = "None"
             prev_dict["status"] = "None"
             prev_dict["comment"] = "None"
         print(prev_dict)
@@ -274,13 +282,19 @@ class TaskInfo(Shotgrid) :
             asset_name = task_dict['asset_name']
         
             path = f"{root_path}/{project_name}/{task_type}/{asset_categ}/{asset_name}/{task_step}"
+            path =path.lower()
             
-        else : #seq 일 때
-            pass
+        elif task_type == "Shot" : #seq 일 때 이거 수정해야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            task_type_str = "seq"
+            shot_name = task_dict['shot_name']
+            seq_name = task_dict['seq_name']
+            task_step = task_dict['step']
+            task_step = task_step.lower()
+            shot_id = task_dict['shot_id']
+
+            path = f"{root_path}/{project_name}/{task_type_str}/{seq_name}/{shot_name}/{task_step}"
         
-        lower_path =path.lower()
-    
-        return lower_path
+        return path
     
     def get_pub_files(self, task_id) :
         path = self.set_path_items(task_id)
@@ -288,6 +302,8 @@ class TaskInfo(Shotgrid) :
         print(f"pub path : {pub_path}")
         pub_list = self.set_file_list(pub_path)
         print(f"the list in pub {pub_list}")
+
+        return pub_path, pub_list
         
     def get_work_files(self, task_id) :
         path = self.set_path_items(task_id)
@@ -295,19 +311,26 @@ class TaskInfo(Shotgrid) :
         print(f"work path : {work_path}")
         work_list = self.set_file_list(work_path)
         print(f"the list in work {work_list}")
+
+        return work_path, work_list
         
+        ##### 여기서 ext 나눠서 
     def set_file_list(self, path) :
-        
         data_list = []
         
         for file in os.listdir(path): # 확장자에 따라서 넣는거 해야함!!!
-            
+            _, ext = file.split('.')
+            if ext == "usd" :
+                ext_image = "/nas/eval/elements/usd_logo"
+            elif ext == "ma" or "mb" :
+                ext_image = "/nas/eval/elements/maya_logo"
             file_path = os.path.join(path, file)
-        
             last_time = os.path.getmtime(file_path) # 최근 수정일 아이거쓰면좋을거같은데 뭔가애매해.
-            last_time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(last_time))
-        
-            data_list.append([file, last_time_str]) 
+            last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
+            #data_list.append(file)
+            #data_list.append(last_time_str)
+
+            data_list.append([ext_image, file, last_time_str]) 
                 
         return data_list
 
@@ -320,8 +343,8 @@ if __name__ == "__main__":
     user = UserInfo(sg_url, script_name, api_key)
     task = TaskInfo(sg_url, script_name, api_key)
 
-    email = "1115kjs@naver.com"
-    name = "Junsu Kim"
+    email = "f8d783@kw.ac.kr"
+    name = "장순우"
 
     user.is_validate(email, name)
     # user_id = user.get_userid()

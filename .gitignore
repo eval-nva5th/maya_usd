@@ -6,3 +6,5 @@
 *.bmp
 *.mp4
 *.mov
+
+loader/__pycache__/

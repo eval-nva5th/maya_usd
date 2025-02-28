@@ -1,7 +1,7 @@
 import os, sys
 
 def make_dir() :
-    root_path = '/nas/show/eval'
+    root_path = '/nas/eval/show'
     project_name = input(str("project name : "))
 
     set_type = input(str("work type (asset = 1 seq = 2) : "))
@@ -44,6 +44,7 @@ def make_dir() :
             if work_type == "work" :
                 for task_type in task_types :
                     path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/scenes/"
+                    print(path)
                     if not os.path.exists(path):
                         os.makedirs(path)
             elif work_type == "pub" :
@@ -51,6 +52,7 @@ def make_dir() :
                 for task_type in task_types :
                     for inner_dir in inner_dirs :
                         path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/{inner_dir}"
+                        print(path)
                         if not os.path.exists(path):
                             os.makedirs(path)
 if __name__ == "__main__":
