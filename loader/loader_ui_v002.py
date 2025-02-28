@@ -4,6 +4,8 @@ try :
     from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QFont
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
     from PySide6.QtCore import Qt, QTimer
+    from datetime import datetime
+    import re
 except ImportError:
     try:
         from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
@@ -11,6 +13,8 @@ except ImportError:
         from PySide2.QtGui import QPixmap, QPainter, QColor, QImage, QFont
         from PySide2.QtWidgets import QHeaderView, QAbstractItemView
         from PySide2.QtCore import Qt, QTimer
+        from datetime import datetime
+        import re
         import maya.cmds as cmds
     except ImportError:
         raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
@@ -30,6 +34,8 @@ class VideoPlayer(QLabel):
     def __init__(self, video_path):
         super().__init__()
         self.video_path = video_path
+
+
         self.setAlignment(Qt.AlignCenter)
         self.setText("Loading Video...")
 
@@ -137,6 +143,9 @@ class UI(QMainWindow):
         self.user_name = ""
         self.task_info = TaskInfo(sg_url, script_name, api_key)
         self.prefix_path = "/nas/eval/show"
+
+
+        self.task_data_dict = []
         
         super().__init__()
         self.setWindowTitle("EVAL_LOADER")
@@ -155,15 +164,15 @@ class UI(QMainWindow):
         self.task_container.setMaximumWidth(570)  # TASK 최소 너비 지정, 안하면 너무 작아짐.
         self.task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 가로/세로 확장 허용
         # WORK 버전 UI 생성
-        work_container = self.make_file_table("work")
+        work_container = self.make_file_table("WORK")
         work_label = QLabel("WORK")
-        work_label.setStyleSheet("font-weight: bold;")
-        work_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed) #가로, 세로 고정 크기 조정
+        work_label.setStyleSheet("font-weight : bold;")
+        work_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         # PUB 버전 UI 생성
-        pub_container = self.make_file_table("pub")
+        pub_container = self.make_file_table("PUB")
         pub_label = QLabel("PUB")
-        pub_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        pub_label.setStyleSheet("font-weight: bold;")
+        pub_label.setStyleSheet("font-weight : bold;")
+        pub_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         # PREVIOUS BLAST UI 생성
         previous_container = self.previous_data()
 
@@ -364,15 +373,10 @@ class UI(QMainWindow):
         widget = QWidget()  # 새 UI 위젯 생성
         layout = QVBoxLayout(widget)
 
-        if version_type == "pub":
+        if version_type == "PUB":
             self.pub_table = QTableWidget(0, 3)
             table = self.pub_table  # Assign to pub_table
-            table.setSelectionMode(QAbstractItemView.NoSelection)
-            #table.setEnabled(False)
-            table.setEditTriggers(QTableWidget.NoEditTriggers)  # 수정 비활성화
-            table.setFocusPolicy(Qt.NoFocus)   
-
-        elif version_type == "work":
+        elif version_type == "WORK":
             self.work_table = QTableWidget(0, 3)
             table = self.work_table  # Assign to work_table
             
@@ -396,27 +400,26 @@ class UI(QMainWindow):
     
     def version_file_data(self, version_type, file_path, file_list):
         data = []
-
-        if version_type == "work":
+        if version_type == "WORK":
             try:
                 self.work_table.cellClicked.disconnect()
             except TypeError:
                 pass  # Ignore if there are no connections yet
         
-        if version_type == "pub":
+        if version_type == "PUB":
             try:
                 self.pub_table.cellClicked.disconnect()
             except TypeError:
                 pass  # Ignore if there are no connections yet
 
-        if version_type == "work" :
+        if version_type == "WORK" :
             if not file_path == "" :
                 for file in file_list :
                     data.append((file[0], file[1], file[2], file[3]))
             else : 
                 data = [(f"/nas/eval/elements/null.png", "no work yet", "", "")]
 
-        elif version_type == "pub" :
+        elif version_type == "PUB" :
             if not file_path == "" :
                 for file in file_list :
                     data.append((file[0], file[1], file[2], file[3]))
@@ -430,14 +433,14 @@ class UI(QMainWindow):
                 (f"/nas/eval/elements/null.png", "something went wrong", "", "")
             ]
 
-        if version_type == "work":
+        if version_type == "WORK":
             self.work_table.setRowCount(0)
             
             #self.work_table.cellClicked.connect(self.on_work_cell_clicked)
             for item in data:
                 self.file_table_item(self.work_table, *item)
-            
-        elif version_type == "pub":
+
+        elif version_type == "PUB":
             self.pub_table.setRowCount(0)
             for item in data:
                 self.file_table_item(self.pub_table, *item)
@@ -480,6 +483,56 @@ class UI(QMainWindow):
         else :
             print(f"Row: {row}, Column: {col}, Item: {full_path}")
             #subprocess.run(["maya", "-file", full_path], check=True) 
+    def on_sort_changed(self):
+        """
+        콤보박스 선택 변경 시 정렬 수행
+        """
+        selected_option = self.sort_combo.currentText()
+
+        if selected_option == "ascending order":
+            ascending = True
+        elif selected_option == "descending order":
+            ascending = False
+        else:
+            return  # 정렬이 아닌 경우 종료
+
+        self.sort_table_by_due_date(self.task_table, ascending)
+
+    def sort_table_by_due_date(self, table_widget, ascending=True):
+        tuple_list = []
+        for index, data in enumerate(self.task_data_dict):
+            due_date = data["due_date"] 
+            data_index_tuple = (due_date, index)
+            tuple_list.append(data_index_tuple)
+
+        tuple_list.sort(key=lambda x: x[0], reverse=not ascending)
+
+        new_task_list = []
+        for _, index  in tuple_list:
+            new_task_list.append(self.task_data_dict[index])
+
+        table_widget.setRowCount(0)
+
+        self.task_table_item(new_task_list)
+
+    def search_task(self):
+        """
+        검색 기능
+        """
+        search_text = self.search_input.text().strip().lower()
+
+        for row in range(self.task_table.rowCount()):
+            item = self.task_table.cellWidget(row, 1)  # Task Info 컬럼의 내용을 가져옴
+            if item:
+                labels = item.findChildren(QLabel)  # QLabel들 가져오기
+                match = False
+                for label in labels:
+                    if search_text in label.text().lower():  # 검색어가 포함된 경우
+                        match = True
+                        break
+
+                self.task_table.setRowHidden(row, not match)  # 일치하지 않으면 숨김
+        self.search_input.clear()
 
     def make_task_table(self):
         """
@@ -491,17 +544,18 @@ class UI(QMainWindow):
         # 테스크 검색, 정렬 UI 생성
         task_label = QLabel("TASK")
         task_label.setStyleSheet("font-weight: bold;")
-        search_input = QLineEdit() # 검색창
-        search_input.setPlaceholderText("SEARCH") # 흐릿한 글씨
-        search_but = QPushButton("검색") # 검색버튼
-        combo_box = QComboBox()
+        self.search_input = QLineEdit() # 검색창
+        self.search_but = QPushButton("SEARCH") # 검색버튼
+        self.sort_combo = QComboBox()
+        self.sort_combo.addItem("ascending order")  # 오름차순 정렬
+        self.sort_combo.addItem("descending order")  # 내림차순 정렬
 
         # 테스크 검색, 정렬 레이아웃 정렬
         h_layout = QHBoxLayout()
         h_layout.addWidget(task_label)
-        h_layout.addWidget(search_input)
-        h_layout.addWidget(search_but)
-        h_layout.addWidget(combo_box)
+        h_layout.addWidget(self.search_input)
+        h_layout.addWidget(self.search_but)
+        h_layout.addWidget(self.sort_combo)
 
         # 테이블 위젯 생성 (초기 행 개수: 0, 2개 컬럼)
         self.task_table = QTableWidget(0, 3)
@@ -510,6 +564,9 @@ class UI(QMainWindow):
 
         # 테이블 이벤트 처리
         self.task_table.cellClicked.connect(self.on_cell_clicked)
+        self.search_but.clicked.connect(self.search_task)
+        self.search_input.returnPressed.connect(self.search_task)
+        self.sort_combo.currentIndexChanged.connect(self.on_sort_changed)
 
         # 테이블 크기설정
         self.task_table.setColumnWidth(0, 180)  # 로고 열 (좁게 설정)
@@ -531,11 +588,12 @@ class UI(QMainWindow):
         layout.addWidget(self.task_table)
 
         # 테스크 데이터 업데이트 
-        self.populate_task_dict()
+        self.task_data(self.task_table)
+        self.task_table_item(self.task_data_dict)
         return widget  # QWidget 반환
 
     # self.task_dict 순회 하면서 data 가공 후 add_task_to_table()
-    def populate_task_dict(self):
+    def task_data(self, task_table):
         self.task_info.get_user_task(self.user.get_userid())
         task_dict = self.task_info.get_task_dict()
 
@@ -566,89 +624,118 @@ class UI(QMainWindow):
                     status_color = v
 
             data_set = f"{low_data} | {high_data} | {proj_name}"
+
+            new_dict = {
+                "task_id": task_id,
+                "task_table": task_table,
+                "thumb": thumb,
+                "task_name": task_name,
+                "data_set": data_set,
+                "status_color": status_color,
+                "status": status,
+                "step": step,
+                "start_date": start_date,
+                "due_date": due_date
+            }
+            
+            self.task_data_dict.append(new_dict)
+        
+        # self.task_table_item(task_id, task_table, thumb, task_name, data_set, status_color, status, step, date_set)
+
+    def task_table_item(self,task_data_dict):
+        for data in task_data_dict:
+            task_id = data["task_id"]
+            task_table = data["task_table"]
+            thumb = data["thumb"]
+            task_name = data["task_name"]
+            data_set = data["data_set"]
+            status_color = data["status_color"]
+            status = data["status"]
+            step = data["step"]
+            start_date = data["start_date"]
+            due_date = data["due_date"]
+
             date_set = f"{start_date} - {due_date}"
-            self.add_task_to_table(task_id, thumb, task_name, data_set, status_color, status, step, date_set)
 
-    # self.task_table에 data binding
-    def add_task_to_table(self, task_id, thumb, task_name, data_set, status_color, status, step, date_set):
-        row = self.task_table.rowCount()
-        self.task_table.insertRow(row)
-        
-        self.task_table.setItem(row, 2, QTableWidgetItem(str(task_id)))
+            row = task_table.rowCount()
+            task_table.insertRow(row)  # 새로운 행 추가
+            task_table.setItem(row, 2, QTableWidgetItem(str(task_id)))
+            task_table.setRowHeight(row, 80)  
+            task_table.resizeRowsToContents()
 
-        self.task_table.setRowHeight(row, 80)  
-        self.task_table.resizeRowsToContents()
+            task_name = QLabel(task_name)
+            task_name.setStyleSheet("font-size: 16pt;")
+            task_step = QLabel(step)
+            task_step.setStyleSheet("color: grey")
+            task_step.setAlignment(Qt.AlignRight)
 
-        task_name = QLabel(task_name)
-        task_name.setStyleSheet("font-size: 16pt;")
-        task_step = QLabel(step)
-        task_step.setStyleSheet("color: grey")
-        task_step.setAlignment(Qt.AlignRight)
+            # 프로젝트 네임
+            task_name_layout = QHBoxLayout()
+            task_name_layout.addWidget(task_name)
+            task_name_layout.addWidget(task_step)
 
-        # 프로젝트 네임
-        task_name_layout = QHBoxLayout()
-        task_name_layout.addWidget(task_name)
-        task_name_layout.addWidget(task_step)
+            # 썸네일
+            task_thumb = QLabel()
+            pixmap = QPixmap(thumb)  # 이미지 파일 경로
+            task_thumb.setPixmap(pixmap.scaled(120, 70))  # 크기 조절
+            task_thumb.setAlignment(Qt.AlignCenter)  # 이미지를 중앙 정렬
+            task_thumb.setScaledContents(True)  # QLabel 크기에 맞게 이미지 조정
+            task_table.setCellWidget(row, 0, task_thumb)
 
-        # 썸네일
-        task_thumb = QLabel()
-        pixmap = QPixmap(thumb)  # 이미지 파일 경로
-        task_thumb.setPixmap(pixmap.scaled(120, 70, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        task_thumb.setAlignment(Qt.AlignCenter)  # 이미지를 중앙 정렬
-        task_thumb.setScaledContents(True)  # QLabel 크기에 맞게 이미지 조정
-        self.task_table.setCellWidget(row, 0, task_thumb)
-        
-        # 상태 표시 (●)
-        task_status = QLabel()
-        #status_pixmap = QPixmap(12, 12)  # 작은 원 크기 설정
-        status_pixmap = QPixmap(12, 12).scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        status_pixmap.fill(QColor("transparent"))  # 배경 투명
+            # 상태 표시 (● 빨간색 원)
+            task_status = QLabel()
+            status_pixmap = QPixmap(12, 12)  # 작은 원 크기 설정
+            status_pixmap.fill(QColor("transparent"))  # 배경 투명
 
-        painter = QPainter(status_pixmap)
-        painter.setBrush(QColor(status_color))  # 빨간색 (Hex 코드 사용 가능)
-        painter.setPen(QColor(status_color))  # 테두리도 빨간색
-        painter.drawEllipse(0, 0, 12, 12)  # (x, y, width, height) 원 그리기
-        painter.end()
-        task_status.setPixmap(status_pixmap)
+            painter = QPainter(status_pixmap)
+            painter.setBrush(QColor(status_color))  # 빨간색 (Hex 코드 사용 가능)
+            painter.setPen(QColor(status_color))  # 테두리도 빨간색
+            painter.drawEllipse(0, 0, 12, 12)  # (x, y, width, height) 원 그리기
+            painter.end()
+            task_status.setPixmap(status_pixmap)
 
-        # 작업 유형
-        data_set = QLabel(data_set)
-        date_set = QLabel(date_set)
-        status = QLabel(status)
-        status.setStyleSheet("font-size: 10pt; color: grey")
+            # 작업 유형
+            data_set = QLabel(data_set)
+            date_set = QLabel(date_set)
+            status = QLabel(status)
+            status.setStyleSheet("font-size: 10pt; color: grey")
 
-        # 상태와 작업 유형을 수평 정렬
-        status_layout = QHBoxLayout()
-        status_layout.addWidget(task_status)
-        status_layout.addWidget(status)
-        status_layout.addStretch() 
+            # 상태와 작업 유형을 수평 정렬
+            status_layout = QHBoxLayout()
+            status_layout.addWidget(task_status)  # 빨간 원 (●)
+            status_layout.addWidget(status)
+            
+            #status_layout.addWidget(task_step)  # Animation
+            status_layout.addStretch()  # 남은 공간 정렬
 
-        text_layout = QVBoxLayout()
-        text_layout.addLayout(task_name_layout)
-        text_layout.addLayout(status_layout)  # 상태 + 작업 유형
-        text_layout.addWidget(data_set)
-        text_layout.addWidget(date_set)
+            text_layout = QVBoxLayout()
 
-        widget = QWidget()
-        layout = QHBoxLayout()
+            #text_layout.addWidget(task_name)
+            text_layout.addLayout(task_name_layout)
+            text_layout.addLayout(status_layout)  # 상태 + 작업 유형
+            text_layout.addWidget(data_set)
+            text_layout.addWidget(date_set)
 
-        layout.addLayout(text_layout)  # 오른쪽: 텍스트 그룹
-        layout.setContentsMargins(5, 5, 5, 5)  # 여백 조정
-        widget.setLayout(layout)
+            widget = QWidget()
+            layout = QHBoxLayout()
 
-        # 테이블 위젯 추가
-        self.task_table.setCellWidget(row, 1, widget)
-        # 행 높이를 조정하여 잘리지 않도록 설정
-        self.task_table.setRowHeight(row, 80)
+            layout.addLayout(text_layout)  # 오른쪽: 텍스트 그룹
+            layout.setContentsMargins(5, 5, 5, 5)  # 여백 조정
+            widget.setLayout(layout)
+
+            # 테이블 위젯 추가
+            task_table.setCellWidget(row, 1, widget)
+            # 행 높이를 조정하여 잘리지 않도록 설정
+            task_table.setRowHeight(row, 80)
 
     def on_cell_clicked(self, row, _):
         clicked_task_id = int(self.task_table.item(row, 2).text())
         print(clicked_task_id)
         pub_path, pub_list = self.task_info.get_pub_files(clicked_task_id)
-        self.version_file_data('pub', pub_path, pub_list)
+        self.version_file_data('PUB', pub_path, pub_list)
 
         work_path , work_list = self.task_info.get_work_files(clicked_task_id)
-        self.version_file_data('work', work_path, work_list)
+        self.version_file_data('WORK', work_path, work_list)
 
         prev_task_data, current_task_data = self.task_info.on_click_task(clicked_task_id)
         prev_task_id = prev_task_data['id']
@@ -753,6 +840,7 @@ class UI(QMainWindow):
                 self.resize(1100, 800)  # 메인 화면 크기 조정
                 self.setCentralWidget(self.setup_layout()) # 로그인 창을 메인화면으로 변경
                 self.center_window()
+
         else: # 이름과 이메일에 값이 없을 때
             popup = QMessageBox()
             popup.setIcon(QMessageBox.Warning)

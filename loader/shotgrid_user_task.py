@@ -339,9 +339,9 @@ if __name__ == "__main__":
     name = "장순우"
 
     user.is_validate(email, name)
-    user_id = user.get_userid()
+    # user_id = user.get_userid()
     print(f"user info : {user.name} | {user.email} | {user.id} | {user.dept} | {user.pos}")
-    task.get_user_task(user_id)
+    task.get_user_task(user.id)
 
     for task_id, value in task.task_dict.items() :
         task.get_pub_files(task_id)
