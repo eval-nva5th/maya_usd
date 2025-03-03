@@ -8,3 +8,7 @@
 *.mov
 
 loader/__pycache__/
+
+loader/data/__pycache__/
+loader/ui/__pycache__/
+loader/event/__pycache__/

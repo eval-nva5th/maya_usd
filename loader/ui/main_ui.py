@@ -1,17 +1,17 @@
 try :
-    from PySide6.QtWidgets import QWidget, QHBoxLayout, QSizePolicy
+    from PySide6.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QApplication
     from PySide6.QtWidgets import QVBoxLayout, QLabel, QMainWindow
     from PySide6.QtCore import Qt
 except ImportError:
     try:
-        from PySide2.QtWidgets import QWidget, QHBoxLayout, QSizePolicy
+        from PySide2.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QApplication
         from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow
         from PySide2.QtCore import Qt
         import maya.cmds as cmds
     except ImportError:
         raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
-from data import previous_get_data, login_data
-from ui import make_task_table, make_file_table
+from data import previous_get_data
+
 import data
 
 class MainView(QMainWindow):
@@ -24,18 +24,19 @@ class MainView(QMainWindow):
         central_widget = QWidget()
         layout = QVBoxLayout(central_widget)
 
-        self.setCentralWidget(central_widget)  # QMainWindow의 중앙 위젯 설정
+        # self.setCentralWidget(central_widget)  # QMainWindow의 중앙 위젯 설정
 
     def setup_layout(self): ####################################################### 수정 진행
         """
         레이아웃 세팅
         """
-        
+        from ui import make_task_table, make_file_table
         # 왼쪽 Task Table UI 생성
         task_container = make_task_table()
         task_container.setMinimumWidth(570)
         task_container.setMaximumWidth(570)  # TASK 최소 너비 지정, 안하면 너무 작아짐.
         task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 가로/세로 확장 허용
+
         # WORK 버전 UI 생성
         work_container = make_file_table("WORK")
         work_label = QLabel("WORK")
@@ -48,10 +49,10 @@ class MainView(QMainWindow):
         pub_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         # # PREVIOUS BLAST UI 생성
         previous_container = previous_get_data()
-
+        
         widget = QWidget()
         layout = QHBoxLayout(widget)
-
+        
         # # 유저 레이아웃
         user_layout = QHBoxLayout()
         none_label = QLabel()
@@ -76,3 +77,10 @@ class MainView(QMainWindow):
         layout.addLayout(right_layout, 2)
 
         return widget
+    
+    def center_window(self):
+        frame_geometry = self.frameGeometry()  # 창의 프레임 가져오기
+        screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
+        screen_geometry = screen.availableGeometry().center()  # 화면의 중앙 좌표
+        frame_geometry.moveCenter(screen_geometry)  # 창의 중심을 화면 중심으로 이동
+        self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동

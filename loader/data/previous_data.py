@@ -14,6 +14,66 @@ except ImportError:
         import maya.cmds as cmds
     except ImportError:
         raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
+    
+def update_prev_work(self, prev_task_data):
+    if prev_task_data['id'] != "None":
+        prev_task_id = prev_task_data['id']
+        prev_task_name = prev_task_data['task_name']
+        prev_task_assignee = prev_task_data['assignees']
+        prev_task_reviewers = prev_task_data['reviewers']
+        prev_task_status = prev_task_data['status']
+        prev_task_step = prev_task_data['step']
+        prev_task_comment = prev_task_data['comment']
+    else :
+        prev_task_id = "No data"
+        prev_task_name = "No data"
+        prev_task_assignee = "No data"
+        prev_task_reviewers = "No data"
+        prev_task_status = "fin"
+        prev_task_step = "No data"
+        prev_task_comment = "No data for previous work"
+
+    # 테이블 업데이트
+    self.dept_name.setText(prev_task_step)
+    self.user_name.setText(prev_task_assignee)
+    self.reviewer_text.setText(prev_task_reviewers)
+    self.comment_text.setText(f'" {prev_task_comment} "')
+
+    # status color update
+    for k, v in self.color_map.items() :
+        if prev_task_status == k :
+            status_color = v
+    
+    status_pixmap = QPixmap(10, 10)  # 작은 원 크기 설정
+    status_pixmap.fill(QColor("transparent"))  # 배경 투명
+    painter = QPainter(status_pixmap)
+    painter.setBrush(QColor(status_color))  # 빨간색 (Hex 코드 사용 가능)
+    painter.setPen(QColor(status_color))  # 테두리도 빨간색
+    painter.drawEllipse(0, 0, 10, 10)  # (x, y, width, height) 원 그리기
+    painter.end()
+
+    # self.state_image.setPixmap(status_pixmap)
+
+    # 기존 위젯 제거 후 새로 추가
+    status_widget = QWidget()
+    status_layout = QHBoxLayout(status_widget)
+    status_layout.setContentsMargins(0, 0, 0, 0)
+    status_layout.setSpacing(2)
+
+    # 상태 아이콘 QLabel
+    status_icon_label = QLabel()
+    status_icon_label.setPixmap(status_pixmap)
+    status_icon_label.setFixedSize(status_pixmap.size())  # 아이콘 크기 고정
+
+    # 상태 텍스트 QLabel
+    status_text_label = QLabel(prev_task_status)
+
+    # 레이아웃에 아이콘과 텍스트 추가
+    status_layout.addWidget(status_icon_label)
+    status_layout.addWidget(status_text_label)
+
+    # 기존 셀 위젯 제거 후 새 위젯 설정
+    self.info_table.setCellWidget(3, 2, status_widget)
 
 
 def previous_get_data(): #############################################순우work
