@@ -1,14 +1,4 @@
-try :
-    from PySide6.QtWidgets import QLineEdit, QPushButton, QDialog
-    from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QToolButton
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QLineEdit, QPushButton, QDialog
-        from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QToolButton
-        import maya.cmds as cmds
-    except ImportError:
-        raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
-from shotgrid_user_task import UserInfo, TaskInfo
+from PySide6.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
 
 class CustomDialog(QDialog):
     def __init__(self, full_path, file_name):

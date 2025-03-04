@@ -1,18 +1,7 @@
-try :
-    from PySide6.QtWidgets import  QLabel
-    from PySide6.QtGui import QPixmap, QImage
-    from PySide6.QtCore import Qt, QTimer
-except ImportError:
-    try:
-        from PySide2.QtWidgets import  QLabel
-        from PySide2.QtGui import QPixmap, QImage
-        from PySide2.QtCore import Qt, QTimer
-        import maya.cmds as cmds
-    except ImportError:
-        raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
+from PySide6.QtWidgets import QLabel
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QPixmap, QImage
 import cv2
-import numpy as np
-import sys
 
 class VideoPlayer(QLabel):
     """
