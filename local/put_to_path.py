@@ -7,15 +7,16 @@ def put_into_path():
     app = QApplication([])
     file_dialog = QFileDialog()
     file_dialog.setFileMode(QFileDialog.ExistingFile)
-    file_dialog.setDirectory("/nas/eval/승연 테스트용") 
+    file_dialog.setDirectory("/nas/sy_test_folder/encoding_trial") 
     
     if file_dialog.exec_():
         file_name = file_dialog.selectedFiles()[0]
 
         root_path = "/nas/eval/show"
-        project_name = input("project name : ")
-
-        set_type = input("work type (assets = 1, seq = 2) : ")
+        project_name = "eval"
+        #project_name = input("project name : ")
+        set_type = "1"
+        #set_type = input("work type (assets = 1, seq = 2) : ")
 
         if set_type == "1":
             set_type_str = "assets"
@@ -38,10 +39,16 @@ def put_into_path():
             elif asset_type == "4":
                 asset_type = "environment"
 
-            path = f"{root_path}/{project_name}/{set_type_str}/{asset_type}/{asset_name}/{task_type}/{work_type}/maya/scenes/"
+            path = f"{root_path}/{project_name}/{set_type_str}/{asset_type}/{asset_name}/{task_type}/{work_type}/maya/data/"
+            #print(path)
 
             if not os.path.exists(path):
                 os.makedirs(path)
+
+            destination_file = os.path.join(path, os.path.basename(file_name))
+            shutil.copy2(file_name, destination_file)
+                
+            print(f"옮겨짐 {destination_file}")
 
         elif set_type == "2":
             raw, _ = os.path.splitext(os.path.basename(file_name))
@@ -52,19 +59,20 @@ def put_into_path():
             task_type = splited[2]
             #ver = splited[3]
             
-            work_type = "pub"
-            path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/scenes/"
+            work_types = ["pub"]
+            for work_type in work_types :
+                path = f"{root_path}/{project_name}/{set_type_str}/{seq_name}/{shot_name}/{task_type}/{work_type}/maya/data/"
 
-            if not os.path.exists(path):
-                os.makedirs(path)
+                if not os.path.exists(path):
+                    os.makedirs(path)
 
-        destination_file = os.path.join(path, os.path.basename(file_name))
-        shutil.copy2(file_name, destination_file)
-        
-        print(f"옮겨짐 {destination_file}")
+                destination_file = os.path.join(path, os.path.basename(file_name))
+                shutil.copy2(file_name, destination_file)
+                
+                print(f"옮겨짐 {destination_file}")
     
-    else:
-        print("무언가문제가잇음")
+        else:
+            print("무언가문제가잇음")
 
 # 함수 실행
 if __name__ == "__main__":
