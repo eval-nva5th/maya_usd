@@ -14,8 +14,9 @@ except ImportError:
         import maya.cmds as cmds
     except ImportError:
         raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
+import data
     
-def update_prev_work(self, prev_task_data):
+def update_prev_work(prev_task_data):
     if prev_task_data['id'] != "None":
         prev_task_id = prev_task_data['id']
         prev_task_name = prev_task_data['task_name']
@@ -34,13 +35,15 @@ def update_prev_work(self, prev_task_data):
         prev_task_comment = "No data for previous work"
 
     # 테이블 업데이트
-    self.dept_name.setText(prev_task_step)
-    self.user_name.setText(prev_task_assignee)
-    self.reviewer_text.setText(prev_task_reviewers)
-    self.comment_text.setText(f'" {prev_task_comment} "')
+    data.dept_name.setText(prev_task_step)
+    data.user_name.setText(prev_task_assignee)
+    data.reviewer_text.setText(prev_task_reviewers)
+    print (data.comment_text)
+    data.comment_text.setText(f'" {prev_task_comment} "')
 
     # status color update
-    for k, v in self.color_map.items() :
+    color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"} # 데이터로 빼야함.
+    for k, v in color_map.items() :
         if prev_task_status == k :
             status_color = v
     
@@ -52,7 +55,7 @@ def update_prev_work(self, prev_task_data):
     painter.drawEllipse(0, 0, 10, 10)  # (x, y, width, height) 원 그리기
     painter.end()
 
-    # self.state_image.setPixmap(status_pixmap)
+    # state_image.setPixmap(status_pixmap)
 
     # 기존 위젯 제거 후 새로 추가
     status_widget = QWidget()
@@ -73,8 +76,7 @@ def update_prev_work(self, prev_task_data):
     status_layout.addWidget(status_text_label)
 
     # 기존 셀 위젯 제거 후 새 위젯 설정
-    self.info_table.setCellWidget(3, 2, status_widget)
-
+    data.info_table.setCellWidget(3, 2, status_widget)
 
 def previous_get_data(): #############################################순우work
     """
@@ -118,25 +120,25 @@ def previous_work_item(user, pb, status_color, status_text, cmt_txt):
         previous_work.setStyleSheet("font-weight: bold;")
 
         # Prev Work 정보 테이블
-        info_table = QTableWidget(4, 3)
-        info_table.verticalHeader().setVisible(False)  # 번호(인덱스) 숨기기
-        info_table.horizontalHeader().setVisible(False)  # 가로 헤더 숨기기
-        info_table.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)  # 크기 조정 허용
-        info_table.setMinimumHeight(info_table.sizeHint().height())  # 최소 높이 조정
-        info_table.setMaximumHeight(info_table.sizeHint().height())  # 최대 높이도 맞춤
-        info_table.resizeRowsToContents()
-        info_table.resizeColumnsToContents()
-        info_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        info_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        info_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-        info_table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
-        info_table.setSelectionMode(QAbstractItemView.NoSelection)  # 선택 불가
-        info_table.setShowGrid(False)
+        data.info_table = QTableWidget(4, 3)
+        data.info_table.verticalHeader().setVisible(False)  # 번호(인덱스) 숨기기
+        data.info_table.horizontalHeader().setVisible(False)  # 가로 헤더 숨기기
+        data.info_table.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)  # 크기 조정 허용
+        data.info_table.setMinimumHeight(data.info_table.sizeHint().height())  # 최소 높이 조정
+        data.info_table.setMaximumHeight(data.info_table.sizeHint().height())  # 최대 높이도 맞춤
+        data.info_table.resizeRowsToContents()
+        data.info_table.resizeColumnsToContents()
+        data.info_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        data.info_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        data.info_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        data.info_table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
+        data.info_table.setSelectionMode(QAbstractItemView.NoSelection)  # 선택 불가
+        data.info_table.setShowGrid(False)
 
         # 강제로 높이를 내부 아이템 크기에 맞춤
-        info_table.setFixedHeight(info_table.verticalHeader().length() + 16)
+        data.info_table.setFixedHeight(data.info_table.verticalHeader().length() + 16)
 
-        info_table.setStyleSheet("""
+        data.info_table.setStyleSheet("""
             QTableWidget {
                 border: none;
                 background: transparent;
@@ -151,20 +153,20 @@ def previous_work_item(user, pb, status_color, status_text, cmt_txt):
         labels = ["Dept", "Assignee", "Reviewer", "Status"]
 
         for row, label in enumerate(labels):
-            info_table.setItem(row, 0, QTableWidgetItem(label))  # 0열 (항목명) 추가
+            data.info_table.setItem(row, 0, QTableWidgetItem(label))  # 0열 (항목명) 추가
 
             item = QTableWidgetItem(":")  # 1열 (콜론 `:`) 아이템 생성
             item.setTextAlignment(Qt.AlignCenter)  # 가운데 정렬 적용
-            info_table.setItem(row, 1, item)  # 1열에 아이템 추가
+            data.info_table.setItem(row, 1, item)  # 1열에 아이템 추가
 
-        dept_name = QTableWidgetItem("No data")
-        user_name = QTableWidgetItem(user)
-        reviewer_text = QTableWidgetItem("Not Assigned")
+        data.dept_name = QTableWidgetItem("No data")
+        data.user_name = QTableWidgetItem(user)
+        data.reviewer_text = QTableWidgetItem("Not Assigned")
         
-        info_table.setItem(0, 2, dept_name)   # Dept
-        info_table.setItem(1, 2, user_name)  # Assignee
-        info_table.setItem(2, 2, reviewer_text)  # Reviewer
-        # info_table.setItem(3, 2, state_text)  # Status
+        data.info_table.setItem(0, 2, data.dept_name)   # Dept
+        data.info_table.setItem(1, 2, data.user_name)  # Assignee
+        data.info_table.setItem(2, 2, data.reviewer_text)  # Reviewer
+        # data.info_table.setItem(3, 2, state_text)  # Status
 
         # COMMENT 영역
         comment_label = QLabel("Comment  :")
@@ -173,10 +175,10 @@ def previous_work_item(user, pb, status_color, status_text, cmt_txt):
         comment_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # 가로/세로 모두 텍스트에 맞춤
         comment_label.adjustSize()  # 크기를 텍스트에 딱 맞게 조정
 
-        comment_text = QLabel(f'" {cmt_txt} "')
-        comment_text.setStyleSheet("padding-top: 2px;padding-left: 1px;")
-        comment_text.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        comment_text.setWordWrap(True)
+        data.comment_text = QLabel(f'" {cmt_txt} "')
+        data.comment_text.setStyleSheet("padding-top: 2px;padding-left: 1px;")
+        data.comment_text.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        data.comment_text.setWordWrap(True)
 
         state_image = QLabel(status_color)      
         # state_text = QLabel(status_text)  
@@ -213,14 +215,14 @@ def previous_work_item(user, pb, status_color, status_text, cmt_txt):
         status_layout.addWidget(status_icon_label)
         status_layout.addWidget(status_text_label)
 
-        info_table.setCellWidget(3, 2, status_wdidget)
+        data.info_table.setCellWidget(3, 2, status_wdidget)
 
         info_layout = QVBoxLayout()
         info_layout.setSpacing(0)
         # info_layout.addWidget(previous_work)
-        info_layout.addWidget(info_table)
+        info_layout.addWidget(data.info_table)
         info_layout.addWidget(comment_label)
-        info_layout.addWidget(comment_text)
+        info_layout.addWidget(data.comment_text)
 
         # PB 레이아웃
         pre_layout = QHBoxLayout()

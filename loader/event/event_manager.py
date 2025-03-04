@@ -9,8 +9,8 @@ except ImportError:
 import data
 from shotgrid_user_task import UserInfo, TaskInfo
 from ui.main_ui import MainView
-# from data import update_prev_work
-# from dialog import CustomDialog
+from .dialog import CustomDialog
+
 def on_sort_changed():
     """
     콤보박스 선택 변경 시 정렬 수행
@@ -61,7 +61,6 @@ def search_task():
                     break
 
             data.task_table.setRowHidden(row, not match)  # 일치하지 않으면 숨김
-    # search_input.clear()
 
 def on_work_cell_clicked(row, col, item, full_path) :
     # item과 관련된 작업을 처리
@@ -80,36 +79,18 @@ def on_cell_clicked(row, column):
     # 테스크 테이블 선택시 진행되는 함수
     clicked_task_id = int(data.task_table.item(row, 2).text())
     print (clicked_task_id)
-    # pub_path, pub_list = data.task_info.get_pub_files(clicked_task_id)
-    # data.version_file_data('PUB', pub_path, pub_list)
+    pub_path, pub_list = data.task_info.get_pub_files(clicked_task_id)
+    data.version_file_data('PUB', pub_path, pub_list)
 
-    # work_path , work_list = TaskInfo.get_work_files(clicked_task_id)
-    # print('get_work_files', work_path , work_list)
-    # data.version_file_data('WORK', work_path, work_list)
+    work_path , work_list = data.task_info.get_work_files(clicked_task_id)
+    print('get_work_files', work_path , work_list)
+    data.version_file_data('WORK', work_path, work_list)
 
-    # prev_task_data, current_task_data = TaskInfo.on_click_task(clicked_task_id)
-    # print('prev_task_data', prev_task_data)
-    # prev_task_id = prev_task_data['id']
-    # print('prev_task_id',prev_task_id)
-    # update_prev_work(prev_task_data)
-
-    # print(f"현재 창 크기 - 너비: {width()}px, 높이: {height()}px")
-
-    # # Task container 크기 출력
-    # if hasattr('task_container'):
-    #     print(f"Task Container 크기 - 너비: {task_container.width()}px, 높이: {task_container.height()}px")
-    # else:
-    #     print("Task Container가 초기화되지 않았습니다.")
-
-    # # Right container 크기 출력
-    # if hasattr('right_layout'):
-    #     right_container = right_layout.parentWidget()  # 부모 위젯 가져오기
-    #     if right_container:
-    #         print(f"Right Container 크기 - 너비: {right_container.width()}px, 높이: {right_container.height()}px")
-    #     else:
-    #         print("Right Container의 부모 위젯이 없습니다.")
-    # else:
-    #     print("Right Layout이 초기화되지 않았습니다.")
+    prev_task_data, current_task_data = data.task_info.on_click_task(clicked_task_id)
+    print('prev_task_data', prev_task_data)
+    prev_task_id = prev_task_data['id']
+    print('prev_task_id',prev_task_id)
+    data.update_prev_work(prev_task_data)
 
 def on_login_click():
     """

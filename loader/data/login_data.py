@@ -8,6 +8,16 @@ task_info = "" # task
 task_data_dict = []
 
 loginView = ""
-search_input = ""
 task_table = ""
+work_table = ""
+pub_table = ""
+info_table = ""
+task_container = ""
+right_layout = ""
+
+search_input = ""
 sort_combo = ""
+dept_name = ""
+user_name = ""
+reviewer_text = ""
+comment_text = ""

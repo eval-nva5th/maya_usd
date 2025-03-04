@@ -11,13 +11,13 @@ except ImportError:
     except ImportError:
         raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
 from data import previous_get_data
-
 import data
 
 class MainView(QMainWindow):
     def __init__(self):
         super().__init__()
-
+        
+        self.setFixedSize(1100, 800)
         self.setWindowTitle("EVAL_LOADER")
 
         # 중앙 위젯 설정

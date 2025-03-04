@@ -89,11 +89,11 @@ def make_file_table(version_type):
     layout = QVBoxLayout(widget)
     print ({f"version_type : {version_type}"})
     if version_type == "PUB":
-        pub_table = QTableWidget(0, 3)
-        table = pub_table  # Assign to pub_table
+        data.pub_table = QTableWidget(0, 3)
+        table = data.pub_table  # Assign to pub_table
     elif version_type == "WORK":
-        work_table = QTableWidget(0, 3)
-        table = work_table  # Assign to work_table
+        data.work_table = QTableWidget(0, 3)
+        table = data.work_table  # Assign to work_table
         
     table.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
     table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
@@ -109,6 +109,5 @@ def make_file_table(version_type):
 
     file_path = ""
     file_list = ["NULL"]
-    # version_file_data(version_type, file_path, file_list)
 
     return widget  # QWidget 반환

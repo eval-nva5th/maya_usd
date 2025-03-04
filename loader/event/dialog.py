@@ -13,22 +13,6 @@ from shotgrid_user_task import UserInfo, TaskInfo
 class CustomDialog(QDialog):
     def __init__(self, full_path, file_name):
         super().__init__()
-        sg_url = "https://hi.shotgrid.autodesk.com/"
-        script_name = "Admin_SY"
-        api_key = "kbuilvikxtf5v^bfrivDgqhxh"
-        self.user = UserInfo(sg_url, script_name, api_key)
-        self.user_name = ""
-        self.task_info = TaskInfo(sg_url, script_name, api_key)
-        self.prefix_path = "/nas/eval/show"
-
-        self.task_data_dict = []
-        
-        super().__init__()
-        self.setWindowTitle("EVAL_LOADER")
-        self.center_window()
-
-        self.login_window = self.login_ui()
-        self.setCentralWidget(self.login_window)
 
         # Set up the dialog layout
         # Create two LineEdits
