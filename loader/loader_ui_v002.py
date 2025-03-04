@@ -151,7 +151,7 @@ class UI(QMainWindow):
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
-
+ 
     def setup_layout(self):
         """
         레이아웃 세팅
