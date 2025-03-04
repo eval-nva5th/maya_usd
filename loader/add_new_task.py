@@ -1,14 +1,13 @@
-# from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox, QMainWindow
-
 from pxr import Usd, Sdf, Kind
+import maya.cmds as cmds
 import os
 import re
-from shotgun_api3 import Shotgun
+# from shotgun_api3 import Shotgun
 
 # 테스크가 할당되었지만 선수작업자가 없어서 본인이 처음 작업일때 사용하는 클래스.
 class AssetShotCreator:
     def __init__(self):
-        self.root_directory = '/Users/junsu/Desktop'
+        self.root_directory = '/nas/show/eval'
 
     # 할당된 asset task가 존재할 때, task를 기반으로 local에 directory, dept usd파일을 생성해주는 함수.
     def create_asset_stage(self, project_name, asset_name, asset_type, dept): 
@@ -42,6 +41,15 @@ class AssetShotCreator:
                 usd_stage.SetDefaultPrim(usd_prim_type)
                 usd_stage.GetRootLayer().Save()
                 print("sublayer가 생성되었습니다")
+
+        if not cmds.about(batch=True):
+            usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+            if not usd_nodes:
+                # 없다면 새 노드 생성 (새 USD Stage 생성)
+                proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+                cmds.mayaUsdLayerEditor(proxy_node, edit=True, addSubLayer=usd_file_path)
+
+
         else:
             print("선수작업이 있는 dept 입니다. 생성할 수 없습니다.")
 
@@ -76,6 +84,13 @@ class AssetShotCreator:
                 usd_stage.SetDefaultPrim(usd_prim_type)
                 usd_stage.GetRootLayer().Save()
                 print("sublayer가 생성되었습니다")
+        if not cmds.about(batch=True):
+            usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+            if not usd_nodes:
+                # 없다면 새 노드 생성 (새 USD Stage 생성)
+                proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+                cmds.mayaUsdLayerEditor(proxy_node, edit=True, addSubLayer=usd_file_path)
+
         else:
             print("선수작업이 있는 dept 입니다. 생성할 수 없습니다.")
 
@@ -134,18 +149,21 @@ class USDReferenceLoader:
                     usd_reference_path = os.path.join(model_pub_path, last_model_version[1])
                     # 상대경로로 바꾼다.
                     relative_usd_reference_path = os.path.relpath(usd_reference_path, os.path.dirname(usd_file_path))
-                    # lookdev or rig의 usd에 model 파일을 Reference로 추가
+                    # lookdev or rig의 usd를 열어준다.
                     department_usd_stage = Usd.Stage.Open(usd_file_path)
+                    # reference usd파일의 prim type을 그대로 가져온다.
                     department_prim = department_usd_stage.GetPrimAtPath(f"/{asset_name}_{dept}")
-                    # Prim이 없으면 생성
+                    # 만약 Prim type이 없으면 생성
                     if not department_prim:
                         department_prim = department_usd_stage.DefinePrim(f"/{asset_name}_{dept}", "Xform")
                     department_prim.GetReferences().AddReference(relative_usd_reference_path)
                     department_usd_stage.GetRootLayer().Save()
                     print(f"{department_usd_stage}을 reference로 불러왔으며, {department_prim}로 추가하였습니다.")
+
         else:
             print("해당 dept는 지원하지 않습니다.")
 
+    # shot 선수 작업자가 있다면, 그 usd를 reference로 불러오는 함수.
     def load_shot_reference(self, project_name, shot_name, shot_num, dept): 
         #혹시나 생길 공백 오류를 예외처리
         shot_name = shot_name.strip()
@@ -176,6 +194,12 @@ class USDReferenceLoader:
             usd_stage.SetDefaultPrim(usd_prim_type)
             usd_stage.GetRootLayer().Save()
             print(f"{usd_stage}을 생성하였으며, {usd_prim_type}로 추가하였습니다.")
+            if not cmds.about(batch=True):
+                try:
+                    cmds.file(usd_file_path, i=True, type="USD Import")
+                    print(f"{usd_file_path} 파일을 정상적으로 로드했습니다.")
+                except Exception as e:
+                    print(f"Maya에서 USD를 로드하는 중 오류 발생: {e}")
 
         department_usd_stage = Usd.Stage.Open(usd_file_path)
 
@@ -228,9 +252,8 @@ class USDReferenceLoader:
             print("해당 dept는 지원하지 않습니다.")
 
 
-create_task = AssetShotCreator()
-create_task.create_asset_stage("IronMan_4", "IronMan", "character", "lookdev")
-
+# y = AssetShotCreator()
+# y.create_asset_stage("IronMan_4", "IronMan", "character", "model")
 #create_task.create_shot_stage("IronMan_4", "OPN", "OPN_0010", "layout")
 
 # get_front_task = USDReferenceLoader()
