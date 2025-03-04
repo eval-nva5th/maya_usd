@@ -1,77 +1,98 @@
-# from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox, QMainWindow
-
 from pxr import Usd, Sdf, Kind
+import maya.cmds as cmds
 import os
 import re
-from shotgun_api3 import Shotgun
+# from shotgun_api3 import Shotgun
 
 # 테스크가 할당되었지만 선수작업자가 없어서 본인이 처음 작업일때 사용하는 클래스.
 class AssetShotCreator:
     def __init__(self):
-        self.root_directory = '/nas/eval/show'
+        self.root_directory = '/nas/show/eval'
 
     # 할당된 asset task가 존재할 때, task를 기반으로 local에 directory, dept usd파일을 생성해주는 함수.
     def create_asset_stage(self, project_name, asset_name, asset_type, dept): 
-        #혹시나 생길 공백 오류를 예외처리
-        asset_name = asset_name.strip()
-        # asset들이 들어있는 경로 패스
-        asset_root_path = os.path.join(self.root_directory, project_name, "assets", asset_type, asset_name)
-        # asset_name으로 된 파일 자동생성.
-        os.makedirs(asset_root_path, exist_ok=True)
-        # 현재 status의 상태, pub과 work파일을 만들어준다.
-        workflows = ["pub", "work"]
-        work_directory = None
-        for status in workflows:
-            status_folder_path = os.path.join(asset_root_path, dept, status, "maya", "scenes")
-            os.makedirs(status_folder_path, exist_ok=True)
-            # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
-            if status == "work":
-                work_directory = status_folder_path
+        if dept == "model":
+            #혹시나 생길 공백 오류를 예외처리
+            asset_name = asset_name.strip()
+            # asset들이 들어있는 경로 패스
+            asset_root_path = os.path.join(self.root_directory, project_name, "assets", asset_type, asset_name)
+            # asset_name으로 된 파일 자동생성.
+            os.makedirs(asset_root_path, exist_ok=True)
+            # 현재 status의 상태, pub과 work파일을 만들어준다.
+            workflows = ["pub", "work"]
+            work_directory = None
+            for status in workflows:
+                status_folder_path = os.path.join(asset_root_path, dept, status, "maya", "scenes")
+                os.makedirs(status_folder_path, exist_ok=True)
+                # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
+                if status == "work":
+                    work_directory = status_folder_path
 
-        # 해당 dept의 usda 파일을 만들어준다.
-        usd_file_name = f"{asset_name}_{dept}_v001.usda"
-        # 새로운 작업자이니, work파일 안에 생성.
-        usd_file_path = os.path.join(work_directory, usd_file_name)
+            # 해당 dept의 usda 파일을 만들어준다.
+            usd_file_name = f"{asset_name}_{dept}_v001.usda"
+            # 새로운 작업자이니, work파일 안에 생성.
+            usd_file_path = os.path.join(work_directory, usd_file_name)
 
-        # 만약 usd_file_name이 존재하지 않는다면, 생성
-        if not os.path.exists(usd_file_path):
-            usd_stage = Usd.Stage.CreateNew(usd_file_path)
-            # usd file의 prim을 정해준다.
-            usd_prim_type = usd_stage.DefinePrim(f"/{asset_name}_{dept}", "Xform")
-            usd_stage.SetDefaultPrim(usd_prim_type)
-            usd_stage.GetRootLayer().Save()
-            print("sublayer가 생성되었습니다")
+            # 만약 usd_file_name이 존재하지 않는다면, 생성
+            if not os.path.exists(usd_file_path):
+                usd_stage = Usd.Stage.CreateNew(usd_file_path)
+                # usd file의 prim을 정해준다.
+                usd_prim_type = usd_stage.DefinePrim(f"/{asset_name}_{dept}", "Xform")
+                usd_stage.SetDefaultPrim(usd_prim_type)
+                usd_stage.GetRootLayer().Save()
+                print("sublayer가 생성되었습니다")
+
+        if not cmds.about(batch=True):
+            usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+            if not usd_nodes:
+                # 없다면 새 노드 생성 (새 USD Stage 생성)
+                proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+                cmds.mayaUsdLayerEditor(proxy_node, edit=True, addSubLayer=usd_file_path)
+
+
+        else:
+            print("선수작업이 있는 dept 입니다. 생성할 수 없습니다.")
 
 # 할당된 shot task가 존재할 때, task를 기반으로 local에 directory, dept usd파일을 생성해주는 함수.
     def create_shot_stage(self, project_name, shot_name, shot_num, dept): 
-        #혹시나 생길 공백 오류를 예외처리
-        shot_name = shot_name.strip()
-        # shot들이 들어있는 경로 패스
-        shot_root_path = os.path.join(self.root_directory, project_name, "seq", shot_name, shot_num)
-        # shot_name으로 된 파일 자동생성.
-        os.makedirs(shot_root_path, exist_ok=True)
-        # 현재 status의 상태, pub과 work파일을 만들어준다.
-        workflows = ["pub", "work"]
-        work_directory = None
-        for status in workflows:
-            status_folder_path = os.path.join(shot_root_path, dept, status, "maya", "scenes")
-            os.makedirs(status_folder_path, exist_ok=True)
-            # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
-            if status == "work":
-                work_directory = status_folder_path
+        if dept == "layout":
+            #혹시나 생길 공백 오류를 예외처리
+            shot_name = shot_name.strip()
+            # shot들이 들어있는 경로 패스
+            shot_root_path = os.path.join(self.root_directory, project_name, "seq", shot_name, shot_num)
+            # shot_name으로 된 파일 자동생성.
+            os.makedirs(shot_root_path, exist_ok=True)
+            # 현재 status의 상태, pub과 work파일을 만들어준다.
+            workflows = ["pub", "work"]
+            work_directory = None
+            for status in workflows:
+                status_folder_path = os.path.join(shot_root_path, dept, status, "maya", "scenes")
+                os.makedirs(status_folder_path, exist_ok=True)
+                # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
+                if status == "work":
+                    work_directory = status_folder_path
 
-        # Root stage 안에 넣어줘야할 dept에 해당하는 usda파일 생성
-        usd_file_name = f"{shot_num}_{dept}_v001.usda"
-        # 새로운 작업자이니, work파일 안에 생성.
-        usd_file_path = os.path.join(work_directory, usd_file_name)
+            # Root stage 안에 넣어줘야할 dept에 해당하는 usda파일 생성
+            usd_file_name = f"{shot_num}_{dept}_v001.usda"
+            # 새로운 작업자이니, work파일 안에 생성.
+            usd_file_path = os.path.join(work_directory, usd_file_name)
 
-        # 만약 usd_file_name이 존재하지 않는다면, 생성
-        if not os.path.exists(usd_file_path):
-            usd_stage = Usd.Stage.CreateNew(usd_file_path)
-            usd_prim_type = usd_stage.DefinePrim(f"/{shot_name}_{dept}","Xform")
-            usd_stage.SetDefaultPrim(usd_prim_type)
-            usd_stage.GetRootLayer().Save()
-            print("sublayer가 생성되었습니다")
+            # 만약 usd_file_name이 존재하지 않는다면, 생성
+            if not os.path.exists(usd_file_path):
+                usd_stage = Usd.Stage.CreateNew(usd_file_path)
+                usd_prim_type = usd_stage.DefinePrim(f"/{shot_name}_{dept}","Xform")
+                usd_stage.SetDefaultPrim(usd_prim_type)
+                usd_stage.GetRootLayer().Save()
+                print("sublayer가 생성되었습니다")
+        if not cmds.about(batch=True):
+            usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+            if not usd_nodes:
+                # 없다면 새 노드 생성 (새 USD Stage 생성)
+                proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+                cmds.mayaUsdLayerEditor(proxy_node, edit=True, addSubLayer=usd_file_path)
+
+        else:
+            print("선수작업이 있는 dept 입니다. 생성할 수 없습니다.")
 
 class USDReferenceLoader:
     def __init__(self):
@@ -79,7 +100,7 @@ class USDReferenceLoader:
         self.root_directory = '/nas/eval/show'
 
 # asset 선수 작업자가 있다면, 그 usd를 reference로 불러오는 함수. ex)ironman_rig라면 ironman_model.usd 파일을 reference로 불러오기.
-    def load_model_reference(self, project_name, asset_name, asset_type, dept): 
+    def load_model_reference(self, project_name, asset_name, asset_type, dept):
         #혹시나 생길 공백 오류를 예외처리
         asset_name = asset_name.strip()
         # asset들이 들어있는 경로 패스
@@ -108,7 +129,7 @@ class USDReferenceLoader:
             usd_prim_type = usd_stage.DefinePrim(f"/{asset_name}_{dept}", "Xform")
             usd_stage.SetDefaultPrim(usd_prim_type)
             usd_stage.GetRootLayer().Save()
-            print("sublayer가 생성되었습니다")
+            print(f"{usd_file_name}가 생성되었습니다")
 
         # 만약 dept가 lookdev이거나 rig라면 기존의 modeling파일을 불러온다.
         if dept in ["lookdev", "rig"]:
@@ -128,15 +149,21 @@ class USDReferenceLoader:
                     usd_reference_path = os.path.join(model_pub_path, last_model_version[1])
                     # 상대경로로 바꾼다.
                     relative_usd_reference_path = os.path.relpath(usd_reference_path, os.path.dirname(usd_file_path))
-                    # lookdev or rig의 usd에 model 파일을 Reference로 추가
+                    # lookdev or rig의 usd를 열어준다.
                     department_usd_stage = Usd.Stage.Open(usd_file_path)
+                    # reference usd파일의 prim type을 그대로 가져온다.
                     department_prim = department_usd_stage.GetPrimAtPath(f"/{asset_name}_{dept}")
-                    # Prim이 없으면 생성
+                    # 만약 Prim type이 없으면 생성
                     if not department_prim:
                         department_prim = department_usd_stage.DefinePrim(f"/{asset_name}_{dept}", "Xform")
                     department_prim.GetReferences().AddReference(relative_usd_reference_path)
                     department_usd_stage.GetRootLayer().Save()
+                    print(f"{department_usd_stage}을 reference로 불러왔으며, {department_prim}로 추가하였습니다.")
 
+        else:
+            print("해당 dept는 지원하지 않습니다.")
+
+    # shot 선수 작업자가 있다면, 그 usd를 reference로 불러오는 함수.
     def load_shot_reference(self, project_name, shot_name, shot_num, dept): 
         #혹시나 생길 공백 오류를 예외처리
         shot_name = shot_name.strip()
@@ -166,6 +193,13 @@ class USDReferenceLoader:
             # Defaultprim을 설정해준다.
             usd_stage.SetDefaultPrim(usd_prim_type)
             usd_stage.GetRootLayer().Save()
+            print(f"{usd_stage}을 생성하였으며, {usd_prim_type}로 추가하였습니다.")
+            if not cmds.about(batch=True):
+                try:
+                    cmds.file(usd_file_path, i=True, type="USD Import")
+                    print(f"{usd_file_path} 파일을 정상적으로 로드했습니다.")
+                except Exception as e:
+                    print(f"Maya에서 USD를 로드하는 중 오류 발생: {e}")
 
         department_usd_stage = Usd.Stage.Open(usd_file_path)
 
@@ -178,6 +212,8 @@ class USDReferenceLoader:
                 if match:
                     version_number = int(match.group(1))
                     published_layouts.append((version_number,filename))
+                else:
+                    print("layout 선수작업이 존재하지 않습니다.")
             if  published_layouts:
                 last_version = sorted(published_layouts, key=lambda x:x[0], reverse=True)[0]
                 layout_referenced_usd_filepath = os.path.join(layout_pub_path, last_version[1])
@@ -187,6 +223,9 @@ class USDReferenceLoader:
                     department_prim = department_usd_stage.DefinePrim(f"/{shot_num}_{dept}", "Xform")
                 department_prim.GetReferences().AddReference(relative_layout_reference_path)
                 department_usd_stage.GetRootLayer().Save()
+                print(f"{department_usd_stage}을 reference로 불러왔으며, {department_prim}로 추가하였습니다.")
+        else:
+            print("해당 dept는 지원하지 않습니다.")
 
         #만약 dept가 light 경우, animation의 usd파일을 레퍼런스로 가져와야 한다.
         if dept == "light":
@@ -197,6 +236,8 @@ class USDReferenceLoader:
                 if match:
                     version_number = int(match.group(1))
                     published_animations.append((version_number,filename))
+                else:
+                    print("animation의 선수작업이 존재하지 않습니다.")
             if  published_animations:
                 last_version = sorted(published_animations, key=lambda x:x[0], reverse=True)[0]
                 animation_referenced_usd_filepath = os.path.join(animation_pub_path, last_version[1])
@@ -206,18 +247,19 @@ class USDReferenceLoader:
                     department_prim = department_usd_stage.DefinePrim(f"/{shot_num}_{dept}", "Xform")
                 department_prim.GetReferences().AddReference(relative_animation_reference_path)
                 department_usd_stage.GetRootLayer().Save()
+                print(f"{department_usd_stage}을 reference로 불러왔으며, {department_prim}로 추가하였습니다.")
+        else:
+            print("해당 dept는 지원하지 않습니다.")
 
 
-
-#create_task = AssetShotCreator()
-# create_task.create_asset_stage("IronMan_4", "IronMan", "character", "model")
-
+# y = AssetShotCreator()
+# y.create_asset_stage("IronMan_4", "IronMan", "character", "model")
 #create_task.create_shot_stage("IronMan_4", "OPN", "OPN_0010", "layout")
 
-get_front_task = USDReferenceLoader()
+# get_front_task = USDReferenceLoader()
 # get_front_task.load_model_reference("IronMan_4", "IronMan", "character", "lookdev")
 # get_front_task.load_model_reference("IronMan_4", "IronMan", "character", "rig")
-get_front_task.load_shot_reference("IronMan_4", "OPN", "OPN_0010", "light")
+# get_front_task.load_shot_reference("IronMan_4", "OPN", "OPN_0010", "light")
 
 
 

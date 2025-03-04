@@ -35,7 +35,6 @@ class VideoPlayer(QLabel):
         super().__init__()
         self.video_path = video_path
 
-
         self.setAlignment(Qt.AlignCenter)
         self.setText("Loading Video...")
 
@@ -143,7 +142,6 @@ class UI(QMainWindow):
         self.user_name = ""
         self.task_info = TaskInfo(sg_url, script_name, api_key)
         self.prefix_path = "/nas/eval/show"
-
 
         self.task_data_dict = []
         
@@ -623,13 +621,12 @@ class UI(QMainWindow):
             elif task_data['task_type'] == 'Asset' :
                 low_data = task_data['asset_name']
                 high_data = task_data['asset_categ']
-                thumb = f"/nas/eval/show/{proj_name}/asset/{high_data}/{low_data}/{step}/pub/maya/data/{low_data}_{step}_v001.jpg"
+                thumb = f"/nas/eval/show/{proj_name}/assets/{high_data}/{low_data}/{step}/pub/maya/data/{low_data}_{step}_v001.jpg"
                 
             for k, v in self.color_map.items() :
                 if status == k :
                     status_color = v
-
-            data_set = f"{low_data} | {high_data} | {proj_name}"
+            data_set = f"{proj_name} | {high_data} | {low_data}"
 
             new_dict = {
                 "task_id": task_id,
