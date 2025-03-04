@@ -8,8 +8,8 @@ try :
     import re
 except ImportError:
     try:
-        from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-        from PySide2.QtWidgets import QVBoxLayout, QLabel, QMessageBox, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+        from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox, QDialog
+        from PySide2.QtWidgets import QVBoxLayout, QLabel, QMessageBox, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy, QToolButton
         from PySide2.QtGui import QPixmap, QPainter, QColor, QImage, QFont
         from PySide2.QtWidgets import QHeaderView, QAbstractItemView
         from PySide2.QtCore import Qt, QTimer
