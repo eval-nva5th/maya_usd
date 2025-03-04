@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QComboBox
 
 import sys
 
+from event.event_handler import publish
 class PublisherDialog(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -66,7 +67,7 @@ class PublisherDialog(QMainWindow):
 
         # Event Handle
         cancel_btn.clicked.connect(self.close)
-        publish_btn.clicked.connect(self.publish)
+        publish_btn.clicked.connect(lambda: publish(self))
 
         # layout
         filepath_container.addWidget(filepath_label)
@@ -94,28 +95,6 @@ class PublisherDialog(QMainWindow):
         layout.addLayout(preview_container)
         layout.addLayout(button_container)
         central_widget.setLayout(layout)
-
-    def publish(self):
-        filename = self.filename_input.text().strip()
-        filepath = self.filepath_input.text().strip()
-        
-        if not filename or not filepath:
-            QMessageBox.critical(self, "Error", "File name or File path does not exist", QMessageBox.Ok)
-            return          
-
-        full_path = f"{filepath}{filename}"
-        
-        # 파일 저장 및 버전업 로직 작성
-        try:
-            print(f"{full_path}에 파일 저장 시도")
-            self.close()
-        except FileNotFoundError:
-            print("File path does not exist")
-        except PermissionError:
-            print("You do not have permission to save the file")
-        except Exception as e:
-            print(f"An unexpected error : {e}")
-
     
     def center_window(self):
         screen_geometry = self.screen().geometry()  # 현재 창이 표시되는 화면의 전체 크기

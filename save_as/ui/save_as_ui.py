@@ -1,10 +1,10 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton
 from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-from PySide6.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QHBoxLayout
 from PySide6.QtWidgets import QComboBox
 
 import sys
+from event.event_handler import open_file_browser, save_file_as
 
 class SaveAsDialog(QMainWindow):
     def __init__(self):
@@ -22,7 +22,6 @@ class SaveAsDialog(QMainWindow):
         filename_container = QHBoxLayout()
         self.filename_label = QLabel("File name:", self)
         self.filename_input = QLineEdit("file_name_input_v001",self)
-
         # 파일 경로 Label + LineEdit
         filepath_container = QHBoxLayout()
         self.filepath_label = QLabel("File path:", self)
@@ -51,8 +50,8 @@ class SaveAsDialog(QMainWindow):
         self.cancel_btn.setFixedSize(100, 30)
 
         # 이벤트 처리
-        self.browse_btn.clicked.connect(self.open_file_browser)
-        self.save_as_btn.clicked.connect(self.save_file_as)
+        self.browse_btn.clicked.connect(lambda: open_file_browser(self))
+        self.save_as_btn.clicked.connect(lambda: save_file_as(self))
         self.cancel_btn.clicked.connect(self.close)
 
         # 레이아웃에 위젯 추가
@@ -75,40 +74,6 @@ class SaveAsDialog(QMainWindow):
         layout.addLayout(filetype_container)
         layout.addLayout(button_container)
         central_widget.setLayout(layout)
-
-    def open_file_browser(self):
-        default_filename = self.filename_input.text().strip()
-        default_filepath = self.filepath_input.text() if self.filepath_input.text() else "/nas/eval/"
-
-        filepath, _ = QFileDialog.getSaveFileName(self, "Select File Path", f"{default_filepath}{default_filename}", "All Files (*)")
-        if filepath:
-            self.filepath_input.setText(filepath)
-
-    def save_file_as(self):
-        filename = self.filename_input.text().strip()
-        filepath = self.filepath_input.text().strip()
-        
-        if not filename or not filepath:
-            QMessageBox.critical(self, "Error", "File name or File path does not exist", QMessageBox.Ok)
-            return          
-
-        full_path = f"{filepath}{filename}"
-        
-        # 파일 저장 및 버전업 로직 작성
-        try:
-            print(f"{full_path}에 파일 저장 시도")
-            self.close()
-        except FileNotFoundError:
-            print("File path does not exist")
-        except PermissionError:
-            print("You do not have permission to save the file")
-        except Exception as e:
-            print(f"An unexpected error : {e}")
-
-    # def resizeEvent(self, event):
-    #     self.center_window()
-    #     super().resizeEvent(event)
-
     
     def center_window(self):
         screen_geometry = self.screen().geometry()  # 현재 창이 표시되는 화면의 전체 크기
@@ -121,9 +86,3 @@ class SaveAsDialog(QMainWindow):
         # 창 이동
         self.setGeometry(center_x, center_y, window_geometry.width(), window_geometry.height())        
         self.move(center_x, center_y)
-
-if __name__ == "__main__":
-    app = QApplication()
-    save_dialog = SaveAsDialog()
-    save_dialog.show()
-    sys.exit(app.exec())

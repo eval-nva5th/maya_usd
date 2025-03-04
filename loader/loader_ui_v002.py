@@ -151,7 +151,7 @@ class UI(QMainWindow):
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
- 
+
     def setup_layout(self):
         """
         레이아웃 세팅
@@ -740,7 +740,6 @@ class UI(QMainWindow):
         self.version_file_data('WORK', work_path, work_list)
 
         prev_task_data, current_task_data = self.task_info.on_click_task(clicked_task_id)
-        prev_task_id = prev_task_data['id']
 
         self.update_prev_work(prev_task_data)
 
