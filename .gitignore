@@ -6,6 +6,7 @@
 *.bmp
 *.mp4
 *.mov
+*.pyc
 
 loader/__pycache__/
 publisher/event/__pycache__/
