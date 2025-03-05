@@ -106,7 +106,7 @@ def version_file_data(ui_instance, version_type, file_path, file_list):
         if version_type == "WORK":
             ui_instance.work_table.setRowCount(0)
             
-            #ui_instance.work_table.cellClicked.connect(ui_instance.on_work_cell_clicked)
+            #ui_instance.work_table.cellClicked.connect(ui_instance.on_work_cell_click)
             for item in data:
                 ui_instance.file_table_item(ui_instance.work_table, *item)
 
