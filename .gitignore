@@ -13,3 +13,7 @@ publisher/ui/__pycache__/
 
 save_as/event/__pycache__/
 save_as/ui/__pycache__/
+
+loader/data/__pycache__/
+loader/ui/__pycache__/
+loader/event/__pycache__/

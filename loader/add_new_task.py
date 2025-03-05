@@ -126,6 +126,7 @@ class USDReferenceLoader:
             if status == "work":
                 work_directory = usd_folder_path
 
+        exr_list = ["usd", "usda", "usdc"]
         # 해당 dept의 usda 파일을 만들어준다.
         usd_file_name = f"{asset_name}_{dept}_v001.usda"
         # 새로운 작업자이니, work파일 안에 생성.
@@ -146,7 +147,7 @@ class USDReferenceLoader:
             if os.path.exists(model_pub_path):
                 published_models = []
                 for filename in os.listdir(model_pub_path):
-                    match = re.search(rf"{asset_name}_model_v(\d{{3}})\.usda", filename)
+                    match = re.search(rf"{asset_name}_model_v(\d{{3}})\.{exr_list}", filename)
                     if match:
                         version_number = int(match.group(1))
                         #만약 있다면, 그 파일순서와 파일 이름을 list에 넣어준다. sorted를 사용하기 위해 튜플로 가두었다.
@@ -198,7 +199,7 @@ class USDReferenceLoader:
             # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
             if status == "work":
                 work_directory = usd_folder_path
-
+        exr_list = ["usd", "usda", "usdc"]
         # 해당 dept의 usda 파일을 만들어준다.
         usd_file_name = f"{shot_num}_{dept}_v001.usda"
         # 새로운 작업자이니, work파일 안에 생성.
@@ -220,7 +221,7 @@ class USDReferenceLoader:
             layout_pub_path = os.path.join(shot_root_path, "layout", "pub", "usd")
             published_layouts = []
             for filename in os.listdir(layout_pub_path):
-                match = re.search(rf"{shot_num}_layout_v(\d{{3}})\.usda", filename)
+                match = re.search(rf"{shot_num}_layout_v(\d{{3}})\.{exr_list}", filename)
                 if match:
                     version_number = int(match.group(1))
                     published_layouts.append((version_number,filename))
@@ -256,7 +257,7 @@ class USDReferenceLoader:
             animation_pub_path = os.path.join(shot_root_path, "animation", "pub", "usd")
             published_animations = []
             for filename in os.listdir(animation_pub_path):
-                match = re.search(rf"{shot_num}_animation_v(\d{{3}})\.usda", filename)
+                match = re.search(rf"{shot_num}_animation_v(\d{{3}})\.{exr_list}", filename)
                 if match:
                     version_number = int(match.group(1))
                     published_animations.append((version_number,filename))
@@ -302,96 +303,3 @@ class LoadWork:
                 cmds.setAttr(f"{proxy_node}.filePath", usd_folder_path, type="string")
         else:
             print("maya file이 없습니다.")
-
-
-
-
-
-
-
-
-# x = LoadWork()
-# x.load_work("IronMan_4", "IronMan", "character", "model")
-
-# y = AssetShotCreator()
-# y.create_asset_stage("IronMan_4", "IronMan", "character", "model")
-#create_task.create_shot_stage("IronMan_4", "OPN", "OPN_0010", "layout")
-
-# get_front_task = USDReferenceLoader()
-# get_front_task.load_model_reference("IronMan_4", "IronMan", "character", "lookdev")
-# get_front_task.load_model_reference("IronMan_4", "IronMan", "character", "rig")
-# get_front_task.load_shot_reference("IronMan_4", "OPN", "OPN_0010", "light")
-
-
-
-
-#-----------------------------------------------------------------------------------------------
-#에셋 루트 만드는거 (추후에 퍼블리셔에서 사용할거)
-        # # asset_root_path에 asset_name의 root stage usda파일 생성 
-        # create_asset_root_usd = os.path.join(asset_root_path, f"{asset_name}.usda")
-        # # 기존 프로젝트 파일이 존재하면 로드, 없으면 새로 생성
-        # if os.path.exists(create_asset_root_usd):
-        #     new_asset_root_stage = Usd.Stage.Open(create_asset_root_usd)
-        #     print(f"{asset_name}.usda 가 존재합니다. 기존 파일을 로드하겠습니다.")
-        # else:
-        #     new_asset_root_stage = Usd.Stage.CreateNew(create_asset_root_usd)
-
-        # # 선택한 prim으로  Root stage에 생성이 됨. ex) def Xform "ironman"
-        # root_prim = new_asset_root_stage.DefinePrim(f"/{default_prim}", root_prim_type)
-        
-        # #상대경로로 변환
-        # relative_usd_file_path = os.path.relpath(usd_file_path, os.path.dirname(create_asset_root_usd))
-
-
-
-        # # Rootstage 에 Payload 로 불러올지 Reference로 불러올지 정하는 변수. (이것도 작업자가 선택할 수 있었으면 좋겠음)
-        # if payload:
-        #     root_prim.GetPayloads().AddPayload(relative_usd_file_path)
-        # else:
-        #     root_prim.GetReferences().AddReference(relative_usd_file_path)
-        # #Root stage 저장
-        # new_asset_root_stage.GetRootLayer().Save()
-        # print(f"usd 파일 생성 완료: {create_asset_root_usd}")
-
-
-        # # root stage에 생성 될 prim의 타입을 선택하는 변수 (콤보박스로 선탁할 수 있게 하면 좋겠음)
-        # root_prim_type = input("root stage에 생성 될 타입을 선택해주세요: (Xform/Scope/Mesh/Material): ").strip()
-        # #기본 값을 Xform으로 생성 후, 잘못된 선택을 했을 시에, 기본 값인 Xform으로 자동으로 선택
-        # if root_prim_type not in ["Xform", "Scope", "Mesh", "Material"]:
-        #     root_prim_type = "Xform"
-        #     print("root prim이 생성되었습니다")
-
-
-#샷 루트 만드는거 (추후에 퍼블리셔에서 사용할거)
-        # # shot_root_path에 asset_name의 root stage usda파일 생성 
-        # create_shot_root_usd = os.path.join(shot_root_path, f"{shot_num}.usda")
-        # # 기존 프로젝트 파일이 존재하면 로드, 없으면 새로 생성
-        # if os.path.exists(create_shot_root_usd):
-        #     new_shot_root_stage = Usd.Stage.Open(create_shot_root_usd)
-        #     print(f"{shot_name}.usda 가 존재합니다. 기존 파일을 로드하겠습니다.")
-        # else:
-        #     new_shot_root_stage = Usd.Stage.CreateNew(create_shot_root_usd) 
-
-
-
-        # # root stage에 생성 될 prim의 타입을 선택하는 변수 (콤보박스로 선탁할 수 있게 하면 좋겠음)
-        # root_prim_type = input("root stage에 생성 될 타입을 선택해주세요: (Xform/Scope/Mesh/Material): ").strip()
-        # #기본 값을 Xform으로 생성 후, 잘못된 선택을 했을 시에, 기본 값인 Xform으로 자동으로 선택
-        # if root_prim_type not in ["Xform", "Scope", "Mesh", "Material"]:
-        #     root_prim_type = "Xform"
-        #     print("root_prim이 생성되었습니다")
-
-        # # 선택한 prim으로  Root stage에 생성이 됨. ex) def Xform "ironman"
-        # root_prim = new_shot_root_stage.DefinePrim(f"/{default_prim}", root_prim_type)
-        
-        # #상대경로로 변환
-        # relative_usd_file_path = os.path.relpath(usd_file_path, os.path.dirname(create_shot_root_usd))
-
-        # # Rootstage 에 Payload 로 불러올지 Reference로 불러올지 정하기. (이것도 작업자가 선택할 수 있었으면 좋겠음)
-        # if payload:
-        #     root_prim.GetPayloads().AddPayload(relative_usd_file_path)
-        # else:
-        #     root_prim.GetReferences().AddReference(relative_usd_file_path)
-        # #Root stage 저장
-        # new_shot_root_stage.GetRootLayer().Save()
-        # print(f"usd 파일 생성 완료: {create_shot_root_usd}")
