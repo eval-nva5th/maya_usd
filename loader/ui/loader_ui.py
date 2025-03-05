@@ -293,7 +293,75 @@ class UI(QMainWindow):
         table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
         # print(edited_time)
 
+<<<<<<< Updated upstream:loader/ui/loader_ui.py
         table_widget.cellClicked.connect(lambda row, col : on_work_cell_clicked(row, col, table_widget.item(row,col), full_path))
+=======
+        table_widget.cellClicked.connect(lambda row, col : self.on_work_cell_clicked(row, col, table_widget.item(row,col), full_path))
+
+    def on_work_cell_clicked(self, row, col, item, full_path) :
+    # item과 관련된 작업을 처리
+        if item.text() ==  "Double Click for new work file" :
+            print("여기서 아이템 생성 시작")
+            print(full_path)
+            path_slice = full_path.split('/')
+            file_name =  f"{path_slice[7]}_{path_slice[8]}_v001"
+            dialog = CustomDialog(full_path, file_name)
+            dialog.exec()
+
+        else :
+            print(f"Row: {row}, Column: {col}, Item: {full_path}")
+            subprocess.run(["maya", "-file", full_path], check=True) 
+    def on_sort_changed(self):
+        """
+        콤보박스 선택 변경 시 정렬 수행
+        """
+        selected_option = self.sort_combo.currentText()
+
+        if selected_option == "ascending order":
+            ascending = True
+        elif selected_option == "descending order":
+            ascending = False
+        else:
+            return  # 정렬이 아닌 경우 종료
+
+        self.sort_table_by_due_date(self.task_table, ascending)
+
+    def sort_table_by_due_date(self, table_widget, ascending=True):
+        tuple_list = []
+        for index, data in enumerate(self.task_data_dict):
+            due_date = data["due_date"] 
+            data_index_tuple = (due_date, index)
+            tuple_list.append(data_index_tuple)
+
+        tuple_list.sort(key=lambda x: x[0], reverse=not ascending)
+
+        new_task_list = []
+        for _, index  in tuple_list:
+            new_task_list.append(self.task_data_dict[index])
+
+        table_widget.setRowCount(0)
+
+        self.task_table_item(new_task_list)
+
+    def search_task(self):
+        """
+        검색 기능
+        """
+        search_text = self.search_input.text().strip().lower()
+
+        for row in range(self.task_table.rowCount()):
+            item = self.task_table.cellWidget(row, 1)  # Task Info 컬럼의 내용을 가져옴
+            if item:
+                labels = item.findChildren(QLabel)  # QLabel들 가져오기
+                match = False
+                for label in labels:
+                    if search_text in label.text().lower():  # 검색어가 포함된 경우
+                        match = True
+                        break
+
+                self.task_table.setRowHidden(row, not match)  # 일치하지 않으면 숨김
+        # self.search_input.clear()
+>>>>>>> Stashed changes:loader/loader_ui_v002.py
 
     def make_task_table(self):
         """
