@@ -115,6 +115,8 @@ class UI(QMainWindow):
 
         # Prev Work 정보 테이블
         self.info_table = QTableWidget(4, 3)
+        self.info_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.info_table.setFocusPolicy(Qt.NoFocus)
         self.info_table.verticalHeader().setVisible(False)  # 번호(인덱스) 숨기기
         self.info_table.horizontalHeader().setVisible(False)  # 가로 헤더 숨기기
         self.info_table.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)  # 크기 조정 허용
@@ -243,6 +245,8 @@ class UI(QMainWindow):
 
         if version_type == "PUB":
             self.pub_table = QTableWidget(0, 3)
+            self.pub_table.setSelectionMode(QAbstractItemView.NoSelection)
+            self.pub_table.setFocusPolicy(Qt.NoFocus)
             table = self.pub_table  # Assign to pub_table
         elif version_type == "WORK":
             self.work_table = QTableWidget(0, 3)
@@ -441,7 +445,6 @@ class UI(QMainWindow):
         로그인 화면 UI
         """
         widget = QWidget()
-        widget.setFixedSize(400, 200)  # 로그인 창 크기 조절
         layout = QVBoxLayout(widget)
 
         # 네임 임력

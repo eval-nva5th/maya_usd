@@ -19,7 +19,7 @@ def on_login_click(ui_instance):
             popup.exec()
         else:
             ui_instance.user_name = name
-            ui_instance.resize(1100, 800)  # 메인 화면 크기 조정
+            ui_instance.setFixedSize(1100, 800)
             ui_instance.setCentralWidget(ui_instance.setup_layout()) # 로그인 창을 메인화면으로 변경
             ui_instance.center_window()
 
@@ -123,9 +123,9 @@ def on_sort_changed(ui_instance):
     """
     selected_option = ui_instance.sort_combo.currentText()
 
-    if selected_option == "ascending order":
+    if selected_option == "data : latest":
         ascending = True
-    elif selected_option == "descending order":
+    elif selected_option == "date : earlist":
         ascending = False
     else:
         return  # 정렬이 아닌 경우 종료
