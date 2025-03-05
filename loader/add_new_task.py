@@ -1,4 +1,4 @@
-from pxr import Usd, Sdf, Kind
+from pxr import Usd
 import maya.cmds as cmds
 import os
 import re
@@ -7,7 +7,7 @@ import re
 # 테스크가 할당되었지만 선수작업자가 없어서 본인이 처음 작업일때 사용하는 클래스.
 class AssetShotCreator:
     def __init__(self):
-        self.root_directory = '/nas/show/eval'
+        self.root_directory = '/nas/eval/show'
 
     # 할당된 asset task가 존재할 때, task를 기반으로 local에 directory, dept usd파일을 생성해주는 함수.
     def create_asset_stage(self, project_name, asset_name, asset_type, dept): 
@@ -24,9 +24,11 @@ class AssetShotCreator:
             for status in workflows:
                 status_folder_path = os.path.join(asset_root_path, dept, status, "maya", "scenes")
                 os.makedirs(status_folder_path, exist_ok=True)
+                usd_folder_path = os.path.join(asset_root_path, dept, status, "usd")
+                os.makedirs(usd_folder_path, exist_ok=True)
                 # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
                 if status == "work":
-                    work_directory = status_folder_path
+                    work_directory = usd_folder_path
 
             # 해당 dept의 usda 파일을 만들어준다.
             usd_file_name = f"{asset_name}_{dept}_v001.usda"
@@ -41,17 +43,19 @@ class AssetShotCreator:
                 usd_stage.SetDefaultPrim(usd_prim_type)
                 usd_stage.GetRootLayer().Save()
                 print("sublayer가 생성되었습니다")
-
-        if not cmds.about(batch=True):
-            usd_nodes = cmds.ls(type="mayaUsdProxyShape")
-            if not usd_nodes:
-                # 없다면 새 노드 생성 (새 USD Stage 생성)
-                proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
-                cmds.mayaUsdLayerEditor(proxy_node, edit=True, addSubLayer=usd_file_path)
-
-
         else:
             print("선수작업이 있는 dept 입니다. 생성할 수 없습니다.")
+
+        usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+        if not usd_nodes:
+            # mayaUsdProxyShape노드 생성. (model.usd파일을 viewport와 outliner에 띄워주기 위한 수단.)
+            proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+        else:
+            # 만약 있다면 제일 첫번째 노드에 붙인다.
+            proxy_node = usd_nodes[0]
+
+        # USD 파일을 Stage Source로 설정
+        cmds.setAttr(f"{proxy_node}.filePath", usd_file_path, type="string")
 
 # 할당된 shot task가 존재할 때, task를 기반으로 local에 directory, dept usd파일을 생성해주는 함수.
     def create_shot_stage(self, project_name, shot_name, shot_num, dept): 
@@ -68,9 +72,11 @@ class AssetShotCreator:
             for status in workflows:
                 status_folder_path = os.path.join(shot_root_path, dept, status, "maya", "scenes")
                 os.makedirs(status_folder_path, exist_ok=True)
+                usd_folder_path = os.path.join(shot_root_path, dept, status, "usd")
+                os.makedirs(usd_folder_path, exist_ok=True)
                 # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
                 if status == "work":
-                    work_directory = status_folder_path
+                    work_directory = usd_folder_path
 
             # Root stage 안에 넣어줘야할 dept에 해당하는 usda파일 생성
             usd_file_name = f"{shot_num}_{dept}_v001.usda"
@@ -84,15 +90,16 @@ class AssetShotCreator:
                 usd_stage.SetDefaultPrim(usd_prim_type)
                 usd_stage.GetRootLayer().Save()
                 print("sublayer가 생성되었습니다")
-        if not cmds.about(batch=True):
-            usd_nodes = cmds.ls(type="mayaUsdProxyShape")
-            if not usd_nodes:
-                # 없다면 새 노드 생성 (새 USD Stage 생성)
-                proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
-                cmds.mayaUsdLayerEditor(proxy_node, edit=True, addSubLayer=usd_file_path)
 
         else:
             print("선수작업이 있는 dept 입니다. 생성할 수 없습니다.")
+
+        usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+        if not usd_nodes:
+            proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+        else:
+            proxy_node = usd_nodes[0]
+        cmds.setAttr(f"{proxy_node}.filePath", usd_file_path, type="string")
 
 class USDReferenceLoader:
     def __init__(self):
@@ -113,10 +120,13 @@ class USDReferenceLoader:
         for status in workflows:
             status_folder_path = os.path.join(asset_root_path, dept, status, "maya", "scenes")
             os.makedirs(status_folder_path, exist_ok=True)
+            usd_folder_path = os.path.join(asset_root_path, dept, status, "usd")
+            os.makedirs(usd_folder_path, exist_ok=True)
             # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
             if status == "work":
-                work_directory = status_folder_path
+                work_directory = usd_folder_path
 
+        exr_list = ["usd", "usda", "usdc"]
         # 해당 dept의 usda 파일을 만들어준다.
         usd_file_name = f"{asset_name}_{dept}_v001.usda"
         # 새로운 작업자이니, work파일 안에 생성.
@@ -133,11 +143,11 @@ class USDReferenceLoader:
 
         # 만약 dept가 lookdev이거나 rig라면 기존의 modeling파일을 불러온다.
         if dept in ["lookdev", "rig"]:
-            model_pub_path = os.path.join(asset_root_path, "model", "pub", "maya", "scenes")
+            model_pub_path = os.path.join(asset_root_path, "model", "pub", "usd")
             if os.path.exists(model_pub_path):
                 published_models = []
                 for filename in os.listdir(model_pub_path):
-                    match = re.search(rf"{asset_name}_model_v(\d{{3}})\.usda", filename)
+                    match = re.search(rf"{asset_name}_model_v(\d{{3}})\.{exr_list}", filename)
                     if match:
                         version_number = int(match.group(1))
                         #만약 있다면, 그 파일순서와 파일 이름을 list에 넣어준다. sorted를 사용하기 위해 튜플로 가두었다.
@@ -160,6 +170,13 @@ class USDReferenceLoader:
                     department_usd_stage.GetRootLayer().Save()
                     print(f"{department_usd_stage}을 reference로 불러왔으며, {department_prim}로 추가하였습니다.")
 
+                    usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+                    if not usd_nodes:
+                        proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+                    else:
+                        proxy_node = usd_nodes[0]
+                    cmds.setAttr(f"{proxy_node}.filePath", usd_file_path, type="string")
+
         else:
             print("해당 dept는 지원하지 않습니다.")
 
@@ -177,10 +194,12 @@ class USDReferenceLoader:
         for status in workflows:
             status_folder_path = os.path.join(shot_root_path, dept, status, "maya", "scenes")
             os.makedirs(status_folder_path, exist_ok=True)
+            usd_folder_path = os.path.join(shot_root_path, dept, status, "usd")
+            os.makedirs(usd_folder_path, exist_ok=True)
             # 폴더 이름이  "work"라면 work_directory를 따로 지정해준다.
             if status == "work":
-                work_directory = status_folder_path
-
+                work_directory = usd_folder_path
+        exr_list = ["usd", "usda", "usdc"]
         # 해당 dept의 usda 파일을 만들어준다.
         usd_file_name = f"{shot_num}_{dept}_v001.usda"
         # 새로운 작업자이니, work파일 안에 생성.
@@ -194,26 +213,19 @@ class USDReferenceLoader:
             usd_stage.SetDefaultPrim(usd_prim_type)
             usd_stage.GetRootLayer().Save()
             print(f"{usd_stage}을 생성하였으며, {usd_prim_type}로 추가하였습니다.")
-            if not cmds.about(batch=True):
-                try:
-                    cmds.file(usd_file_path, i=True, type="USD Import")
-                    print(f"{usd_file_path} 파일을 정상적으로 로드했습니다.")
-                except Exception as e:
-                    print(f"Maya에서 USD를 로드하는 중 오류 발생: {e}")
 
         department_usd_stage = Usd.Stage.Open(usd_file_path)
 
         #만약 dept가 animation일 경우, layout의 usd파일을 레퍼런스로 가져와야 한다.
         if dept == "animation":
-            layout_pub_path = os.path.join(shot_root_path, "layout", "pub", "maya", "scenes")
+            layout_pub_path = os.path.join(shot_root_path, "layout", "pub", "usd")
             published_layouts = []
             for filename in os.listdir(layout_pub_path):
-                match = re.search(rf"{shot_num}_layout_v(\d{{3}})\.usda", filename)
+                match = re.search(rf"{shot_num}_layout_v(\d{{3}})\.{exr_list}", filename)
                 if match:
                     version_number = int(match.group(1))
                     published_layouts.append((version_number,filename))
-                else:
-                    print("layout 선수작업이 존재하지 않습니다.")
+
             if  published_layouts:
                 last_version = sorted(published_layouts, key=lambda x:x[0], reverse=True)[0]
                 layout_referenced_usd_filepath = os.path.join(layout_pub_path, last_version[1])
@@ -224,15 +236,28 @@ class USDReferenceLoader:
                 department_prim.GetReferences().AddReference(relative_layout_reference_path)
                 department_usd_stage.GetRootLayer().Save()
                 print(f"{department_usd_stage}을 reference로 불러왔으며, {department_prim}로 추가하였습니다.")
+
+                if not cmds.about(batch=True):
+                    usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+                    if not usd_nodes:
+                        # 없다면 새 노드 생성 (새 USD Stage 생성)
+                        proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+                    else:
+                        proxy_node = usd_nodes[0]
+
+                    # USD 파일을 Stage Source로 설정
+                    cmds.setAttr(f"{proxy_node}.filePath", usd_file_path, type="string")
+            else:
+                print("layout 선수작업이 존재하지 않습니다.")
         else:
             print("해당 dept는 지원하지 않습니다.")
 
         #만약 dept가 light 경우, animation의 usd파일을 레퍼런스로 가져와야 한다.
         if dept == "light":
-            animation_pub_path = os.path.join(shot_root_path, "animation", "pub", "maya", "scenes")
+            animation_pub_path = os.path.join(shot_root_path, "animation", "pub", "usd")
             published_animations = []
             for filename in os.listdir(animation_pub_path):
-                match = re.search(rf"{shot_num}_animation_v(\d{{3}})\.usda", filename)
+                match = re.search(rf"{shot_num}_animation_v(\d{{3}})\.{exr_list}", filename)
                 if match:
                     version_number = int(match.group(1))
                     published_animations.append((version_number,filename))
@@ -248,89 +273,33 @@ class USDReferenceLoader:
                 department_prim.GetReferences().AddReference(relative_animation_reference_path)
                 department_usd_stage.GetRootLayer().Save()
                 print(f"{department_usd_stage}을 reference로 불러왔으며, {department_prim}로 추가하였습니다.")
+                if not cmds.about(batch=True):
+                    usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+                    if not usd_nodes:
+                        proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+                    else:
+                        proxy_node = usd_nodes[0]
+                    cmds.setAttr(f"{proxy_node}.filePath", usd_file_path, type="string")
         else:
             print("해당 dept는 지원하지 않습니다.")
 
+class LoadWork:
+    def __init__(self):
+        #프로젝트의 루트 패스
+        self.root_directory = '/nas/eval/show'
 
-# y = AssetShotCreator()
-# y.create_asset_stage("IronMan_4", "IronMan", "character", "model")
-#create_task.create_shot_stage("IronMan_4", "OPN", "OPN_0010", "layout")
-
-# get_front_task = USDReferenceLoader()
-# get_front_task.load_model_reference("IronMan_4", "IronMan", "character", "lookdev")
-# get_front_task.load_model_reference("IronMan_4", "IronMan", "character", "rig")
-# get_front_task.load_shot_reference("IronMan_4", "OPN", "OPN_0010", "light")
-
-
-
-
-#-----------------------------------------------------------------------------------------------
-#에셋 루트 만드는거 (추후에 퍼블리셔에서 사용할거)
-        # # asset_root_path에 asset_name의 root stage usda파일 생성 
-        # create_asset_root_usd = os.path.join(asset_root_path, f"{asset_name}.usda")
-        # # 기존 프로젝트 파일이 존재하면 로드, 없으면 새로 생성
-        # if os.path.exists(create_asset_root_usd):
-        #     new_asset_root_stage = Usd.Stage.Open(create_asset_root_usd)
-        #     print(f"{asset_name}.usda 가 존재합니다. 기존 파일을 로드하겠습니다.")
-        # else:
-        #     new_asset_root_stage = Usd.Stage.CreateNew(create_asset_root_usd)
-
-        # # 선택한 prim으로  Root stage에 생성이 됨. ex) def Xform "ironman"
-        # root_prim = new_asset_root_stage.DefinePrim(f"/{default_prim}", root_prim_type)
+    def load_work(self, project_name, asset_name, asset_type, dept, work_ver):
+        work_path = os.path.join(self.root_directory, project_name, "assets", asset_type, asset_name, dept, "work", "maya", "scenes", f"{work_ver}.mb")
+        usd_folder_path = os.path.join(self.root_directory, project_name, "assets", asset_type, asset_name, dept, "work", "usd", f"{work_ver}.usda")
         
-        # #상대경로로 변환
-        # relative_usd_file_path = os.path.relpath(usd_file_path, os.path.dirname(create_asset_root_usd))
-
-
-
-        # # Rootstage 에 Payload 로 불러올지 Reference로 불러올지 정하는 변수. (이것도 작업자가 선택할 수 있었으면 좋겠음)
-        # if payload:
-        #     root_prim.GetPayloads().AddPayload(relative_usd_file_path)
-        # else:
-        #     root_prim.GetReferences().AddReference(relative_usd_file_path)
-        # #Root stage 저장
-        # new_asset_root_stage.GetRootLayer().Save()
-        # print(f"usd 파일 생성 완료: {create_asset_root_usd}")
-
-
-        # # root stage에 생성 될 prim의 타입을 선택하는 변수 (콤보박스로 선탁할 수 있게 하면 좋겠음)
-        # root_prim_type = input("root stage에 생성 될 타입을 선택해주세요: (Xform/Scope/Mesh/Material): ").strip()
-        # #기본 값을 Xform으로 생성 후, 잘못된 선택을 했을 시에, 기본 값인 Xform으로 자동으로 선택
-        # if root_prim_type not in ["Xform", "Scope", "Mesh", "Material"]:
-        #     root_prim_type = "Xform"
-        #     print("root prim이 생성되었습니다")
-
-
-#샷 루트 만드는거 (추후에 퍼블리셔에서 사용할거)
-        # # shot_root_path에 asset_name의 root stage usda파일 생성 
-        # create_shot_root_usd = os.path.join(shot_root_path, f"{shot_num}.usda")
-        # # 기존 프로젝트 파일이 존재하면 로드, 없으면 새로 생성
-        # if os.path.exists(create_shot_root_usd):
-        #     new_shot_root_stage = Usd.Stage.Open(create_shot_root_usd)
-        #     print(f"{shot_name}.usda 가 존재합니다. 기존 파일을 로드하겠습니다.")
-        # else:
-        #     new_shot_root_stage = Usd.Stage.CreateNew(create_shot_root_usd) 
-
-
-
-        # # root stage에 생성 될 prim의 타입을 선택하는 변수 (콤보박스로 선탁할 수 있게 하면 좋겠음)
-        # root_prim_type = input("root stage에 생성 될 타입을 선택해주세요: (Xform/Scope/Mesh/Material): ").strip()
-        # #기본 값을 Xform으로 생성 후, 잘못된 선택을 했을 시에, 기본 값인 Xform으로 자동으로 선택
-        # if root_prim_type not in ["Xform", "Scope", "Mesh", "Material"]:
-        #     root_prim_type = "Xform"
-        #     print("root_prim이 생성되었습니다")
-
-        # # 선택한 prim으로  Root stage에 생성이 됨. ex) def Xform "ironman"
-        # root_prim = new_shot_root_stage.DefinePrim(f"/{default_prim}", root_prim_type)
-        
-        # #상대경로로 변환
-        # relative_usd_file_path = os.path.relpath(usd_file_path, os.path.dirname(create_shot_root_usd))
-
-        # # Rootstage 에 Payload 로 불러올지 Reference로 불러올지 정하기. (이것도 작업자가 선택할 수 있었으면 좋겠음)
-        # if payload:
-        #     root_prim.GetPayloads().AddPayload(relative_usd_file_path)
-        # else:
-        #     root_prim.GetReferences().AddReference(relative_usd_file_path)
-        # #Root stage 저장
-        # new_shot_root_stage.GetRootLayer().Save()
-        # print(f"usd 파일 생성 완료: {create_shot_root_usd}")
+        if cmds.file(work_path, query=True, exists=True):
+            cmds.file(work_path, open=True, force=True)
+            if not cmds.about(batch=True):
+                usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+                if not usd_nodes:
+                    proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+                else:
+                    proxy_node = usd_nodes[0]
+                cmds.setAttr(f"{proxy_node}.filePath", usd_folder_path, type="string")
+        else:
+            print("maya file이 없습니다.")

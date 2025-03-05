@@ -8,3 +8,11 @@
 *.mov
 
 loader/__pycache__/
+<<<<<<< Updated upstream
+publisher/event/__pycache__/
+publisher/ui/__pycache__/
+
+save_as/event/__pycache__/
+save_as/ui/__pycache__/
+=======
+>>>>>>> Stashed changes
