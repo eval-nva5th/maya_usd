@@ -308,8 +308,8 @@ class UI(QMainWindow):
         self.search_input = QLineEdit() # 검색창
         self.search_but = QPushButton("SEARCH") # 검색버튼
         self.sort_combo = QComboBox()
-        self.sort_combo.addItem("ascending order")  # 오름차순 정렬
-        self.sort_combo.addItem("descending order")  # 내림차순 정렬
+        self.sort_combo.addItem("data : latest")  # 오름차순 정렬
+        self.sort_combo.addItem("date : earlist")  # 내림차순 정렬
 
         # 테스크 검색, 정렬 레이아웃 정렬
         h_layout = QHBoxLayout()
