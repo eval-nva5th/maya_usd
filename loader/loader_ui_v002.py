@@ -202,7 +202,7 @@ class UI(QMainWindow):
 
         return widget
 
-    def previous_data(self): #############################################순우work
+    def previous_data(self): 
         """
         외부에서 데이터를 받아서 테이블에 추가하는 함수
         """
@@ -740,7 +740,7 @@ class UI(QMainWindow):
         self.version_file_data('WORK', work_path, work_list)
 
         prev_task_data, current_task_data = self.task_info.on_click_task(clicked_task_id)
-
+        print(prev_task_data['step'])
         self.update_prev_work(prev_task_data)
 
         print(f"현재 창 크기 - 너비: {self.width()}px, 높이: {self.height()}px")
