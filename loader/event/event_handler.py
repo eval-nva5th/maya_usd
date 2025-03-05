@@ -3,7 +3,7 @@ from PySide6.QtGui import QPixmap, QPainter, QColor
 from event.custom_dialog import CustomDialog
 from core.data_managers import version_file_data
 
-def on_login_click(ui_instance):
+def on_login_clicked(ui_instance):
     """
     로그인 버튼 실행
     """

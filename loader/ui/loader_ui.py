@@ -15,7 +15,7 @@ except ImportError:
     except ImportError:
         raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
 from shotgrid_user_task import UserInfo, TaskInfo
-from event.event_handler import on_sort_changed, on_work_cell_clicked,on_login_click, on_cell_clicked, search_task
+from event.event_handler import on_sort_changed, on_work_cell_clicked,on_login_clicked, on_cell_clicked, search_task
 from core.video_player import VideoPlayer
 from core.data_managers import previous_data, version_file_data, task_data
 
@@ -456,12 +456,12 @@ class UI(QMainWindow):
         # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
 
         # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작하도록 연결
-        self.email_input.returnPressed.connect(lambda:on_login_click(self))
-        self.name_input.returnPressed.connect(lambda:on_login_click(self))
+        self.email_input.returnPressed.connect(lambda:on_login_clicked(self))
+        self.name_input.returnPressed.connect(lambda:on_login_clicked(self))
 
         # 로그인 버튼
         self.login_btn = QPushButton("LOGIN")
-        self.login_btn.clicked.connect(lambda:on_login_click(self))
+        self.login_btn.clicked.connect(lambda:on_login_clicked(self))
 
         # 레이아웃 설정
         layout.addWidget(self.name_input)
