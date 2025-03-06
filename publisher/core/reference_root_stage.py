@@ -24,7 +24,6 @@ def first_model_publish(project_name, asset_type, asset_name, dept):
         maya_ascii_path = os.path.join(work_path, f"{asset_name}_v001.ma")
         cmds.file(rename=maya_ascii_path)  # 파일명을 설정
         cmds.file(save=True, type="mayaAscii")  # ASCII (.ma) 파일로 저장
-
         cmds.file("/path/to/save_file.mb", save=True, type="mayaBinary")  # Binary (.mb) 파일로 저장
     else:
         print("해당 dept는 사용할 수 없습니다.")
