@@ -15,7 +15,7 @@ def put_into_path():
         root_path = "/nas/eval/show"
         project_name = "eval"
         #project_name = input("project name : ")
-        set_type = "1"
+        set_type = "2"
         #set_type = input("work type (assets = 1, seq = 2) : ")
 
         if set_type == "1":

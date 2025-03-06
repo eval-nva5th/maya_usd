@@ -35,9 +35,9 @@ def create_mov_and_extract_jpg(text, mov_output_path, jpg_output_path):
     subprocess.run(ffmpeg_jpg_cmd, check=True)
 
 # 변수 설정
-text = "juhye_car_veh\nlookdev_v001"
-mov_output_path = "/nas/sy_test_folder/encoding_trial/juhye_car_vehicle_lookdev_v001.mov"
-jpg_output_path = "/nas/sy_test_folder/encoding_trial/juhye_car_vehicle_lookdev_v001.jpg"
+text = "juhye_car\nveh_v001"
+mov_output_path = "/nas/sy_test_folder/encoding_trial/juhye_car_model.mov"
+jpg_output_path = "/nas/sy_test_folder/encoding_trial/juhye_car_model.jpg"
 
 # 함수 실행
 create_mov_and_extract_jpg(text, mov_output_path, jpg_output_path)

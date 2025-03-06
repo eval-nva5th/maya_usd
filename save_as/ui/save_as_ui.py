@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton
-from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-from PySide6.QtWidgets import QHBoxLayout
-from PySide6.QtWidgets import QComboBox
+from PySide2.QtWidgets import QMainWindow, QWidget, QPushButton
+from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+from PySide2.QtWidgets import QHBoxLayout
+from PySide2.QtWidgets import QComboBox
 
 import sys
 from event.event_handler import open_file_browser, save_file_as

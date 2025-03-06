@@ -1,8 +1,8 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
-from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-from PySide6.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
-from PySide6.QtWidgets import QMessageBox
-from PySide6.QtWidgets import QComboBox
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+from PySide2.QtWidgets import QMessageBox
+from PySide2.QtWidgets import QComboBox
 
 import sys
 
