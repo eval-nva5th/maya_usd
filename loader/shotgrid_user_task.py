@@ -141,7 +141,7 @@ class TaskInfo(Shotgrid) :
                 self.prev_task_dict[prev_task_id] = {}
                 self.prev_task_dict[prev_task_id]["proj_name"] = prev_task_proj
                 self.prev_task_dict[prev_task_id]["type_name"] = entity_type.lower()
-                self.prev_task_dict[prev_task_id]["category"] = prev_task_category.lower()
+                self.prev_task_dict[prev_task_id]["category"] = prev_task_category
                 self.prev_task_dict[prev_task_id]["name"] = prev_task_name            
 
                 self.prev_task_dict[prev_task_id]["task_name"] = prev_task_task_name
