@@ -9,12 +9,18 @@
 *.pyc
 
 loader/__pycache__/
+<<<<<<< Updated upstream
 publisher/event/__pycache__/
 publisher/ui/__pycache__/
 
 save_as/event/__pycache__/
 save_as/ui/__pycache__/
+<<<<<<< Updated upstream
 
 loader/data/__pycache__/
 loader/ui/__pycache__/
 loader/event/__pycache__/
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes

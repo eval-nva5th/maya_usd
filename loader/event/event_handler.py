@@ -1,5 +1,10 @@
-from PySide6.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout
-from PySide6.QtGui import QPixmap, QPainter, QColor
+try:
+    from PySide6.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout
+    from PySide6.QtGui import QPixmap, QPainter, QColor
+except ImportError:
+    from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout
+    from PySide2.QtGui import QPixmap, QPainter, QColor
+
 from event.custom_dialog import CustomDialog
 from core.video_player import VideoPlayer
 from core.data_managers import version_file_data
