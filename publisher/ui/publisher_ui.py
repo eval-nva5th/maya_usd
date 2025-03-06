@@ -1,12 +1,19 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
-from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-from PySide6.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
-from PySide6.QtWidgets import QMessageBox, QPlainTextEdit
-from PySide6.QtWidgets import QComboBox
-
+try:
+    from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide6.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+    from PySide6.QtWidgets import QMessageBox, QPlainTextEdit
+    from PySide6.QtWidgets import QComboBox
+except:
+    from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
+    from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+    from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
+    from PySide2.QtWidgets import QComboBox
 import sys
-
+from core.play_blast import PlayblastManager
 from event.event_handler import publish
+
 class PublisherDialog(QMainWindow):
     def __init__(self):
         super().__init__()

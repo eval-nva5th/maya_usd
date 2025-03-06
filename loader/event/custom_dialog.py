@@ -1,4 +1,7 @@
-from PySide6.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
+try:
+    from PySide6.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
+except:
+    from PySide2.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
 
 class CustomDialog(QDialog):
     def __init__(self, full_path, file_name):

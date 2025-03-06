@@ -1,6 +1,11 @@
-from PySide6.QtWidgets import QLabel
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QPixmap, QImage
+try:
+    from PySide6.QtWidgets import QLabel
+    from PySide6.QtCore import Qt, QTimer
+    from PySide6.QtGui import QPixmap, QImage
+except ImportError:
+    from PySide2.QtWidgets import QLabel
+    from PySide2.QtCore import Qt, QTimer
+    from PySide2.QtGui import QPixmap, QImage
 import cv2
 
 class VideoPlayer(QLabel):
