@@ -64,3 +64,35 @@ first_model_publish("IronMan_4", "character", "IronMan", "model")
 #     #Root stage 저장
 #     new_shot_root_stage.GetRootLayer().Save()
 #     print(f"usd 파일 생성 완료: {create_shot_root_usd}")
+
+
+
+
+# load_model_reference("Project_205","Hyung", "character", "lookdev")
+# create_asset_path("snowman_3","snowman", "character", "model")
+
+            # # 해당 dept의 usda 파일을 만들어준다.
+            # usd_file_name = f"{asset_name}_{dept}_v001.usda"
+            # # 새로운 작업자이니, work파일 안에 생성.
+            # usd_file_path = os.path.join(work_directory, usd_file_name)
+
+            # # 만약 usd_file_name이 존재하지 않는다면, 생성
+            # if not os.path.exists(usd_file_path):
+            #     usd_stage = Usd.Stage.CreateNew(usd_file_path)
+            #     # usd file의 prim을 정해준다.
+            #     usd_prim_type = usd_stage.DefinePrim(f"/{asset_name}_{dept}", "Xform")
+            #     usd_stage.SetDefaultPrim(usd_prim_type)
+            #     usd_stage.GetRootLayer().Save()
+            #     print("sublayer가 생성되었습니다")
+
+
+        # usd_nodes = cmds.ls(type="mayaUsdProxyShape")
+        # if not usd_nodes:
+        #     # mayaUsdProxyShape노드 생성. (model.usd파일을 viewport와 outliner에 띄워주기 위한 수단.)
+        #     proxy_node = cmds.createNode("mayaUsdProxyShape", name="usdProxy")
+        # else:
+        #     # 만약 있다면 제일 첫번째 노드에 붙인다.
+        #     proxy_node = usd_nodes[0]
+
+        # # USD 파일을 Stage Source로 설정
+        # cmds.setAttr(f"{proxy_node}.filePath", usd_file_path, type="string")

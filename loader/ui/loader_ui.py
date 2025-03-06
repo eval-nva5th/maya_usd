@@ -37,7 +37,7 @@ class UI(QMainWindow):
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
-
+ 
     def setup_layout(self):
         """
         레이아웃 세팅
@@ -93,20 +93,20 @@ class UI(QMainWindow):
         외부에서 데이터를 받아서 Previous_work에 추가하는 함수
         """
         #동영상파일 재생
-        video_widget = VideoPlayer(pb)
-        video_widget.setStyleSheet("border: 2px solid #555; border-radius: 5px;")
+        self.video_widget = VideoPlayer(pb)
+        self.video_widget.setStyleSheet("border: 2px solid #555; border-radius: 5px;")
 
         # 원본 크기 가져오기 (비율 유지)
-        original_size = video_widget.size()  # 또는 video_widget.size()
+        original_size = self.video_widget.size()  # 또는 self.video_widget.size()
         default_width = original_size.width()/2.5
         default_height = original_size.height()/2.5
 
-        #video_widget.setAspectRatioMode(True)
-        video_widget.setFixedSize(default_width, default_height)
+        #self.video_widget.setAspectRatioMode(True)
+        self.video_widget.setFixedSize(default_width, default_height)
 
         # 비율 유지하며 크기 자동 조정
-        video_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        video_widget.setScaledContents(True)  # 자동으로 크기 조절 (비율 유지)
+        self.video_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.video_widget.setScaledContents(True)  # 자동으로 크기 조절 (비율 유지)
 
         #정보 라벨
         previous_work = QLabel("PREVIOUS WORK")
@@ -222,7 +222,7 @@ class UI(QMainWindow):
         # PB 레이아웃
         pre_layout = QHBoxLayout()
         pre_layout.setSpacing(20)
-        pre_layout.addWidget(video_widget)
+        pre_layout.addWidget(self.video_widget)
         pre_layout.addLayout(info_layout)
 
         widget = QWidget()
