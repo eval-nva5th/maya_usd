@@ -38,28 +38,38 @@ def create_shot_stage(project_name, shot_name, shot_num, dept):
 
 # asset 선수 작업자가 있다면, 그 usd를 reference로 불러오는 함수. ex)ironman_rig라면 ironman_model.usd 파일을 reference로 불러오기.
 def load_model_reference(project_name, asset_name, asset_type, dept):
-    # dept가 lookdev 혹은 rig라면 실행되는 함수
-    if dept in ["lookdev", "rig"]:
-        root_directory = '/nas/eval/show'
-        # asset들이 들어있는 경로 패스
-        asset_root_path = os.path.join(root_directory, project_name, "assets", asset_type, asset_name)
-        # asset_name으로 된 파일 자동생성.
-        os.makedirs(asset_root_path, exist_ok=True)
-        # 현재 status의 상태, pub과 work파일을 만들어준다.
+    root_directory = '/nas/eval/show'
+    asset_root_path = os.path.join(root_directory, project_name, "assets", asset_type, asset_name)
+    if dept == "lookdev":
         workflows = ["pub", "work"]
         for status in workflows:
             status_folder_path = os.path.join(asset_root_path, dept, status, "maya", "scenes")
             os.makedirs(status_folder_path, exist_ok=True)
-            usd_folder_path = os.path.join(asset_root_path, dept, status, "usd")
+            usd_folder_path = os.path.join(asset_root_path, dept, "pub", "usd")
             os.makedirs(usd_folder_path, exist_ok=True)
         usd_type_list = ["usd", "usda", "usdc"]
         for usd_type in usd_type_list:
             model_pub_path = os.path.join(asset_root_path, "model", "pub", "usd")
             model_usd_filename = f"{asset_name}_model.{usd_type}"
             usd_reference_path = os.path.join(model_pub_path, model_usd_filename)
-        if os.path.exists(usd_reference_path):
-            namespace = asset_name + "_model"
-            cmds.file(usd_reference_path, reference=True, namespace=namespace)
+            if os.path.exists(usd_reference_path):
+                namespace = asset_name + "_model"
+                cmds.file(usd_reference_path, reference=True, namespace=namespace)
+
+    elif dept == "rig":
+        workflows = ["pub", "work"]
+        for status in workflows:
+            status_folder_path = os.path.join(asset_root_path, dept, status, "maya", "scenes")
+            os.makedirs(status_folder_path, exist_ok=True)
+            usd_folder_path = os.path.join(asset_root_path, dept, "pub", "usd")
+            os.makedirs(usd_folder_path, exist_ok=True)
+        usd_type_list = ["usd", "usda", "usdc"]
+        for usd_type in usd_type_list:
+            asset_root_usd_filename = f"{asset_name}.{usd_type}"
+            root_reference_path = os.path.join(asset_root_path, asset_root_usd_filename)
+            if os.path.exists(root_reference_path):
+                namespace = asset_name
+                cmds.file(root_reference_path, reference=True, namespace=namespace)
     else:
         print("해당 dept는 지원하지 않습니다.")
 
@@ -88,11 +98,8 @@ def load_shot_reference(project_name, shot_name, shot_num, dept):
             cmds.file(usd_reference_path, reference=True, namespace=namespace)
         else:
             print("layout 선수작업이 존재하지 않습니다.")
-    else:
-        print("해당 dept는 지원하지 않습니다.")
-
     #만약 dept가 light 경우, animation의 usd파일을 레퍼런스로 가져와야 한다.
-    if dept == "light":
+    elif dept == "light":
         for usd_type in usd_type_list:
             animation_pub_path = os.path.join(shot_root_path, "animation", "pub", "usd")
             animation_usd_filename = f"{shot_num}_animation.{usd_type}"
@@ -116,7 +123,6 @@ def load_work(project_name, task_name, task_type, dept, work_ver):
         for maya_type in maya_type_list:
             # 여기에 들어가는 task_name은 asset name, task_type은 asset_type이 되어야 한다.
             asset_work_path= os.path.join(root_directory, project_name, "assets", task_name, task_type, dept, "work", "maya", "scenes", f"{task_type}_{dept}_{work_ver}.{maya_type}")
-
             if os.path.exists(asset_work_path):
                 cmds.file(asset_work_path, open=True, force=True)
                 return
