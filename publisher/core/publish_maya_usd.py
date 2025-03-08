@@ -4,6 +4,7 @@ import shutil
 import re
 from pxr import Usd
 
+<<<<<<< HEAD:publisher/core/publish_maya_usd.py
 
 def publish_model(project_name, asset_name, asset_type, dept):
     if dept == "model":
@@ -57,6 +58,31 @@ def publish_model(project_name, asset_name, asset_type, dept):
             maya_ascii_pub_path = os.path.join(pub_path, f"{asset_name}_{dept}_v{last_version:03d}.ma")
             shutil.copy2(maya_ascii_work_path, maya_ascii_pub_path)
 
+=======
+def first_model_publish(project_name, asset_type, asset_name, dept):
+    if dept == "model":
+        # asset_root_path에 asset_name의 root stage usda파일 생성 
+        root_directory = '/nas/eval/show'
+        asset_root_path = os.path.join(root_directory, project_name, "assets", asset_type, asset_name)
+        create_asset_root_usd = os.path.join(asset_root_path, f"{asset_name}.usda")
+        # 기존 프로젝트 파일이 존재하면 로드, 없으면 새로 생성
+        if os.path.exists(create_asset_root_usd):
+            new_asset_root_stage = Usd.Stage.Open(create_asset_root_usd)
+            print(f"{asset_name}.usda 가 존재합니다.")
+        else:
+            new_asset_root_stage = Usd.Stage.CreateNew(create_asset_root_usd)
+        # 선택한 prim으로  Root stage에 생성이 됨. ex) def Xform "ironman"
+        root_prim = new_asset_root_stage.DefinePrim(f"/{asset_name}", "Xform")
+        new_asset_root_stage.SetDefaultPrim(root_prim)
+        #Root stage 저장
+        new_asset_root_stage.GetRootLayer().Save() 
+        print(f"usd 파일 생성 완료: {create_asset_root_usd}")
+        work_path = os.path.join(asset_root_path, "pub", "maya", "scenes")
+        maya_ascii_path = os.path.join(work_path, f"{asset_name}_v001.ma")
+        cmds.file(rename=maya_ascii_path)  # 파일명을 설정
+        cmds.file(save=True, type="mayaAscii")  # ASCII (.ma) 파일로 저장
+        cmds.file("/path/to/save_file.mb", save=True, type="mayaBinary")  # Binary (.mb) 파일로 저장
+>>>>>>> origin/main:publisher/core/reference_root_stage.py
     else:
         print("해당 dept는 사용할 수 없습니다.")
 

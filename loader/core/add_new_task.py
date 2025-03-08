@@ -84,6 +84,20 @@ def load_model_reference(project_name, asset_name, asset_type, dept):
         if os.path.exists(maya_binary_path):
             cmds.file(maya_binary_path, open=True, force=True)
 
+<<<<<<< HEAD:loader/core/add_new_task.py
+=======
+# asset 선수 작업자가 있다면, 그 usd를 reference로 불러오는 함수. ex)ironman_rig라면 ironman_model.usd 파일을 reference로 불러오기.
+def load_model_reference(project_name, asset_name, asset_type, dept):
+    root_directory = '/nas/eval/show'
+    asset_root_path = os.path.join(root_directory, project_name, "assets", asset_type, asset_name)
+    if dept == "lookdev":
+        workflows = ["pub", "work"]
+        for status in workflows:
+            status_folder_path = os.path.join(asset_root_path, dept, status, "maya", "scenes")
+            os.makedirs(status_folder_path, exist_ok=True)
+            usd_folder_path = os.path.join(asset_root_path, dept, "pub", "usd")
+            os.makedirs(usd_folder_path, exist_ok=True)
+>>>>>>> origin/main:loader/add_new_task.py
         usd_type_list = ["usd", "usda", "usdc"]
         for usd_type in usd_type_list:
             model_pub_path = os.path.join(asset_root_path, "model", "pub", "usd")
@@ -100,6 +114,7 @@ def load_model_reference(project_name, asset_name, asset_type, dept):
             os.makedirs(status_folder_path, exist_ok=True)
             usd_folder_path = os.path.join(asset_root_path, dept, "pub", "usd")
             os.makedirs(usd_folder_path, exist_ok=True)
+<<<<<<< HEAD:loader/core/add_new_task.py
         work_path = os.path.join(asset_root_path, dept, "work", "maya", "scenes")
         maya_binary_path = os.path.join(work_path, f"{asset_name}_{dept}_v001.mb")
 
@@ -109,6 +124,8 @@ def load_model_reference(project_name, asset_name, asset_type, dept):
 
         if os.path.exists(maya_binary_path):
             cmds.file(maya_binary_path, open=True, force=True)
+=======
+>>>>>>> origin/main:loader/add_new_task.py
         usd_type_list = ["usd", "usda", "usdc"]
         for usd_type in usd_type_list:
             asset_root_usd_filename = f"{asset_name}.{usd_type}"
@@ -116,8 +133,11 @@ def load_model_reference(project_name, asset_name, asset_type, dept):
             if os.path.exists(root_reference_path):
                 namespace = asset_name
                 cmds.file(root_reference_path, reference=True, namespace=namespace)
+<<<<<<< HEAD:loader/core/add_new_task.py
         else:
             print("rootstage가 존재하지 않습니다.")
+=======
+>>>>>>> origin/main:loader/add_new_task.py
     else:
         print("해당 dept는 지원하지 않습니다.")
 
@@ -157,7 +177,11 @@ def load_shot_reference(project_name, shot_name, shot_num, dept):
             cmds.file(usd_reference_path, reference=True, namespace=namespace)
         else:
             print("layout 선수작업이 존재하지 않습니다.")
+<<<<<<< HEAD:loader/core/add_new_task.py
 
+=======
+    #만약 dept가 light 경우, animation의 usd파일을 레퍼런스로 가져와야 한다.
+>>>>>>> origin/main:loader/add_new_task.py
     elif dept == "light":
         for usd_type in usd_type_list:
             animation_pub_path = os.path.join(shot_root_path, "animation", "pub", "usd")
