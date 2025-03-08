@@ -1,34 +1,66 @@
 import os
 import maya.cmds as cmds
+import shutil
+import re
 from pxr import Usd
 
-def first_model_publish(project_name, asset_type, asset_name, dept):
+
+def publish_model(project_name, asset_name, asset_type, dept):
     if dept == "model":
-        # asset_root_path에 asset_name의 root stage usda파일 생성 
-        root_directory = '/nas/eval/show'
-        asset_root_path = os.path.join(root_directory, project_name, "assets", asset_type, asset_name)
-        create_asset_root_usd = os.path.join(asset_root_path, f"{asset_name}.usda")
-        # 기존 프로젝트 파일이 존재하면 로드, 없으면 새로 생성
-        if os.path.exists(create_asset_root_usd):
-            new_asset_root_stage = Usd.Stage.Open(create_asset_root_usd)
-            print(f"{asset_name}.usda 가 존재합니다.")
-        else:
-            new_asset_root_stage = Usd.Stage.CreateNew(create_asset_root_usd)
-        # 선택한 prim으로  Root stage에 생성이 됨. ex) def Xform "ironman"
-        root_prim = new_asset_root_stage.DefinePrim(f"/{asset_name}", "Xform")
-        new_asset_root_stage.SetDefaultPrim(root_prim)
-        #Root stage 저장
-        new_asset_root_stage.GetRootLayer().Save() 
-        print(f"usd 파일 생성 완료: {create_asset_root_usd}")
-        work_path = os.path.join(asset_root_path, "pub", "maya", "scenes")
-        maya_ascii_path = os.path.join(work_path, f"{asset_name}_v001.ma")
-        cmds.file(rename=maya_ascii_path)  # 파일명을 설정
-        cmds.file(save=True, type="mayaAscii")  # ASCII (.ma) 파일로 저장
-        cmds.file("/path/to/save_file.mb", save=True, type="mayaBinary")  # Binary (.mb) 파일로 저장
+        root_dir = '/nas/eval/show'
+        asset_root_path = os.path.join(root_dir, project_name, "assets", asset_type, asset_name)
+        model_pub_dir = os.path.join(asset_root_path, dept, "pub", "usd")
+        if os.path.exists(model_pub_dir):
+            if not cmds.pluginInfo("mayaUsdPlugin", query=True, loaded=True):
+                cmds.loadPlugin("mayaUsdPlugin")
+            usd_filename = f"{asset_name}_{dept}.usda"
+            usd_publish_path = os.path.join(model_pub_dir, usd_filename)
+
+            cmds.mayaUSDExport(
+                    file=usd_publish_path,
+                    selection=True,  # 선택한 것만 퍼블리쉬
+                    exportUVs=True,  # UV 포함
+                    exportDisplayColor=True,  # Display Color 포함
+                    exportMaterialCollections=True,  # 머티리얼 포함
+                    defaultMeshScheme="catmullClark",  # SubD 설정
+                    exportInstances=True,  # 인스턴스 포함
+                    exportBlendShapes=True,  # 블렌드셰이프 포함
+                    exportSkels="auto",  # 스켈레톤 포함
+                    exportSkin="auto")  # 스킨 포함
+            root_usd_path = os.path.join(asset_root_path, f"{asset_name}.usda")
+            relative_usd_file_path = os.path.relpath(usd_publish_path, os.path.dirname(root_usd_path))
+            if os.path.exists(root_usd_path):
+                asset_stage = Usd.Stage.Open(root_usd_path)
+            root_prim = asset_stage.DefinePrim(f"/{asset_name}", "Xform")
+            asset_stage.SetDefaultPrim(root_prim)
+            root_prim.GetReferences().AddReference(relative_usd_file_path)
+            asset_stage.GetRootLayer().Save()
+
+            pub_path = os.path.join(asset_root_path, dept, "pub", "maya", "scenes")
+            work_path = os.path.join(asset_root_path, dept, "work", "maya", "scenes")
+
+            version_nums = []
+            work_files = os.listdir(work_path)
+            for file_name in work_files:
+                match = re.search(r"v(\d{3})", file_name)
+                if match:
+                    version_nums.append(int(match.group(1)))
+
+            if version_nums:
+                last_version = max(version_nums)+1
+            else:
+                last_version = 1 
+
+            maya_ascii_work_path = os.path.join(work_path, f"{asset_name}_{dept}_v{last_version:03d}.ma")
+            cmds.file(rename=maya_ascii_work_path)
+            cmds.file(save=True, type="mayaAscii")
+            maya_ascii_pub_path = os.path.join(pub_path, f"{asset_name}_{dept}_v{last_version:03d}.ma")
+            shutil.copy2(maya_ascii_work_path, maya_ascii_pub_path)
+
     else:
         print("해당 dept는 사용할 수 없습니다.")
 
-first_model_publish("IronMan_4", "character", "IronMan", "model")
+# first_model_publish("IronMan_4", "character", "IronMan", "model")
 
 # #샷 루트 만드는거 (추후에 퍼블리셔에서 사용할거)
 #     # shot_root_path에 asset_name의 root stage usda파일 생성 
