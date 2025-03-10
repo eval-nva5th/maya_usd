@@ -49,15 +49,12 @@ class UI(QMainWindow):
         file_table_layout = QVBoxLayout(file_table_widget)
 
         # WORK 버전 UI 생성
-        #work_container = self.make_work_file_table
         work_label = QLabel("WORK")
-        #self.create_file_table("WORK")
         work_label.setStyleSheet("font-weight : bold;padding-left: 10px;")
         work_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+
         # PUB 버전 UI 생성
-        #pub_container = self.make_pub_file_table
         pub_label = QLabel("PUB")
-        #self.create_file_table("PUB")
         pub_label.setStyleSheet("font-weight : bold;padding-left: 10px;")
         pub_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
 
@@ -67,7 +64,6 @@ class UI(QMainWindow):
         file_table_layout.addWidget(pub_label)
         file_table_layout.addWidget(self.pub_table)
 
-        #file_table_layout.addWidget(self.work)
         # PREVIOUS BLAST UI 생성
         previous_container = previous_data(self)
 
@@ -243,60 +239,6 @@ class UI(QMainWindow):
         widget.setLayout(layout)
 
         return widget
-
-    # def create_file_table(self, version_type):
-
-    #     table = QTableWidget(0, 3)
-    #     table.setSelectionMode(QAbstractItemView.NoSelection)
-    #     table.setFocusPolicy(Qt.NoFocus)
-
-    #     table.setHorizontalHeaderLabels(["", "file name", "recently updated"])
-    #     table.setSelectionBehavior(QAbstractItemView.SelectRows)
-    #     table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-    #     table.setColumnWidth(0, 30)
-    #     table.setColumnWidth(1, 330)
-    #     table.setColumnWidth(2, 126)
-    #     table.verticalHeader().setDefaultSectionSize(30)
-    #     table.verticalHeader().setVisible(False)
-    #     table.setAlternatingRowColors(True)
-
-    #     if version_type == "WORK":
-    #         self.work_table = table
-    #     elif version_type == "PUB":
-    #         self.pub_table = table
-
-    # def file_table_item(self, table_widget, dcc_logo, file_name, edited_time, full_path):
-        
-    #     row = table_widget.rowCount()
-    #     table_widget.insertRow(row)  # 새로운 행 추가
-
-    #     table_widget.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
-    #     table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
-    #     table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
-    #     table_widget.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
-    #     table_widget.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
-    #     table_widget.setColumnWidth(2,126)
-    #     table_widget.verticalHeader().setDefaultSectionSize(30)
-    #     table_widget.verticalHeader().setVisible(False)
-
-    #     #DCC 로고
-    #     file_logo = QLabel()
-    #     pixmap = QPixmap(dcc_logo).scaled(25, 25)  # 크기 조절
-    #     file_logo.setPixmap(pixmap)
-    #     #file_logo.setScaledContents(True) # 크기에 맞게 이미지가 자동으로 축소/확대됨.
-    #     file_logo.setAlignment(Qt.AlignCenter)
-    #     table_widget.setCellWidget(row, 0, file_logo)  # 첫 번째 열에 추가
-
-    #     # 파일명 (QTableWidgetItem 사용)
-    #     name_table = QTableWidgetItem(f"{file_name}")
-    #     table_widget.setItem(row, 1, name_table)  # 두 번째 열에 추가
-    #     # print(file_name)
-
-    #     # 저장 날짜 
-    #     time_table = QTableWidgetItem(f"{edited_time}")
-    #     table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
-        # print(edited_time)
-        #table_widget.cellClicked.connect(lambda row, col: self.handle_work_table_click(table_widget, row, col))
 
     def handle_work_table_click(self, table_widget, row, col):
         if col != 1:  # Ensure it only fires for one column

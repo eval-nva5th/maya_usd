@@ -17,13 +17,6 @@ from event.custom_dialog import CustomDialog
 #from core.data_managers import version_file_data
 from shotgrid_user_task import ClickedTask
 
-
-# from ..widget.ui.test import CustomUI, add_custom_ui_to_tab
-#from ui.test import CustomUI, add_custom_ui_to_tab
-
-# sys.path.append("/home/rapa/gitkraken/maya_usd/widget/ui")
-# from test import CustomUI, add_custom_ui_to_tab
-
 def on_login_clicked(ui_instance):
     """
     로그인 버튼 실행
@@ -116,9 +109,6 @@ def add_file_to_table(table_widget, file_info):
     time_item = QTableWidgetItem(file_info[2]) #if file_info[2] else "Unknown")
     table_widget.setItem(row, 2, time_item)
 
-    # Attach a click event to handle file path interaction
-    #table_widget.cellClicked.connect(lambda row, col: on_work_cell_clicked(table_widget, file_info[3], row, col))
-
 def on_work_cell_clicked(table_widget, row, col, path, file_name, ct):
     from widget_ui import CustomUI, add_custom_ui_to_tab
 
@@ -203,8 +193,6 @@ def update_prev_work(ui_instance, prev_task_data):
     painter.drawEllipse(0, 0, 10, 10)  # (x, y, width, height) 원 그리기
     painter.end()
 
-    # ui_instance.state_image.setPixmap(status_pixmap)
-
     # 기존 위젯 제거 후 새로 추가
     status_widget = QWidget()
     status_layout = QHBoxLayout(status_widget)
@@ -226,35 +214,6 @@ def update_prev_work(ui_instance, prev_task_data):
     # 기존 셀 위젯 제거 후 새 위젯 설정
     ui_instance.info_table.setCellWidget(3, 2, status_widget)
     ui_instance.video_widget.set_new_mov_file(file_path)
-
-
-# def on_work_cell_clicked(table_widget, full_path, row, col):
-#     item = table_widget.item(row, col)
-#     print(item.text(), row,col)
-    # if item.text() == "Click for new dir and file" :
-    #     print("x directory x file")
-        
-    #     if not os.path.exists(new_path):
-    #         os.makedirs(new_path)
-    #         print(f"'{new_path}' 경로가 생성되었습니다.")
-
-    #     path_slice = full_path.split('/')
-    #     file_name =  f"{path_slice[7]}_{path_slice[8]}_v001"
-    #     dialog = CustomDialog(full_path, file_name)
-    #     dialog.exec()
-
-    # elif item.text() ==  "Double Click for new work file" :
-    #     print("o directory x file")
-    #     path_slice = full_path.split('/')
-    #     file_name =  f"{path_slice[7]}_{path_slice[8]}_v001"
-    #     dialog = CustomDialog(full_path, file_name)
-    #     dialog.exec()
-
-    # else :
-    #     print(row,col)
-    #     print(item.text())
-    #     #cmds.file(full_path, open=True) ################################################################파일여는부분
-    #     print(f"{full_path}가 열립니다.") 
 
 def on_sort_changed(ui_instance):
     """
