@@ -12,10 +12,11 @@ sys.path.append("/home/rapa/gitkraken/maya_usd/widget")
 widget_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/widget/ui")
 sys.path.append(widget_ui_path)
 
-from event.custom_dialog import CustomDialog
-#from core.video_player import VideoPlayer
-#from core.data_managers import version_file_data
 from shotgrid_user_task import ClickedTask
+from loader.event.custom_dialog import CustomDialog
+from loader.core.video_player import VideoPlayer
+from loader.core.data_managers import version_file_data
+import os
 
 def on_login_clicked(ui_instance):
     """
@@ -265,4 +266,3 @@ def search_task(ui_instance):
                     break
 
             ui_instance.task_table.setRowHidden(row, not match)  # 일치하지 않으면 숨김
-    # ui_instance.search_input.clear()

@@ -1,13 +1,15 @@
+try:
+    from PySide6.QtWidgets import QApplication
+except ImportError:
+    from PySide2.QtWidgets import QApplication
+    #import maya.cmds as cmds
+import sys
+from loader.ui.loader_ui import UI
 
-from PySide2.QtWidgets import QApplication
-#import maya.cmds as cmds
-import sys 
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader/event")
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader/ui")
-
-from ui.loader_ui import UI
 
 # app = QApplication.instance()  # 기존 인스턴스를 가져오기
 # if not app:

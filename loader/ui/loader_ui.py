@@ -1,11 +1,18 @@
-
-from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
-from PySide2.QtGui import QPixmap, QPainter, QColor
-from PySide2.QtWidgets import QHeaderView, QAbstractItemView
-from PySide2.QtCore import Qt
-import maya.cmds as cmds
-
+try :
+    from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox, QDialog
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy, QToolButton
+    from PySide6.QtGui import QPixmap, QPainter, QColor
+    from PySide6.QtWidgets import QHeaderView, QAbstractItemView
+    from PySide6.QtCore import Qt
+except ImportError:
+    from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
+    from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+    from PySide2.QtGui import QPixmap, QPainter, QColor
+    from PySide2.QtWidgets import QHeaderView, QAbstractItemView
+    from PySide2.QtCore import Qt
+    import maya.cmds as cmds
+except ImportError:
+    raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
 
 from shotgrid_user_task import UserInfo, TaskInfo, ClickedTask
 from event.event_handler import on_sort_changed, on_work_cell_clicked,on_login_clicked, on_cell_clicked, search_task
@@ -34,7 +41,7 @@ class UI(QMainWindow):
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
- 
+
     def setup_layout(self):
         """
         레이아웃 세팅
@@ -422,7 +429,7 @@ class UI(QMainWindow):
     
     def center_window(self):
         frame_geometry = self.frameGeometry()  # 창의 프레임 가져오기
-        #screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
-        #screen_geometry = screen.availableGeometry().center()  # 화면의 중앙 좌표
-        #frame_geometry.moveCenter(screen_geometry)  # 창의 중심을 화면 중심으로 이동
-        #self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동
+        screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
+        screen_geometry = screen.availableGeometry().center()  # 화면의 중앙 좌표
+        frame_geometry.moveCenter(screen_geometry)  # 창의 중심을 화면 중심으로 이동
+        self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동
