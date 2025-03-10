@@ -3,9 +3,15 @@ try:
 except:
     from PySide2.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
 
+import maya.cmds as cmds
+import os
+
 class CustomDialog(QDialog):
-    def __init__(self, full_path, file_name):
+    def __init__(self, path, file_name, is_dir, ct):
         super().__init__()
+
+        self.is_dir = is_dir
+        self.ct = ct
 
         # Set up the dialog layout
         # Create two LineEdits
@@ -38,7 +44,7 @@ class CustomDialog(QDialog):
         self.create_button = QPushButton("Create", self)
         self.exit_button = QPushButton("Exit", self)
         
-        self.create_button.clicked.connect(lambda: self.on_click_create(full_path))
+        self.create_button.clicked.connect(lambda: self.on_click_create(path))
         self.exit_button.clicked.connect(self.on_click_exit)
 
         text_layout = QHBoxLayout()
@@ -62,13 +68,33 @@ class CustomDialog(QDialog):
         else:
             self.switch.setText(".mb")
 
-    def on_click_create(self, full_path):
+    def on_click_create(self, path):
         line_edit_text = self.line_edit.text()
         ext = self.switch.text()
-        run_path = f"{full_path}/{line_edit_text}{ext}"
+        run_path = f"{path}/{line_edit_text}{ext}"
         print(run_path)
+
+        if self.is_dir :
+            pass
+        else :
+            os.makedirs(path)
+            print(f"'{path}' 경로가 생성되었습니다.")
+            
+
+        cmds.file(rename=run_path)
+        if ext == ".ma" :
+            save_type = "mayaAscii"
+        elif ext == ".mb" :
+            save_type = "mayaBinary"
+
+        cmds.file(save=True, type=save_type)
+        print(f"씬 파일 '{run_path}'가 저장되었습니다.")
+        print(self.ct.entity_id, self.ct.task_id, self.ct.proj_id)
+
+        cmds.file(run_path, open=True) #################################### 여는 방법 수정
+        print(f"{run_path}가 열립니다.")
         self.dialog_flag = False
-        self.accept()  # Close the dialog
+        self.accept()
 
     def on_click_exit(self) :
         print("종료")

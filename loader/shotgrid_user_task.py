@@ -39,16 +39,17 @@ class UserInfo(Shotgrid) :
         return self.id
     
     # asset 파트인지 seq 파트인지 구별을 위해 사용되는 함수
-    def get_user_part(self):
+    def get_user_part(self, entity_type):
         asset_dept = {"model", "lookdev", "rig"}
-        seq_dept = {"layout", "anim", "lighting", "comp"}
+        seq_dept = {"matchmove", "layout", "light", "animation", "comp"}
 
-        if self.dept.lower() in asset_dept :
-            return "asset"
-        elif self.dept.lower() in seq_dept :
+        if entity_type.lower() in asset_dept :
+            return "assets"
+        elif entity_type.lower() in seq_dept :
             return "seq"
         else :
-            return "unkown"
+            return "unknown"
+        
     def show_loading(self) :
         pass
 
@@ -75,30 +76,37 @@ class TaskInfo(Shotgrid) :
         tasks = self.sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
         total_tasks = len(tasks)
         print(f"할당된 태스크 정보를 가져오는 중입니다 ... 총 {total_tasks}개")
+
         for i, task in enumerate(tasks, start=1) :
             print(f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
+
             current_task_id = task['id']
             proj_name = task['project']['name']
+            proj_id = task['project']['id']
             task_name = task['content']
-            shot_name = task['entity']['name']
-            task_type = task['entity']['type']
-            asset_id = task['entity']['id']
+            entity_name = task['entity']['name']
+            entity_type = task['entity']['type']
+            entity_id = task['entity']['id']
             start_date = task['start_date']
             due_date = task['due_date']
             status = task['sg_status_list']
             step = task['step']['name']
 
             self.task_dict[current_task_id] = {}
+            self.task_dict[current_task_id]['proj_id'] = proj_id
             self.task_dict[current_task_id]['proj_name']=proj_name
             self.task_dict[current_task_id]['content']=task_name
-            
-            self.task_dict[current_task_id]['task_type']=task_type
+            self.task_dict[current_task_id]['entity_id'] = entity_id
+            self.task_dict[current_task_id]['entity_type']=entity_type
+            self.task_dict[current_task_id]['entity_name'] = entity_name
             self.task_dict[current_task_id]['start_date']=start_date
             self.task_dict[current_task_id]['due_date']=due_date
             self.task_dict[current_task_id]['status']=status
             self.task_dict[current_task_id]['step'] = step
-            
-            self.branch_asset_seq(task_type, current_task_id, asset_id, shot_name) # asset seq로 딕트 형식/저장방법 분기
+
+            #{5828: {'proj_name': 'eval', 'content': 'bike_rig', 'entity_name': 'bike', 'entity_type': 'Asset', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig'}
+
+            self.branch_entity_type(entity_type, current_task_id, entity_id) # asset seq로 딕트 형식/저장방법 분기
             prev_task_id = self.get_prev_task(current_task_id)
             self.task_dict[current_task_id]['prev_task_id'] = prev_task_id
     
@@ -164,23 +172,22 @@ class TaskInfo(Shotgrid) :
                 self.prev_task_dict[prev_task_id]["status"] = "None"
                 self.prev_task_dict[prev_task_id]["comment"] = "None"
             
-    def branch_asset_seq(self, task_type, task_id, asset_id, shot_name) :
+    def branch_entity_type(self, entity_type, task_id, entity_id) :
 
-        if task_type == "Shot" :
-            seq_contents = self.sg.find("Shot", [["id", "is", asset_id]], ["tasks", "sg_sequence"])
+        if entity_type == "Shot" :
+            seq_contents = self.sg.find("Shot", [["id", "is", entity_id]], ["tasks", "sg_sequence"])
+            
             seq_name = seq_contents[0]['sg_sequence']['name']
+            self.task_dict[task_id]['entity_type'] = "seq"
+            self.task_dict[task_id]['entity_parent'] = seq_name
+            
+        elif entity_type == "Asset" :
+            asset_contents = self.sg.find("Asset", [["id", "is", entity_id]], ["tasks", "sg_asset_type"])
 
-            self.task_dict[task_id]['shot_name'] = shot_name
-            self.task_dict[task_id]['seq_name'] = seq_name
-            self.task_dict[task_id]['shot_id'] = asset_id
-        
-        elif task_type == "Asset" :
-            asset_contents = self.sg.find("Asset", [["id", "is", asset_id]], ["tasks", "sg_asset_type"])
             asset_category_name = asset_contents[0]['sg_asset_type']
-            self.task_dict[task_id]['asset_name']=shot_name
-            self.task_dict[task_id]['asset_categ'] = asset_category_name
-
-            self.task_dict[task_id]['asset_id'] = asset_id
+            self.task_dict[task_id]['entity_type'] = "assets"
+            self.task_dict[task_id]['entity_parent'] = asset_category_name
+            #self.task_dict[task_id]['entity_id'] = entity_id
 
     def get_task_dict(self) :
         return self.task_dict
@@ -194,7 +201,7 @@ class TaskInfo(Shotgrid) :
         
         # type_id(shot_id/asset_id)이 같은 태스크들 찾기
         related_tasks = []
-        type_id = current_task.get("shot_id") or current_task.get("asset_id")
+        type_id = current_task.get("entity_id") #or current_task.get("asset_id")
         # print(type_id)
         filters = [
             {
@@ -251,16 +258,13 @@ class TaskInfo(Shotgrid) :
                     return prev_task_id
         return None
 
+    #### asset 일 시 {5828: {'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827}
     def on_click_task(self, id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
         current_task_id = id
         current_dict = {}
+        current_dict = self.task_dict[current_task_id]
         current_dict["id"] = current_task_id
-        current_dict["proj_name"] = self.task_dict[current_task_id]['proj_name']
-        current_dict["task_type"] = self.task_dict[current_task_id]['task_type'].lower()
-        current_dict["category"] = self.task_dict[current_task_id].get('seq_name') or self.task_dict[current_task_id].get('asset_categ').lower()
-        current_dict["name"] = self.task_dict[current_task_id].get('shot_name') or self.task_dict[current_task_id].get('asset_name').lower()
-        current_dict["step"] = self.task_dict[current_task_id]['step']
-
+        
         prev_task_dict = {}
         prev_task_id = self.task_dict[current_task_id]['prev_task_id']
         prev_task = self.prev_task_dict[prev_task_id]
@@ -278,74 +282,153 @@ class TaskInfo(Shotgrid) :
         prev_task_dict["comment"] = prev_task['comment']
         return prev_task_dict, current_dict
 
-    def set_path_items(self,task_id) :
-        '''
-        task_id와 그 task에 붙은 task_dict를 기반으로 파일패스를 생성해 task와 연결되는 디렉토리 내의 파일을 리스트의 형식으로 담아온다.
-        pub과 work로 분기하였으며 파일이름과 함께 생성일과 최근 수정일도 time 라이브러리를 사용해 가져옴 (논의 필요)
-        그리고 이거 다른 파일에 붙여야하는데 어디다 붙일지 모르겠어서 일단 팠어요.
-        '''  
-        root_path = '/nas/eval/show'
+    # def set_path_items(self,task_id) :
+    #     '''
+    #     task_id와 그 task에 붙은 task_dict를 기반으로 파일패스를 생성해 task와 연결되는 디렉토리 내의 파일을 리스트의 형식으로 담아온다.
+    #     pub과 work로 분기하였으며 파일이름과 함께 생성일과 최근 수정일도 time 라이브러리를 사용해 가져옴 (논의 필요)
+    #     그리고 이거 다른 파일에 붙여야하는데 어디다 붙일지 모르겠어서 일단 팠어요.
+    #     '''  
+    #     root_path = '/nas/eval/show'
         
-        task_dict = self.task_dict[task_id]
-        project_name = task_dict['proj_name']
-        task_type = task_dict['task_type']
+    #     task_dict = self.task_dict[task_id]
+    #     project_name = task_dict['proj_name']
+    #     task_type = task_dict['task_type']
         
-        if task_type == "Asset"  : 
-            asset_categ = task_dict['asset_categ']
-            task_step = task_dict['step']
-            task_type = "assets"
-            asset_name = task_dict['asset_name']
+    #     if task_type == "Asset"  : 
+    #         asset_categ = task_dict['asset_categ']
+    #         task_step = task_dict['step']
+    #         task_type = "assets"
+    #         asset_name = task_dict['asset_name']
         
-            path = f"{root_path}/{project_name}/{task_type}/{asset_categ}/{asset_name}/{task_step}"
-            path =path.lower()
+    #         path = f"{root_path}/{project_name}/{task_type}/{asset_categ}/{asset_name}/{task_step}"
+    #         path =path.lower()
             
-        elif task_type == "Shot" :
-            task_type_str = "seq"
-            shot_name = task_dict['shot_name']
-            seq_name = task_dict['seq_name']
-            task_step = task_dict['step']
-            task_step = task_step.lower()
-            shot_id = task_dict['shot_id']
+    #     elif task_type == "Shot" :
+    #         task_type_str = "seq"
+    #         shot_name = task_dict['shot_name']
+    #         seq_name = task_dict['seq_name']
+    #         task_step = task_dict['step']
+    #         task_step = task_step.lower()
+    #         shot_id = task_dict['shot_id']
 
-            path = f"{root_path}/{project_name}/{task_type_str}/{seq_name}/{shot_name}/{task_step}"
+    #         path = f"{root_path}/{project_name}/{task_type_str}/{seq_name}/{shot_name}/{task_step}"
         
-        return path
+    #     return path
     
-    def get_pub_files(self, task_id) :
-        path = self.set_path_items(task_id)
-        pub_path = f"{path}/pub/maya/scenes"
-        pub_list = self.set_file_list(pub_path)
-        if len(pub_list) == 0 :
-            pub_list.append(["/nas/eval/elements/null.png", "No Published File yet", "", pub_path])
-        return pub_path, pub_list
+    # def get_pub_files(self, task_id) :
+    #     path = self.set_path_items(task_id) # /nas/eval/show/eval/seq/AAC/AAC_0010/animation? 이건 만들어도되는거지?
+    #     pub_path = f"{path}/pub/maya/scenes" # /nas/eval/show/eval/seq/AAC/AAC_0010/animation/pub/maya/scenes
+    #     if not os.path.exists(pub_path) :
+    #        pub_list = self.make_directory(path)
+    #     else : 
+    #         pub_list = self.set_file_list(pub_path)
+    #         if len(pub_list) == 0 :
+    #             pub_list.append(["/nas/eval/elements/null.png", "No Published File yet", "", pub_path])
+    #     return pub_path, pub_list
         
-    def get_work_files(self, task_id) :
-        path = self.set_path_items(task_id)
-        work_path = f"{path}/work/maya/scenes"
-        work_list = self.set_file_list(work_path)
-        if len(work_list) == 0 :
-            work_list.append(["/nas/eval/elements/null.png", "Double Click for new work file", "", work_path])
-        return work_path, work_list
+    # def get_work_files(self, task_id) :
+    #     path = self.set_path_items(task_id)
+    #     work_path = f"{path}/work/maya/scenes"
+
+    #     if not os.path.exists(work_path) :
+    #         work_list = self.make_directory(path)
+    #     else : 
+    #         work_list = self.set_file_list(work_path)
+    #         if work_list is None:
+    #             work_list = []
+    #         if len(work_list) == 0 :
+    #             work_list.append(["/nas/eval/elements/null.png", "Double Click for new work file", "", work_path])
+    #     return work_path, work_list
+
+    # def set_file_list(self, path) :
+    #     data_list = []
+    #     try : 
+    #         for file in os.listdir(path):
+    #             if '.' in file:
+    #                 _, ext = file.split('.')
+    #             else:
+    #                 ext = ''
+    #             if ext == "usd" :
+    #                 ext_image = "/nas/eval/elements/usd_logo"
+    #             elif ext in ["ma","mb"] :
+    #                 ext_image = "/nas/eval/elements/maya_logo"
+    #             file_path = os.path.join(path, file)
+    #             last_time = os.path.getmtime(file_path) # 최근 수정일 아이거쓰면좋을거같은데 뭔가애매해.
+    #             last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
+
+    #             data_list.append([ext_image, file, last_time_str, file_path]) 
+    #         return data_list
         
-        ##### 여기서 ext 나눠서 
+    #     except Exception as e :
+    #         print(f"error name : {e}")
+    #         return None
+    
+    # def make_directory(self, path) :
+    #     data_list = []
+    #     data_list.append(["/nas/eval/elements/null.png", "Click for new dir and file", "", path])
+    #     return data_list
+
+class ClickedTask:
+    def __init__(self, id_dict):
+        #{'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827, 'id': 5828}
+        self.id = id_dict["id"]
+        self.proj_id = id_dict["proj_id"]
+        self.project_name = id_dict["proj_name"]
+        self.entity_id = id_dict["entity_id"]
+        self.entity_type = id_dict["entity_type"]
+        self.entity_name = id_dict["entity_name"]
+        self.entity_parent = id_dict['entity_parent']
+        self.step = id_dict['step'].lower()
+        self.root_path = "/nas/eval/show"
+
+    def __repr__(self):
+        return f"ClickedTask(id={self.id}, project_id={self.proj_id}, project_name={self.project_name}, entity_id = {self.entity_id}, entity_type = {self.entity_type}, entity_parent ={self.entity_parent}, step={self.step})"
+    
+    def set_shallow_path(self):
+        shallow_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}"
+        return shallow_path
+    
+    def set_deep_path(self, pub_or_work, export_type="scenes") :
+        deep_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}/{pub_or_work}/maya/{export_type}"
+        return deep_path
+
+    def set_file_name(self) :
+        file_name =  f"{self.entity_name}_{self.step}_v001"
+        return file_name
+
+    def get_dir_items(self, deep_path) :
+        data_list = []
+
+        if not os.path.exists(deep_path) :
+            data_list.append(["/nas/eval/elements/null.png", "No Dir No File", "", deep_path])
+        else : 
+            data_list = self.set_file_list(deep_path)
+            if len(data_list) == 0 :
+                data_list.append(["/nas/eval/elements/null.png", "No File", "", deep_path])
+
+        return data_list
+    
     def set_file_list(self, path) :
         data_list = []
-        
-        for file in os.listdir(path): # 확장자에 따라서 넣는거 해야함!!!
-            _, ext = file.split('.')
+
+        for file in os.listdir(path):
+            if '.' in file:
+                _, ext = file.split('.')
+            else:
+                ext = ''
             if ext == "usd" :
                 ext_image = "/nas/eval/elements/usd_logo"
-            elif ext == "ma" or "mb" :
+            elif ext in ["ma","mb"] :
                 ext_image = "/nas/eval/elements/maya_logo"
             file_path = os.path.join(path, file)
-            last_time = os.path.getmtime(file_path) # 최근 수정일 아이거쓰면좋을거같은데 뭔가애매해.
+            last_time = os.path.getmtime(file_path)
             last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
 
             data_list.append([ext_image, file, last_time_str, file_path]) 
-                
+
         return data_list
 
-#실행
+# 실행
 if __name__ == "__main__":
     sg_url = "https://hi.shotgrid.autodesk.com/"
     script_name = "Admin_SY"
@@ -354,14 +437,34 @@ if __name__ == "__main__":
     user = UserInfo(sg_url, script_name, api_key)
     task = TaskInfo(sg_url, script_name, api_key)
 
-    email = "f8d783@kw.ac.kr"
+    email = "f8d783@kw.ac.kr" #"p2xch@naver.com" 
     name = "장순우"
 
     user.is_validate(email, name)
     user_id = user.get_userid()
-    # print(f"user info : {user.name} | {user.email} | {user.id} | {user.dept} | {user.pos}")
+    print(f"user info : {user.name} | {user.email} | {user.id} | {user.dept} | {user.pos}")
     task.get_user_task(user_id)
+    prev_task_dict, current_dict = task.on_click_task(6178) 
 
-    for task_id, value in task.task_dict.items() :
-        task.get_pub_files(task_id)
-        task.get_work_files(task_id)
+    c = ClickedTask(current_dict) ############### how to make clicked_task Object
+
+    print(c.id, c.proj_id, c.entity_id, c.entity_type, c.entity_parent, c.step, c. root_path)
+    shallow_path = c.set_shallow_path()
+    print(shallow_path)
+
+    #export_type = "scenes"
+    pub_deep_path = c.set_deep_path("pub")
+    print(f"pub path : {pub_deep_path}")
+
+    work_deep_path = c.set_deep_path("work")
+    print(f"work path : {work_deep_path}")
+
+    pub_list = c.get_dir_items(pub_deep_path)
+    print(f"pub list : {pub_list}")
+
+    work_list = c.get_dir_items(work_deep_path)
+    print(f"work list : {work_list}")
+
+    # for task_id, value in task.task_dict.items() :
+    #     task.get_pub_files(task_id)
+    #     task.get_work_files(task_id)

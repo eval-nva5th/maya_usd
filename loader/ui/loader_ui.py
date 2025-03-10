@@ -1,26 +1,20 @@
-try :
-    from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox, QDialog
-    from PySide6.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy, QToolButton
-    from PySide6.QtGui import QPixmap, QPainter, QColor
-    from PySide6.QtWidgets import QHeaderView, QAbstractItemView
-    from PySide6.QtCore import Qt
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-        from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
-        from PySide2.QtGui import QPixmap, QPainter, QColor
-        from PySide2.QtWidgets import QHeaderView, QAbstractItemView
-        from PySide2.QtCore import Qt
-        import maya.cmds as cmds
-    except ImportError:
-        raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
-from shotgrid_user_task import UserInfo, TaskInfo
+
+from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
+from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+from PySide2.QtGui import QPixmap, QPainter, QColor
+from PySide2.QtWidgets import QHeaderView, QAbstractItemView
+from PySide2.QtCore import Qt
+import maya.cmds as cmds
+
+
+from shotgrid_user_task import UserInfo, TaskInfo, ClickedTask
 from event.event_handler import on_sort_changed, on_work_cell_clicked,on_login_clicked, on_cell_clicked, search_task
 from core.video_player import VideoPlayer
-from core.data_managers import previous_data, version_file_data, task_data
+from core.data_managers import previous_data, task_data
 
 class UI(QMainWindow):
     def __init__(self):
+
         sg_url = "https://hi.shotgrid.autodesk.com/"
         script_name = "Admin_SY"
         api_key = "kbuilvikxtf5v^bfrivDgqhxh"
@@ -32,8 +26,11 @@ class UI(QMainWindow):
         self.task_data_dict = []
         
         super().__init__()
-        self.setWindowTitle("EVAL_LOADER")
+        self.setWindowTitle("EVAL LOADER")
         self.center_window()
+
+        self.work_table = QTableWidget(0,3)
+        self.pub_table = QTableWidget(0,3)
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
@@ -47,22 +44,35 @@ class UI(QMainWindow):
         self.task_container.setMinimumWidth(570)
         self.task_container.setMaximumWidth(570)  # TASK 최소 너비 지정, 안하면 너무 작아짐.
         self.task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 가로/세로 확장 허용
+        
+        file_table_widget = QWidget()
+        file_table_layout = QVBoxLayout(file_table_widget)
+
         # WORK 버전 UI 생성
-        work_container = self.make_file_table("WORK")
+        #work_container = self.make_work_file_table
         work_label = QLabel("WORK")
+        #self.create_file_table("WORK")
         work_label.setStyleSheet("font-weight : bold;padding-left: 10px;")
         work_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         # PUB 버전 UI 생성
-        pub_container = self.make_file_table("PUB")
+        #pub_container = self.make_pub_file_table
         pub_label = QLabel("PUB")
+        #self.create_file_table("PUB")
         pub_label.setStyleSheet("font-weight : bold;padding-left: 10px;")
         pub_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+
+        file_table_layout = QVBoxLayout()
+        file_table_layout.addWidget(work_label)
+        file_table_layout.addWidget(self.work_table)
+        file_table_layout.addWidget(pub_label)
+        file_table_layout.addWidget(self.pub_table)
+
+        #file_table_layout.addWidget(self.work)
         # PREVIOUS BLAST UI 생성
         previous_container = previous_data(self)
 
         widget = QWidget()
         layout = QHBoxLayout(widget)
-
         # 유저 레이아웃
         user_layout = QHBoxLayout()
         none_label = QLabel()
@@ -78,9 +88,9 @@ class UI(QMainWindow):
         self.right_layout.addLayout(user_layout)
         self.right_layout.addWidget(previous_container, 2)
         self.right_layout.addWidget(work_label)
-        self.right_layout.addWidget(work_container, 2)
+        self.right_layout.addWidget(self.work_table, 2)
         self.right_layout.addWidget(pub_label)
-        self.right_layout.addWidget(pub_container, 1)
+        self.right_layout.addWidget(self.pub_table, 1)
 
         # 메인 레이아웃 세팅
         layout.addWidget(self.task_container, 3)
@@ -234,66 +244,64 @@ class UI(QMainWindow):
 
         return widget
 
-    def make_file_table(self, version_type):
-        """
-        File UI (테이블 목록) 생성
-        version_type: "work" 또는 "pub"
-        """
+    # def create_file_table(self, version_type):
+
+    #     table = QTableWidget(0, 3)
+    #     table.setSelectionMode(QAbstractItemView.NoSelection)
+    #     table.setFocusPolicy(Qt.NoFocus)
+
+    #     table.setHorizontalHeaderLabels(["", "file name", "recently updated"])
+    #     table.setSelectionBehavior(QAbstractItemView.SelectRows)
+    #     table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+    #     table.setColumnWidth(0, 30)
+    #     table.setColumnWidth(1, 330)
+    #     table.setColumnWidth(2, 126)
+    #     table.verticalHeader().setDefaultSectionSize(30)
+    #     table.verticalHeader().setVisible(False)
+    #     table.setAlternatingRowColors(True)
+
+    #     if version_type == "WORK":
+    #         self.work_table = table
+    #     elif version_type == "PUB":
+    #         self.pub_table = table
+
+    # def file_table_item(self, table_widget, dcc_logo, file_name, edited_time, full_path):
         
-        widget = QWidget()  # 새 UI 위젯 생성
-        layout = QVBoxLayout(widget)
+    #     row = table_widget.rowCount()
+    #     table_widget.insertRow(row)  # 새로운 행 추가
 
-        if version_type == "PUB":
-            self.pub_table = QTableWidget(0, 3)
-            self.pub_table.setSelectionMode(QAbstractItemView.NoSelection)
-            self.pub_table.setFocusPolicy(Qt.NoFocus)
-            table = self.pub_table  # Assign to pub_table
-        elif version_type == "WORK":
-            self.work_table = QTableWidget(0, 3)
-            table = self.work_table  # Assign to work_table
-            
-        table.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
-        table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
-        table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
-        table.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
-        table.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
-        table.setColumnWidth(2,126)
-        table.verticalHeader().setDefaultSectionSize(30)
-        table.verticalHeader().setVisible(False)
+    #     table_widget.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
+    #     table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
+    #     table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
+    #     table_widget.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
+    #     table_widget.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
+    #     table_widget.setColumnWidth(2,126)
+    #     table_widget.verticalHeader().setDefaultSectionSize(30)
+    #     table_widget.verticalHeader().setVisible(False)
 
-        table.setAlternatingRowColors(True)
-        layout.addWidget(table)
+    #     #DCC 로고
+    #     file_logo = QLabel()
+    #     pixmap = QPixmap(dcc_logo).scaled(25, 25)  # 크기 조절
+    #     file_logo.setPixmap(pixmap)
+    #     #file_logo.setScaledContents(True) # 크기에 맞게 이미지가 자동으로 축소/확대됨.
+    #     file_logo.setAlignment(Qt.AlignCenter)
+    #     table_widget.setCellWidget(row, 0, file_logo)  # 첫 번째 열에 추가
 
-        file_path = ""
-        file_list = ["NULL"]
-        version_file_data(self, version_type, file_path, file_list)
+    #     # 파일명 (QTableWidgetItem 사용)
+    #     name_table = QTableWidgetItem(f"{file_name}")
+    #     table_widget.setItem(row, 1, name_table)  # 두 번째 열에 추가
+    #     # print(file_name)
 
-        return widget  # QWidget 반환
-
-    def file_table_item(self, table_widget, dcc_logo, file_name, edited_time, full_path):
-        
-        row = table_widget.rowCount()
-        table_widget.insertRow(row)  # 새로운 행 추가
-
-        #DCC 로고
-        file_logo = QLabel()
-        pixmap = QPixmap(dcc_logo).scaled(25, 25)  # 크기 조절
-        file_logo.setPixmap(pixmap)
-        #file_logo.setScaledContents(True) # 크기에 맞게 이미지가 자동으로 축소/확대됨.
-        file_logo.setAlignment(Qt.AlignCenter)
-        table_widget.setCellWidget(row, 0, file_logo)  # 첫 번째 열에 추가
-
-        # 파일명 (QTableWidgetItem 사용)
-        name_table = QTableWidgetItem(f"{file_name}")
-        table_widget.setItem(row, 1, name_table)  # 두 번째 열에 추가
-        # print(file_name)
-
-        # 저장 날짜 
-        time_table = QTableWidgetItem(f"{edited_time}")
-        table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
+    #     # 저장 날짜 
+    #     time_table = QTableWidgetItem(f"{edited_time}")
+    #     table_widget.setItem(row, 2, time_table)  # 세 번째 열에 추가
         # print(edited_time)
+        #table_widget.cellClicked.connect(lambda row, col: self.handle_work_table_click(table_widget, row, col))
 
-        table_widget.cellClicked.connect(lambda row, col : on_work_cell_clicked(row, col, table_widget.item(row,col), full_path))
+    def handle_work_table_click(self, table_widget, row, col):
+        if col != 1:  # Ensure it only fires for one column
+            return
+        print(f"Processing row {row}, column {col}")  # Debugging output
 
     def make_task_table(self):
         """
@@ -472,7 +480,7 @@ class UI(QMainWindow):
     
     def center_window(self):
         frame_geometry = self.frameGeometry()  # 창의 프레임 가져오기
-        screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
-        screen_geometry = screen.availableGeometry().center()  # 화면의 중앙 좌표
-        frame_geometry.moveCenter(screen_geometry)  # 창의 중심을 화면 중심으로 이동
-        self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동
+        #screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
+        #screen_geometry = screen.availableGeometry().center()  # 화면의 중앙 좌표
+        #frame_geometry.moveCenter(screen_geometry)  # 창의 중심을 화면 중심으로 이동
+        #self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동

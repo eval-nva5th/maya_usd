@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QFileDialog, QMessageBox
+from PySide2.QtWidgets import QFileDialog, QMessageBox
 
 def open_file_browser(ui_instance):
         default_filename = ui_instance.filename_input.text().strip()

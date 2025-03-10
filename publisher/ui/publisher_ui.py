@@ -10,6 +10,7 @@ except:
     from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
     from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
     from PySide2.QtWidgets import QComboBox
+    
 import sys
 from core.play_blast import PlayblastManager
 from event.event_handler import publish

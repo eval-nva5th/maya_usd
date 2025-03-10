@@ -1,14 +1,28 @@
-try:
-    from PySide6.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout
-    from PySide6.QtGui import QPixmap, QPainter, QColor
-except ImportError:
-    from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout
-    from PySide2.QtGui import QPixmap, QPainter, QColor
+from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
+from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
+
+import os, sys
+import maya.cmds as cmds
+
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader/event")
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader/ui")
+sys.path.append("/home/rapa/gitkraken/maya_usd/widget") 
+widget_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/widget/ui")
+sys.path.append(widget_ui_path)
 
 from event.custom_dialog import CustomDialog
-from core.video_player import VideoPlayer
-from core.data_managers import version_file_data
-import os
+#from core.video_player import VideoPlayer
+#from core.data_managers import version_file_data
+from shotgrid_user_task import ClickedTask
+
+
+# from ..widget.ui.test import CustomUI, add_custom_ui_to_tab
+#from ui.test import CustomUI, add_custom_ui_to_tab
+
+# sys.path.append("/home/rapa/gitkraken/maya_usd/widget/ui")
+# from test import CustomUI, add_custom_ui_to_tab
 
 def on_login_clicked(ui_instance):
     """
@@ -24,6 +38,7 @@ def on_login_clicked(ui_instance):
             popup.setWindowTitle("Failure")
             popup.setText("아이디 또는 이메일이 일치하지 않습니다")
             popup.exec()
+
         else:
             ui_instance.user_name = name
             ui_instance.setFixedSize(1100, 800)
@@ -39,16 +54,99 @@ def on_login_clicked(ui_instance):
 
 def on_cell_clicked(ui_instance, row, _):
     clicked_task_id = int(ui_instance.task_table.item(row, 2).text())
-    pub_path, pub_list = ui_instance.task_info.get_pub_files(clicked_task_id)
-    version_file_data(ui_instance, 'PUB', pub_path, pub_list)
-
-    work_path , work_list = ui_instance.task_info.get_work_files(clicked_task_id)
-    version_file_data(ui_instance, 'WORK', work_path, work_list)
-
+    
     prev_task_data, current_task_data = ui_instance.task_info.on_click_task(clicked_task_id)
-    prev_task_id = prev_task_data['id']
-
     update_prev_work(ui_instance, prev_task_data)
+
+    ct = ClickedTask(current_task_data)
+    pub_path = ct.set_deep_path("pub")
+    work_path = ct.set_deep_path("work")
+    file_name = ct.set_file_name()
+    pub_list = ct.get_dir_items(pub_path)
+    work_list = ct.get_dir_items(work_path)
+
+    update_pub_table(ui_instance, pub_path, pub_list)
+    update_work_table(ui_instance, work_path, work_list)
+    print(pub_list, work_list)
+    ui_instance.work_table.cellClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance.work_table, row, col, work_path, file_name, ct))
+
+def update_pub_table(ui_instance, pub_path, pub_list):
+
+    ui_instance.pub_table.setRowCount(0)
+
+    for file_info in pub_list:
+        # Example of file_info: ["/nas/eval/elements/null.png", "Click for new dir and file", "", path]
+        add_file_to_table(ui_instance.pub_table, file_info)
+
+def update_work_table(ui_instance, work_path, work_list):
+
+    ui_instance.work_table.setRowCount(0)  # Clear existing rows
+
+    for file_info in work_list:
+        add_file_to_table(ui_instance.work_table, file_info)
+
+    #ui_instance.work_table.cellClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance, file_info[3], row, col))
+
+def add_file_to_table(table_widget, file_info):
+
+    row = table_widget.rowCount()
+    table_widget.insertRow(row)
+
+    table_widget.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
+    table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
+    table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
+    table_widget.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
+    table_widget.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
+    table_widget.setColumnWidth(2,126)
+    table_widget.verticalHeader().setDefaultSectionSize(30)
+    table_widget.verticalHeader().setVisible(False)
+
+    # Image (DCC logo)
+    image_label = QLabel()
+    pixmap = QPixmap(file_info[0]).scaled(25, 25)
+    image_label.setPixmap(pixmap)
+    image_label.setAlignment(Qt.AlignCenter)
+    table_widget.setCellWidget(row, 0, image_label)
+
+    # File name or message
+    file_item = QTableWidgetItem(file_info[1])
+    table_widget.setItem(row, 1, file_item)
+
+    # Edited time 
+    time_item = QTableWidgetItem(file_info[2]) #if file_info[2] else "Unknown")
+    table_widget.setItem(row, 2, time_item)
+
+    # Attach a click event to handle file path interaction
+    #table_widget.cellClicked.connect(lambda row, col: on_work_cell_clicked(table_widget, file_info[3], row, col))
+
+def on_work_cell_clicked(table_widget, row, col, path, file_name, ct):
+    from widget_ui import CustomUI, add_custom_ui_to_tab
+
+    item = table_widget.item(row, col)
+    print(f"Clicked item: {item.text()} at row {row}, column {col}")
+
+    if item.text() == "No Dir No File":
+        print(f"Open directory or create a new file at path")
+        is_dir = False
+        dialog = CustomDialog(path, file_name, is_dir, ct)
+        dialog.exec()
+
+    elif item.text() ==  "No File" :
+        print("o directory x file")
+        is_dir = True
+        dialog = CustomDialog(path, file_name, is_dir, ct)
+        dialog.exec()
+
+    else :
+        full_path = f"{path}/{item.text()}"
+        cmds.file(full_path, open=True) ################################################################파일여는부분
+        print(ct.entity_id, ct.id, ct.proj_id)
+
+        print(f"{item.text()}가 열립니다.") 
+
+        add_custom_ui_to_tab(path)
+        customUI = CustomUI(path, ct)
+        customUI.exec()
 
 def update_prev_work(ui_instance, prev_task_data):
     prefix_path = "/nas/eval/show"
@@ -72,7 +170,7 @@ def update_prev_work(ui_instance, prev_task_data):
         dir_path = os.path.join(prefix_path, prev_task_project_name, prev_task_type_name, prev_task_category_name, prev_task_n, prev_task_step,"pub/maya/data")
         file_name = f"{prev_task_n}_{prev_task_step}.mov"
         file_path = f"{dir_path}/{file_name}"
-        print(file_path)
+
     else :
         prev_task_id = "No data"
         prev_task_name = "No data"
@@ -130,19 +228,33 @@ def update_prev_work(ui_instance, prev_task_data):
     ui_instance.video_widget.set_new_mov_file(file_path)
 
 
-def on_work_cell_clicked(row, col, item, full_path) :
-# item과 관련된 작업을 처리
-    if item.text() ==  "Double Click for new work file" :
-        print("여기서 아이템 생성 시작")
-        print(full_path)
-        path_slice = full_path.split('/')
-        file_name =  f"{path_slice[7]}_{path_slice[8]}_v001"
-        dialog = CustomDialog(full_path, file_name)
-        dialog.exec()
+# def on_work_cell_clicked(table_widget, full_path, row, col):
+#     item = table_widget.item(row, col)
+#     print(item.text(), row,col)
+    # if item.text() == "Click for new dir and file" :
+    #     print("x directory x file")
+        
+    #     if not os.path.exists(new_path):
+    #         os.makedirs(new_path)
+    #         print(f"'{new_path}' 경로가 생성되었습니다.")
 
-    else :
-        print(f"Row: {row}, Column: {col}, Item: {full_path}")
-        #subprocess.run(["maya", "-file", full_path], check=True)
+    #     path_slice = full_path.split('/')
+    #     file_name =  f"{path_slice[7]}_{path_slice[8]}_v001"
+    #     dialog = CustomDialog(full_path, file_name)
+    #     dialog.exec()
+
+    # elif item.text() ==  "Double Click for new work file" :
+    #     print("o directory x file")
+    #     path_slice = full_path.split('/')
+    #     file_name =  f"{path_slice[7]}_{path_slice[8]}_v001"
+    #     dialog = CustomDialog(full_path, file_name)
+    #     dialog.exec()
+
+    # else :
+    #     print(row,col)
+    #     print(item.text())
+    #     #cmds.file(full_path, open=True) ################################################################파일여는부분
+    #     print(f"{full_path}가 열립니다.") 
 
 def on_sort_changed(ui_instance):
     """

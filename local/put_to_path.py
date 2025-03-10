@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication, QFileDialog, QWidget
 
 def put_into_path():
 
-    app = QApplication([])
+    #app = QApplication([])
     file_dialog = QFileDialog()
     file_dialog.setFileMode(QFileDialog.ExistingFile)
     file_dialog.setDirectory("/nas/sy_test_folder/encoding_trial") 

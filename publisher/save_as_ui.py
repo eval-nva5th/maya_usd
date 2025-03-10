@@ -123,7 +123,7 @@ class SaveAsDialog(QMainWindow):
         self.move(center_x, center_y)
 
 if __name__ == "__main__":
-    app = QApplication()
+    #app = QApplication()
     save_dialog = SaveAsDialog()
     save_dialog.show()
-    sys.exit(app.exec())
+    #sys.exit(app.exec())
