@@ -2,10 +2,14 @@ from PySide2.QtWidgets import QApplication
 from ui.publisher_ui import PublisherDialog
 import sys
 
-def runrun():
-    
+def run():
+    app = QApplication()
     save_dialog = PublisherDialog()
     save_dialog.show()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    runrun()
+    run()
+else:
+    save_dialog = PublisherDialog()
+    save_dialog.show()
