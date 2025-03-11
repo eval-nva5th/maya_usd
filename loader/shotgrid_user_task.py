@@ -1,5 +1,7 @@
+from PySide6.QtWidgets import QApplication
 from shotgun_api3 import Shotgun 
 import os, sys, time
+from ui.loading_ui import LoadingDialog
 
 class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
     def __init__(self, sg_url, script_name, api_key):
@@ -72,13 +74,21 @@ class TaskInfo(Shotgrid) :
     def get_user_task(self, user_id):
         #UserInfo에서 갖고온 id를 파라미터로 갖고와 그 아이디에 해당하는 태스크를 딕트 형식으로 저장
 
+        loading_window = LoadingDialog()
+        loading_window.show()
+        QApplication.processEvents() ##### 문제되려남........
+
         id_filter = {'type': 'HumanUser', 'id': user_id}
         tasks = self.sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
         total_tasks = len(tasks)
         print(f"할당된 태스크 정보를 가져오는 중입니다 ... 총 {total_tasks}개")
 
         for i, task in enumerate(tasks, start=1) :
-            print(f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
+            progress_text = (f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
+            print (progress_text)
+
+            loading_window.set_loading_text(progress_text)
+            QApplication.processEvents() ##### 문제되려남........
 
             current_task_id = task['id']
             proj_name = task['project']['name']

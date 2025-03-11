@@ -2,8 +2,7 @@ try:
     from PySide6.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
 except:
     from PySide2.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
-
-import maya.cmds as cmds
+    import maya.cmds as cmds
 import os
 
 class CustomDialog(QDialog):
