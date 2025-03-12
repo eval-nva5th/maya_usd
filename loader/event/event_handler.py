@@ -1,5 +1,6 @@
 from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
 from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
+from functools import partial
 
 import os, sys
 import maya.cmds as cmds
@@ -50,18 +51,36 @@ def on_cell_clicked(ui_instance, row, _):
     
     prev_task_data, current_task_data = ui_instance.task_info.on_click_task(clicked_task_id)
     update_prev_work(ui_instance, prev_task_data)
-    # ct = ClickedTask()
-    # ct.initialize(current_task_data)
+
     ct = ClickedTask(current_task_data)
     pub_path = ct.set_deep_path("pub")
     work_path = ct.set_deep_path("work")
-    file_name = ct.set_file_name()
+
+    #file_name = ct.set_file_name()
     pub_list = ct.get_dir_items(pub_path)
     work_list = ct.get_dir_items(work_path)
     update_pub_table(ui_instance, pub_path, pub_list)
     update_work_table(ui_instance, work_path, work_list)
-    print(pub_list, work_list)
-    ui_instance.work_table.cellClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance.work_table, row, col, work_path, file_name, ct))
+
+    # print(pub_path, work_path)
+    # try:
+    #     if hasattr(ui_instance, "_work_table_slot"):  # 슬롯이 있는지 확인
+    #         ui_instance.work_table.cellDoubleClicked.disconnect(ui_instance._work_table_slot)
+    # except (TypeError, RuntimeError):
+    #     pass  # 연결된 슬롯이 없으면 무시
+
+    # # 새로운 슬롯을 partial로 저장
+    # ui_instance._work_table_slot = partial(on_work_cell_clicked, ui_instance.work_table, ct, work_path)
+    
+    # # 새로운 슬롯을 이벤트에 연결
+    # ui_instance.work_table.cellDoubleClicked.connect(ui_instance._work_table_slot)
+
+    try:
+        ui_instance.work_table.cellDoubleClicked.disconnect()
+    except Exception as e:
+        print(e)
+        pass  # 연결된 핸들러가 없을 경우 예외 발생할 수 있음, 무시
+    ui_instance.work_table.cellDoubleClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance.work_table, row, col, ct, work_path))
 
 def update_pub_table(ui_instance, pub_path, pub_list):
 
@@ -84,13 +103,14 @@ def add_file_to_table(table_widget, file_info):
 
     row = table_widget.rowCount()
     table_widget.insertRow(row)
-
+     
     table_widget.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
     table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
     table_widget.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
     table_widget.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
     table_widget.setColumnWidth(2,126)
     table_widget.verticalHeader().setDefaultSectionSize(30)
+    table_widget.horizontalHeader().setVisible(True) 
     table_widget.verticalHeader().setVisible(False)
 
     # Image (DCC logo)
@@ -108,38 +128,40 @@ def add_file_to_table(table_widget, file_info):
     time_item = QTableWidgetItem(file_info[2]) #if file_info[2] else "Unknown")
     table_widget.setItem(row, 2, time_item)
 
-def on_work_cell_clicked(table_widget, row, col, path, file_name, ct):
+def on_work_cell_clicked(table_widget, row, col, ct, path):
     from widget_ui import CustomUI, add_custom_ui_to_tab
 
     item = table_widget.item(row, col)
+    print(ct)
+    print(ct.entity_name, ct.content)
+    print(path)
+    print(ct.set_file_name())
     print(f"Clicked item: {item.text()} at row {row}, column {col}")
 
     if item.text() == "No Dir No File":
-        print(f"Open directory or create a new file at path")
-        is_dir = False
-        dialog = CustomDialog(path, file_name, is_dir, ct)
+       print(f"Open directory or create a new file at path")
+       print(ct.set_file_name())
+       is_dir, is_created = False, False
+       if not is_created :
+        dialog = CustomDialog(path, is_dir,is_created, ct)
         dialog.exec()
 
     elif item.text() ==  "No File" :
         print("o directory x file")
-        is_dir = True
-        dialog = CustomDialog(path, file_name, is_dir, ct)
-        dialog.exec()
+        print(ct.set_file_name())
+        is_dir, is_created = True, False
+        if not is_created :
+            print(ct.entity_name, ct.content) 
+            dialog = CustomDialog(path, is_dir,is_created, ct)
+            dialog.exec()
 
     else :
         full_path = f"{path}/{item.text()}"
         cmds.file(full_path, open=True) ################################################################파일여는부분
-        print(ct.entity_id, ct.id, ct.proj_id)
 
         print(f"{item.text()}가 열립니다.") 
 
         add_custom_ui_to_tab(path, ct)
-        # customUI = CustomUI()
-        # customUI.initialize()  # 명시적으로 초기화
-        # customUI = CustomUI()
-        # customUI.getClickedTaskObject(ct)
-        # customUI.update()
-        # customUI.show()
 
 def update_prev_work(ui_instance, prev_task_data):
     prefix_path = "/nas/eval/show"

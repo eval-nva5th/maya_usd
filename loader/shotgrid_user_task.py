@@ -347,12 +347,15 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
     def get_dir_items(self, deep_path) :
         data_list = []
 
+        #full_path = f"{deep_path}/{self.set_file_name()}"
         if not os.path.exists(deep_path) :
-            data_list.append(["/nas/eval/elements/null.png", "No Dir No File", "", deep_path])
+            full_path = f"{deep_path}/{self.set_file_name()}"
+            data_list.append(["/nas/eval/elements/null.png", "No Dir No File", "", full_path])
         else : 
             data_list = self.set_file_list(deep_path)
+            full_path = f"{deep_path}/{self.set_file_name()}"
             if len(data_list) == 0 :
-                data_list.append(["/nas/eval/elements/null.png", "No File", "", deep_path])
+                data_list.append(["/nas/eval/elements/null.png", "No File", "", full_path])
 
         return data_list
     
@@ -392,7 +395,7 @@ if __name__ == "__main__":
     user_id = user.get_userid()
     print(f"user info : {user.name} | {user.email} | {user.id} | {user.dept} | {user.pos}")
     task.get_user_task(user_id)
-    prev_task_dict, current_dict = task.on_click_task(6178) 
+    prev_task_dict, current_dict = task.on_click_task(6192) 
 
     c = ClickedTask(current_dict) ############### how to make clicked_task Object
 

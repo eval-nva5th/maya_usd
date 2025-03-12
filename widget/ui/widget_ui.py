@@ -30,12 +30,14 @@ sg = shotgun_api3.Shotgun(sg_url, script_name, api_key)
 path = ""
 
 def get_maya_main_window():
-    """Returns the Maya main window as a QWidget."""
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(int(main_window_ptr), QWidget)
 
 class CustomUI(QWidget):
     def __init__(self, path=None, ct=None):
+
+        self.current_widget = None  
+
         if path !=None :
             self.path=path
         
@@ -67,7 +69,7 @@ class CustomUI(QWidget):
 
         self.label0 = QLabel("TASK INFO")
         self.label0.setStyleSheet("font-size: 11pt;")
-        # Create Labels, LineEdits, and Buttons
+
         self.label1 = QLabel(f"Project : {self.project_name}")
         self.label2 = QLabel(f"Task : {self.content}")
         self.label3 = QLabel(f"Dept : {self.step}")
@@ -95,7 +97,6 @@ class CustomUI(QWidget):
 
         colleague_list = []
         colleague_list = self.get_colleague_info()
-        print(colleague_list)
 
         colleague_layout = QGridLayout()
         
@@ -119,16 +120,13 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
-            # pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            # pixmap = pixmap.copy((pixmap.width()-30)//2, (pixmap.height()-30)//2, 30, 30)
+            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            pixmap = pixmap.copy((pixmap.width()-30)//2, (pixmap.height()-30)//2, 30, 30)
             pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = self.circular_pixmap(pixmap, 30)
-            thumb_label.setPixmap(pixmap)  # 기존 thumb_label 사용해야 함!
-            thumb_label.setStyleSheet('border-radius: 15px; border: white;')
 
-# 간단하게 원형 마스크 적용하기
-            # region = QRegion(pixmap.rect(), QRegion.Ellipse)
-            # thumb_label.setMask(region)
+            thumb_label.setPixmap(pixmap) 
+            thumb_label.setStyleSheet('border-radius: 15px; border: white;')
 
             text_label = QLabel(f"{str(item[0])} : {str(item[1])}")
 
@@ -307,23 +305,33 @@ class PublishDialog(QDialog):
         name1 = self.line_edit1.text()
         name2 = self.line_edit2.text()
         print(f"Publish - Name 1: {name1}, Name 2: {name2}")
-        self.accept()  # Close the dialog
+        self.accept()  # 다이얼로그 닫기
 
-# Create and add custom UI to Maya's right-side tab
 def add_custom_ui_to_tab(path, ct=None):
     workspace_control_name = "CustomTabUIWorkspaceControl"
     
-    if not cmds.workspaceControl(workspace_control_name, q=True, exists=True):
-        # Create a workspace control (dockable UI)
-        cmds.workspaceControl(workspace_control_name, label="Save / Publish", retain=False, dockToControl=("AttributeEditor", "right"))
-
-    # Get the pointer for the workspace control and wrap it
+    if cmds.workspaceControl(workspace_control_name, query=True, exists=True):
+        print(f"WorkspaceControl '{workspace_control_name}' already exists.")
+        cmds.deleteUI(workspace_control_name) # 기존 패널 삭제
+    else : 
+        pass
+    cmds.workspaceControl(workspace_control_name, label="Save / Publish", retain=False, dockToControl=("AttributeEditor", "right"))
+    
     control_ptr = omui.MQtUtil.findControl(workspace_control_name)
     control_widget = wrapInstance(int(control_ptr), QWidget)
 
-    # Create an instance of CustomUI and add it to the workspace control
-    custom_ui = CustomUI(path, ct)
-    control_widget.layout().addWidget(custom_ui)
+    if "custom_ui" not in locals() or custom_ui is None:
+        custom_ui = CustomUI(path, ct)
+        control_widget.layout().addWidget(custom_ui)
+    else :
+        if custom_ui.current_widget is not None:
+            custom_ui.current_widget.close()
+            custom_ui.current_widget.deleteLater()
+            custom_ui.current_widget = None  
+
+            custom_ui = CustomUI(path, ct)
+            control_widget.layout().addWidget(custom_ui)
+
 
 # Call the function to add the custom UI
 #add_custom_ui_to_tab(path)

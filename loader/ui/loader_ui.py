@@ -32,13 +32,13 @@ class UI(QMainWindow):
         self.work_table = QTableWidget(0,3)
         self.work_table.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
         self.work_table.setEditTriggers(QTableWidget.NoEditTriggers)  # **모든 셀 편집 막기**
-        self.work_table.horizontalHeader().setVisible(False)  # 컬럼(위) 헤더 숨기기
-        self.work_table.verticalHeader().setVisible(False)  # 행 번호(왼쪽) 헤더 숨기기
+        self.work_table.horizontalHeader().setVisible(False)  
+        self.work_table.verticalHeader().setVisible(False) 
         self.pub_table = QTableWidget(0,3)
         self.pub_table.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
         self.pub_table.setEditTriggers(QTableWidget.NoEditTriggers)  # **모든 셀 편집 막기**
-        self.pub_table.horizontalHeader().setVisible(False)  # 컬럼(위) 헤더 숨기기
-        self.pub_table.verticalHeader().setVisible(False)  # 행 번호(왼쪽) 헤더 숨기기
+        self.pub_table.horizontalHeader().setVisible(False) 
+        self.pub_table.verticalHeader().setVisible(False)  
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
@@ -285,7 +285,7 @@ class UI(QMainWindow):
         self.task_table.setColumnHidden(2, True) # Task ID 숨김
 
         # 테이블 이벤트 처리
-        self.task_table.cellClicked.connect(lambda row,col:on_cell_clicked(self,row,col))
+        self.task_table.cellDoubleClicked.connect(lambda row,col:on_cell_clicked(self,row,col))
         self.search_but.clicked.connect(lambda:search_task(self))
         self.search_input.returnPressed.connect(lambda:search_task(self))
         self.search_input.textChanged.connect(lambda:search_task(self))

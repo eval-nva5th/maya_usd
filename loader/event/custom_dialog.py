@@ -7,16 +7,17 @@ import maya.cmds as cmds
 import os
 
 class CustomDialog(QDialog):
-    def __init__(self, path, file_name, is_dir, ct):
+    def __init__(self, path, is_dir, is_created, ct):
         super().__init__()
 
         self.is_dir = is_dir
-        self.ct = ct
-
+        self.is_created = is_created
+        #self.ct = ct
+        self.file_name = ct.set_file_name()
         # Set up the dialog layout
         # Create two LineEdits
         self.line_edit = QLineEdit(self)
-        self.line_edit.setText(file_name)
+        self.line_edit.setText(self.file_name)
         self.line_edit.setFixedWidth(300)
         self.switch = QToolButton(self)
         self.switch.setCheckable(True)
@@ -79,8 +80,8 @@ class CustomDialog(QDialog):
         else :
             os.makedirs(path)
             print(f"'{path}' 경로가 생성되었습니다.")
+            self.is_dir = False
             
-
         cmds.file(rename=run_path)
         if ext == ".ma" :
             save_type = "mayaAscii"
@@ -89,6 +90,7 @@ class CustomDialog(QDialog):
 
         cmds.file(save=True, type=save_type)
         print(f"씬 파일 '{run_path}'가 저장되었습니다.")
+        self.is_created = True
         print(self.ct.entity_id, self.ct.task_id, self.ct.proj_id)
 
         cmds.file(run_path, open=True) #################################### 여는 방법 수정
