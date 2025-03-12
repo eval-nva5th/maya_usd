@@ -6,9 +6,8 @@ from PySide2.QtWidgets import QHeaderView, QAbstractItemView
 from PySide2.QtCore import Qt
 import maya.cmds as cmds
 
-
+from loader.event import event_handler
 from shotgrid_user_task import UserInfo, TaskInfo, ClickedTask
-from event.event_handler import on_sort_changed, on_work_cell_clicked,on_login_clicked, on_cell_clicked, search_task
 from core.video_player import VideoPlayer
 from core.data_managers import previous_data, task_data
 
@@ -23,8 +22,10 @@ class UI(QMainWindow):
         self.task_info = TaskInfo(sg_url, script_name, api_key)
         self.prefix_path = "/nas/eval/show"
 
+        self.input_name = ""
+
         self.task_data_dict = []
-        
+
         super().__init__()
         self.setWindowTitle("EVAL LOADER")
         self.center_window()
@@ -32,9 +33,6 @@ class UI(QMainWindow):
         self.work_table = QTableWidget(0,3)
         self.pub_table = QTableWidget(0,3)
 
-        self.login_window = self.login_ui()
-        self.setCentralWidget(self.login_window)
- 
     def setup_layout(self):
         """
         레이아웃 세팅
@@ -72,7 +70,7 @@ class UI(QMainWindow):
         # 유저 레이아웃
         user_layout = QHBoxLayout()
         none_label = QLabel()
-        user_name = QLabel(self.name_input.text())
+        user_name = QLabel(self.input_name)
         user_name.setStyleSheet("font-weight: bold;")
         user_name.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         user_name.setAlignment(Qt.AlignRight)
@@ -274,11 +272,11 @@ class UI(QMainWindow):
         self.task_table.setColumnHidden(2, True) # Task ID 숨김
 
         # 테이블 이벤트 처리
-        self.task_table.cellClicked.connect(lambda row,col:on_cell_clicked(self,row,col))
-        self.search_but.clicked.connect(lambda:search_task(self))
-        self.search_input.returnPressed.connect(lambda:search_task(self))
-        self.search_input.textChanged.connect(lambda:search_task(self))
-        self.sort_combo.currentIndexChanged.connect(lambda:on_sort_changed(self))
+        self.task_table.cellClicked.connect(lambda row,col:event_handler.on_cell_clicked(self,row,col))
+        self.search_but.clicked.connect(lambda:event_handler.search_task(self))
+        self.search_input.returnPressed.connect(lambda:event_handler.search_task(self))
+        self.search_input.textChanged.connect(lambda:event_handler.search_task(self))
+        self.sort_combo.currentIndexChanged.connect(lambda:event_handler.on_sort_changed(self))
 
         # 테이블 크기설정
         self.task_table.setColumnWidth(0, 180)  # 로고 열 (좁게 설정)
@@ -390,39 +388,39 @@ class UI(QMainWindow):
             # 행 높이를 조정하여 잘리지 않도록 설정
             task_table.setRowHeight(row, 80)
 
-    def login_ui(self):
-        """
-        로그인 화면 UI
-        """
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
+    # def login_ui(self):
+    #     """
+    #     로그인 화면 UI
+    #     """
+    #     widget = QWidget()
+    #     layout = QVBoxLayout(widget)
 
-        # 네임 임력
-        self.name_input = QLineEdit("장순우") ################ 말풍선 제거하기
-        # self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
+    #     # 네임 임력
+    #     self.name_input = QLineEdit("장순우") ################ 말풍선 제거하기
+    #     # self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
 
-        # 이메일 입력
-        self.email_input = QLineEdit("f8d783@kw.ac.kr") ################ 말풍선 제거하기
-        # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
+    #     # 이메일 입력
+    #     self.email_input = QLineEdit("f8d783@kw.ac.kr") ################ 말풍선 제거하기
+    #     # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
 
-        # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작하도록 연결
-        self.email_input.returnPressed.connect(lambda:on_login_clicked(self))
-        self.name_input.returnPressed.connect(lambda:on_login_clicked(self))
+    #     # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작하도록 연결
+    #     self.email_input.returnPressed.connect(lambda:on_login_clicked(self))
+    #     self.name_input.returnPressed.connect(lambda:on_login_clicked(self))
 
-        # 로그인 버튼
-        self.login_btn = QPushButton("LOGIN")
-        self.login_btn.clicked.connect(lambda:on_login_clicked(self))
+    #     # 로그인 버튼
+    #     self.login_btn = QPushButton("LOGIN")
+    #     self.login_btn.clicked.connect(lambda:on_login_clicked(self))
 
-        # 레이아웃 설정
-        layout.addWidget(self.name_input)
-        layout.addWidget(self.email_input)
-        layout.addWidget(self.login_btn)
+    #     # 레이아웃 설정
+    #     layout.addWidget(self.name_input)
+    #     layout.addWidget(self.email_input)
+    #     layout.addWidget(self.login_btn)
 
-        return widget # 생성된 창 반환
+    #     return widget # 생성된 창 반환
     
     def center_window(self):
         frame_geometry = self.frameGeometry()  # 창의 프레임 가져오기
-        #screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
-        #screen_geometry = screen.availableGeometry().center()  # 화면의 중앙 좌표
-        #frame_geometry.moveCenter(screen_geometry)  # 창의 중심을 화면 중심으로 이동
-        #self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동
+        screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
+        screen_geometry = screen.availableGeometry().center()  # 화면의 중앙 좌표
+        frame_geometry.moveCenter(screen_geometry)  # 창의 중심을 화면 중심으로 이동
+        self.move(frame_geometry.topLeft())  # 최종적으로 창을 이동
