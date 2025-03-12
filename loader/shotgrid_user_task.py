@@ -282,10 +282,44 @@ class TaskInfo(Shotgrid) :
         prev_task_dict["comment"] = prev_task['comment']
         return prev_task_dict, current_dict
 
-class ClickedTask:
+class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠㅠ
+    # _instance = None
+
+    # def __new__(cls, id_dict=None) :
+    #     if not cls._instance:
+    #         cls._instance = super().__new__(cls)
+    #         cls._instance._id_dict = id_dict # 초기화는 여기서 수행
+
+    #         cls._id = None
+    #         cls._content = None
+    #         cls._proj_id = None
+    #         cls._project_name = None
+    #         cls._entity_id = None
+    #         cls._entity_type = None
+    #         cls._entity_name = None
+    #         cls._entity_parent = None
+    #         cls._step = None
+    #         cls._root_path = None
+
+    #     return cls._instance
+    
+    # def initialize(self, id_dict):  # 명시적으로 초기화하는 함수 추가
+    #     if id_dict:
+    #         self.id = id_dict.get('id', None)
+    #         self.content = id_dict.get('content', None)
+    #         self.proj_id = id_dict.get('proj_id', None)
+    #         self.project_name = id_dict.get('proj_name', None)
+    #         self.entity_id = id_dict.get('entity_id', None)
+    #         self.entity_type = id_dict.get('entity_type', None)
+    #         self.entity_name = id_dict.get('entity_name', None)
+    #         self.entity_parent = id_dict.get('entity_parent', None)
+    #         self.step = id_dict('step', None)
+    #         self.root_path = None
+
     def __init__(self, id_dict):
         #{'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827, 'id': 5828}
         self.id = id_dict["id"]
+        self.content = id_dict["content"]
         self.proj_id = id_dict["proj_id"]
         self.project_name = id_dict["proj_name"]
         self.entity_id = id_dict["entity_id"]

@@ -50,14 +50,14 @@ def on_cell_clicked(ui_instance, row, _):
     
     prev_task_data, current_task_data = ui_instance.task_info.on_click_task(clicked_task_id)
     update_prev_work(ui_instance, prev_task_data)
-
+    # ct = ClickedTask()
+    # ct.initialize(current_task_data)
     ct = ClickedTask(current_task_data)
     pub_path = ct.set_deep_path("pub")
     work_path = ct.set_deep_path("work")
     file_name = ct.set_file_name()
     pub_list = ct.get_dir_items(pub_path)
     work_list = ct.get_dir_items(work_path)
-
     update_pub_table(ui_instance, pub_path, pub_list)
     update_work_table(ui_instance, work_path, work_list)
     print(pub_list, work_list)
@@ -87,7 +87,6 @@ def add_file_to_table(table_widget, file_info):
 
     table_widget.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
     table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
-    table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 편집 비활성화
     table_widget.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
     table_widget.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
     table_widget.setColumnWidth(2,126)
@@ -134,9 +133,13 @@ def on_work_cell_clicked(table_widget, row, col, path, file_name, ct):
 
         print(f"{item.text()}가 열립니다.") 
 
-        add_custom_ui_to_tab(path)
-        customUI = CustomUI(path, ct)
-        customUI.exec()
+        add_custom_ui_to_tab(path, ct)
+        # customUI = CustomUI()
+        # customUI.initialize()  # 명시적으로 초기화
+        # customUI = CustomUI()
+        # customUI.getClickedTaskObject(ct)
+        # customUI.update()
+        # customUI.show()
 
 def update_prev_work(ui_instance, prev_task_data):
     prefix_path = "/nas/eval/show"

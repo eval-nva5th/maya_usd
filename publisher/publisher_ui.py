@@ -5,6 +5,7 @@ from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
 from PySide2.QtWidgets import QComboBox
 
 import sys
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader/")
 
 class PublisherDialog(QMainWindow):
     def __init__(self):

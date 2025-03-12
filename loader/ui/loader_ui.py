@@ -30,7 +30,15 @@ class UI(QMainWindow):
         self.center_window()
 
         self.work_table = QTableWidget(0,3)
+        self.work_table.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
+        self.work_table.setEditTriggers(QTableWidget.NoEditTriggers)  # **모든 셀 편집 막기**
+        self.work_table.horizontalHeader().setVisible(False)  # 컬럼(위) 헤더 숨기기
+        self.work_table.verticalHeader().setVisible(False)  # 행 번호(왼쪽) 헤더 숨기기
         self.pub_table = QTableWidget(0,3)
+        self.pub_table.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
+        self.pub_table.setEditTriggers(QTableWidget.NoEditTriggers)  # **모든 셀 편집 막기**
+        self.pub_table.horizontalHeader().setVisible(False)  # 컬럼(위) 헤더 숨기기
+        self.pub_table.verticalHeader().setVisible(False)  # 행 번호(왼쪽) 헤더 숨기기
 
         self.login_window = self.login_ui()
         self.setCentralWidget(self.login_window)
@@ -43,7 +51,8 @@ class UI(QMainWindow):
         self.task_container = self.make_task_table()
         self.task_container.setMinimumWidth(570)
         self.task_container.setMaximumWidth(570)  # TASK 최소 너비 지정, 안하면 너무 작아짐.
-        self.task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 가로/세로 확장 허용
+        self.task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding) # 가로/세로 확장 허용
+        #self.task_container.setEditTriggers(QAbstractItemView.NoEditTriggers)  
         
         file_table_widget = QWidget()
         file_table_layout = QVBoxLayout(file_table_widget)
@@ -270,6 +279,8 @@ class UI(QMainWindow):
 
         # 테이블 위젯 생성 (초기 행 개수: 0, 2개 컬럼)
         self.task_table = QTableWidget(0, 3)
+        self.task_table.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
+        self.task_table.setEditTriggers(QTableWidget.NoEditTriggers)  # **모든 셀 편집 막기**
         self.task_table.setHorizontalHeaderLabels(["Thumbnail", "Task Info", "Task ID"])
         self.task_table.setColumnHidden(2, True) # Task ID 숨김
 
