@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
 from PySide2.QtWidgets import QComboBox
     
 import sys
-#from publisher.core.play_blast import PlayblastManager
+from publisher.core.play_blast import PlayblastManager
 from publisher.event.event_handler import publish
 
 class PublisherDialog(QMainWindow):
