@@ -10,6 +10,9 @@ import requests
 import sys
 import os
 
+sys.path.append("/home/rapa/maya_usd/save_as")
+from save_as.main import run as save_as_run
+
 from importlib import reload
 
 publisher_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/save_as")
@@ -255,6 +258,7 @@ class CustomUI(QWidget):
             self.step = ct.step
 
     def show_save_as_popup(self):
+        save_as_run()
         """Displays the 'Save As' popup dialog."""
         # main.save_dialog = SaveAsDialog()
         # main.save_dialog.show()

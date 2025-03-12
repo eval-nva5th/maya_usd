@@ -1,6 +1,8 @@
 from PySide2.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
 import maya.cmds as cmds
-import os
+import os, sys
+
+
 
 class CustomDialog(QDialog):
     def __init__(self, path, is_dir, is_created, ct):
