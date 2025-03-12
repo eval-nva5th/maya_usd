@@ -36,9 +36,22 @@ class PublishManager(Shotgrid):
     def get_entity_type(self, entity_type):
         return "Shot" if entity_type == "seq" else "Asset"
     
+
+    def get_internal_ip(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("8.8.8.8", 80))  # 구글 DNS 서버로 연결하여 내부망 IP 확인
+            internal_ip = s.getsockname()[0]
+        except Exception:
+            internal_ip = "127.0.0.1"
+        finally:
+            s.close()
+        return internal_ip
+    
     def get_assignee(self):
-        hostname = socket.gethostname()
-        internal_ip = socket.gethostbyname(hostname)
+        # hostname = socket.gethostname()
+        # internal_ip = socket.gethostbyname(hostname)
+        internal_ip = self.get_internal_ip()
         last_ip = int(internal_ip.split(".")[-1])
         return self.sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
     
