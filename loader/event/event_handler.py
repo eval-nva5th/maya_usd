@@ -8,7 +8,7 @@ import os, sys
 from shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
 from shotgrid_user_task import UserInfo
-# from loader.ui.loader_ui import UI
+from loader.ui.loader_ui import UI
 # from loader.core.data_managers import version_file_data
 
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
