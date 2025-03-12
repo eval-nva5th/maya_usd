@@ -10,8 +10,7 @@ def run():
     # app = QApplication(sys.argv)
     save_dialog = SaveAsDialog()
     save_dialog.show()
-    # sys.exit(app.exec_())
-    return save_dialog
+    #sys.exit(app.exec_())
 
 if __name__ == "__main__":
     run()

@@ -16,6 +16,8 @@ API_KEY = "i7bnd$zZcatoksolnitceenip"
 
 sg = shotgun_api3.Shotgun(SHOTGRID_URL, SCRIPT_NAME, API_KEY)
 
+connected_clients = {}
+
 @app.route("/notify", methods=["POST"])
 def notify_maya():
     try:
@@ -65,12 +67,16 @@ def notify_maya():
         #     print(f"Sent signal to {ip}")
 
         for ip in assignees_ip_list:
-            print(f"[DEBUG] Preparing to send notification to {ip}")
-            try:
-                sio.emit("shotgrid_notification", {"message_dict": message_dict}, namespace="/")
-                print(f"[DEBUG] Successfully sent notification to {ip}")
-            except Exception as e:
-                print(f"[DEBUG] Failed to send notification to {ip}: {e}")
+            if ip in connected_clients:
+                sid = connected_clients[ip]
+                print(f"[DEBUG] Sending notification to {ip} (SID: {sid})")
+                try:
+                    sio.emit("shotgrid_notification", {"message_dict": message_dict}, room=sid)
+                    print(f"[DEBUG] Successfully sent notification to {ip}")
+                except Exception as e:
+                    print(f"[DEBUG] Failed to send notification to {ip}: {e}")
+            else:
+                print(f"[DEBUG] No active connection for {ip}")
 
 
         if os.name == "posix":
@@ -85,16 +91,22 @@ def notify_maya():
 @sio.event
 def connect(sid, environ):
     client_ip = environ.get("HTTP_X_FORWARDED_FOR") or environ.get("REMOTE_ADDR", "Unknown")
-    print(f"Client connected: {sid} (IP: {client_ip})")
+    connected_clients[client_ip] = sid  # IP와 SID 매핑 저장
+    print(f"[DEBUG] Client connected: {sid} (IP: {client_ip})")
 
 @sio.event
 def disconnect(sid):
-    print(f"Client disconnect : {sid}")
+    for ip, stored_sid in list(connected_clients.items()):
+        if stored_sid == sid:
+            del connected_clients[ip]
+            print(f"[DEBUG] Client disconnected: {ip} (SID: {sid})")
+            break
 
 def start_socketio_server():
     eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 6000)), flask_app)
 
 def run_flask_in_thread():
+    print("Central Server is running at other thread")
     thread = threading.Thread(target=start_socketio_server)
     thread.daemon = True
     thread.start()
@@ -149,4 +161,7 @@ def get_assignees_ip(task_id):
     return user_ip_list
 
 print(f"{'-'*20}Central Server Running{'-'*20}")
-run_flask_in_thread()
+if __name__ == "__main__":
+    start_socketio_server()
+else:
+    run_flask_in_thread()
