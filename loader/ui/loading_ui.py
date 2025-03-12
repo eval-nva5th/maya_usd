@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
-from PySide6.QtCore import Qt, QTimer
+
+from PySide2.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
+from PySide2.QtCore import Qt, QTimer
 from loader.core.video_player import VideoPlayer
 
 try:

@@ -1,17 +1,14 @@
-try:
-    from PySide6.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
-    from PySide6.QtGui import QPixmap, QPainter, QColor, Qt
-except:
-    from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
-    from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
-    import maya.cmds as cmds
-    import maya.utils as mu
+
+from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
+from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
+import maya.cmds as cmds
+import maya.utils as mu
 
 import os, sys
 from shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
 from shotgrid_user_task import UserInfo
-from loader.ui.loader_ui import UI
+# from loader.ui.loader_ui import UI
 # from loader.core.data_managers import version_file_data
 
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader")

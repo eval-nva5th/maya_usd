@@ -1,18 +1,10 @@
-try :
-    from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-    from PySide6.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
-    from PySide6.QtGui import QPixmap, QPainter, QColor
-    from PySide6.QtWidgets import QHeaderView, QAbstractItemView
-    from PySide6.QtCore import Qt
-except ImportError:
-    from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-    from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
-    from PySide2.QtGui import QPixmap, QPainter, QColor
-    from PySide2.QtWidgets import QHeaderView, QAbstractItemView
-    from PySide2.QtCore import Qt
-    import maya.cmds as cmds
-except ImportError:
-    raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
+
+from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
+from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+from PySide2.QtGui import QPixmap, QPainter, QColor
+from PySide2.QtWidgets import QHeaderView, QAbstractItemView
+from PySide2.QtCore import Qt
+import maya.cmds as cmds
 
 from loader.event import event_handler
 from shotgrid_user_task import UserInfo, TaskInfo, ClickedTask

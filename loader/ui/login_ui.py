@@ -1,10 +1,6 @@
-try :
-    from PySide6.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QApplication
-except ImportError:
-    from PySide2.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QApplication
-    import maya.cmds as cmds
-except ImportError:
-    raise ImportError("PySide6와 PySide2가 모두 설치되지 않았습니다. 설치 후 다시 실행해주세요.")
+
+from PySide2.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QApplication
+import maya.cmds as cmds
 
 from event.event_handler import on_login_clicked
 

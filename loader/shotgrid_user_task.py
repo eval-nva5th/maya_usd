@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication
 from shotgun_api3 import Shotgun 
 import os, sys, time
 from ui.loading_ui import LoadingDialog
