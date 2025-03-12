@@ -1,9 +1,16 @@
+
 from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
 from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
 from functools import partial
+import maya.cmds as cmds
+import maya.utils as mu
 
 import os, sys
-import maya.cmds as cmds
+from shotgrid_user_task import ClickedTask
+from loader.event.custom_dialog import CustomDialog
+from shotgrid_user_task import UserInfo
+from loader.ui.loader_ui import UI
+# from loader.core.data_managers import version_file_data
 
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
@@ -13,19 +20,20 @@ sys.path.append("/home/rapa/gitkraken/maya_usd/widget")
 widget_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/widget/ui")
 sys.path.append(widget_ui_path)
 
-from event.custom_dialog import CustomDialog
-#from core.video_player import VideoPlayer
-#from core.data_managers import version_file_data
-from shotgrid_user_task import ClickedTask
-
-def on_login_clicked(ui_instance):
+def on_login_clicked(ui_instance):                        ######################### 1번 실행중
     """
     로그인 버튼 실행
     """
+    sg_url = "https://hi.shotgrid.autodesk.com/"
+    script_name = "Admin_SY"
+    api_key = "kbuilvikxtf5v^bfrivDgqhxh"
+    user = UserInfo(sg_url, script_name, api_key)
+
     name = ui_instance.name_input.text()
     email = ui_instance.email_input.text()
+
     if name and email: #이름과 이메일에 값이 있을 때
-        is_validate = ui_instance.user.is_validate(email, name)
+        is_validate = user.is_validate(email, name)
         if not is_validate:
             popup = QMessageBox()
             popup.setIcon(QMessageBox.Warning)
@@ -33,11 +41,16 @@ def on_login_clicked(ui_instance):
             popup.setText("아이디 또는 이메일이 일치하지 않습니다")
             popup.exec()
 
-        else:
-            ui_instance.user_name = name
-            ui_instance.setFixedSize(1100, 800)
-            ui_instance.setCentralWidget(ui_instance.setup_layout()) # 로그인 창을 메인화면으로 변경
-            ui_instance.center_window()
+        else: # 로그인 성공!
+            ui_instance.close()
+            loader_ui = UI()
+            loader_ui.user = user
+            loader_ui.user_name = name
+            loader_ui.input_name = name
+            loader_ui.setFixedSize(1100, 800)
+            loader_ui.setCentralWidget(loader_ui.setup_layout()) # 로그인 창을 메인화면으로 변경
+            loader_ui.center_window()
+            loader_ui.show()
 
     else: # 이름과 이메일에 값이 없을 때
         popup = QMessageBox()
@@ -47,6 +60,8 @@ def on_login_clicked(ui_instance):
         popup.exec()
 
 def on_cell_clicked(ui_instance, row, _):
+    if not ui_instance:
+        return
     clicked_task_id = int(ui_instance.task_table.item(row, 2).text())
     
     prev_task_data, current_task_data = ui_instance.task_info.on_click_task(clicked_task_id)
@@ -290,4 +305,3 @@ def search_task(ui_instance):
                     break
 
             ui_instance.task_table.setRowHidden(row, not match)  # 일치하지 않으면 숨김
-    # ui_instance.search_input.clear()

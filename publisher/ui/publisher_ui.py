@@ -1,19 +1,12 @@
-try:
-    from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
-    from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-    from PySide6.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
-    from PySide6.QtWidgets import QMessageBox, QPlainTextEdit
-    from PySide6.QtWidgets import QComboBox
-except:
-    from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
-    from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-    from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
-    from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
-    from PySide2.QtWidgets import QComboBox
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
+from PySide2.QtWidgets import QComboBox
     
 import sys
-from core.play_blast import PlayblastManager
-from event.event_handler import publish
+from publisher.core.play_blast import PlayblastManager
+from publisher.event.event_handler import publish
 
 class PublisherDialog(QMainWindow):
     def __init__(self):
@@ -72,10 +65,10 @@ class PublisherDialog(QMainWindow):
         cancel_btn.setFixedHeight(30)
         publish_btn.setFixedHeight(30)
 
-
         # Event Handle
         cancel_btn.clicked.connect(self.close)
         publish_btn.clicked.connect(lambda: publish(self))
+        publish_btn.clicked.connect(lambda: PlayblastManager(self))
 
         # layout
         filepath_container.addWidget(filepath_label)
