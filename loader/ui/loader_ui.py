@@ -14,9 +14,9 @@ from core.data_managers import previous_data, task_data
 class UI(QMainWindow):
     def __init__(self):
 
-        sg_url = "https://hi.shotgrid.autodesk.com/"
-        script_name = "Admin_SY"
-        api_key = "kbuilvikxtf5v^bfrivDgqhxh"
+        sg_url = "https://5thacademy.shotgrid.autodesk.com/"
+        script_name = "sy_key"
+        api_key = "vkcuovEbxhdoaqp9juqodux^x"
         self.user = UserInfo(sg_url, script_name, api_key)
         self.user_name = ""
         self.task_info = TaskInfo(sg_url, script_name, api_key)

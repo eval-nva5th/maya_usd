@@ -24,9 +24,9 @@ def on_login_clicked(ui_instance):                        ######################
     """
     로그인 버튼 실행
     """
-    sg_url = "https://hi.shotgrid.autodesk.com/"
-    script_name = "Admin_SY"
-    api_key = "kbuilvikxtf5v^bfrivDgqhxh"
+    sg_url = "https://5thacademy.shotgrid.autodesk.com/"
+    script_name = "sy_key"
+    api_key = "vkcuovEbxhdoaqp9juqodux^x"
     user = UserInfo(sg_url, script_name, api_key)
 
     name = ui_instance.name_input.text()

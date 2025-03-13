@@ -391,9 +391,9 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
 
 # 실행
 if __name__ == "__main__":
-    sg_url = "https://hi.shotgrid.autodesk.com/"
-    script_name = "Admin_SY"
-    api_key = "kbuilvikxtf5v^bfrivDgqhxh"
+    sg_url = "https://5thacademy.shotgrid.autodesk.com/"
+    script_name = "sy_key"
+    api_key = "vkcuovEbxhdoaqp9juqodux^x"
 
     user = UserInfo(sg_url, script_name, api_key)
     task = TaskInfo(sg_url, script_name, api_key)

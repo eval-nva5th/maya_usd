@@ -10,6 +10,13 @@ import requests
 import sys
 import os
 
+from PySide2.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout
+from PySide2.QtGui import QPixmap
+from PySide2.QtCore import Qt
+import sys
+import requests
+from io import BytesIO
+
 sys.path.append("/home/rapa/maya_usd/save_as")
 from save_as.main import run as save_as_run
 
@@ -23,9 +30,9 @@ import main   # 이제 main.py에서 show_ui 함수를 임포트할 수 있습�
 import shotgun_api3
 
 # ShotGrid 서버 정보
-sg_url = "https://hi.shotgrid.autodesk.com/"
-script_name = "Admin_SY"
-api_key = "kbuilvikxtf5v^bfrivDgqhxh"
+sg_url = "https://5thacademy.shotgrid.autodesk.com/"
+script_name = "sy_key"
+api_key = "vkcuovEbxhdoaqp9juqodux^x"
 
 # ShotGrid API 연결
 sg = shotgun_api3.Shotgun(sg_url, script_name, api_key)
@@ -48,6 +55,7 @@ class CustomUI(QWidget):
         print("*"*30)
 
         print("여기서부터 custom UI 생성을 드가자")
+        
         if ct is not None:
             if hasattr(ct, 'id') and hasattr(ct, 'entity_id'):
                 print(f"ct.id: {ct.id}, ct.entity_id: {ct.entity_id}, ct.proj_name = {ct.project_name}, {ct.content}, {ct.entity_type}, {ct.entity_name}")
@@ -70,8 +78,8 @@ class CustomUI(QWidget):
             self.entity_parent = ""
             self.step = ""
 
-        self.label0 = QLabel("TASK INFO")
-        self.label0.setStyleSheet("font-size: 11pt;")
+        self.label0 = QLabel("[TASK INFO]")
+        self.label0.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
 
         self.label1 = QLabel(f"Project : {self.project_name}")
         self.label2 = QLabel(f"Task : {self.content}")
@@ -95,8 +103,8 @@ class CustomUI(QWidget):
         h_line1.setFrameShape(QFrame.HLine)
         h_line1.setFrameShadow(QFrame.Sunken)
 
-        self.colleagueLabel = QLabel("COLLEAGUE INFO")
-        self.colleagueLabel.setStyleSheet("font-size: 11pt;")
+        self.colleagueLabel = QLabel("[COLLEAGUE INFO]")
+        self.colleagueLabel.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
 
         colleague_list = []
         colleague_list = self.get_colleague_info()
@@ -125,11 +133,11 @@ class CustomUI(QWidget):
             thumb_label.setPixmap(pixmap)
             pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = pixmap.copy((pixmap.width()-30)//2, (pixmap.height()-30)//2, 30, 30)
-            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            #pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = self.circular_pixmap(pixmap, 30)
 
             thumb_label.setPixmap(pixmap) 
-            thumb_label.setStyleSheet('border-radius: 15px; border: white;')
+            thumb_label.setStyleSheet('border-radius: 15px; border: white; padding-left : 5px')
 
             text_label = QLabel(f"{str(item[0])} : {str(item[1])}")
 
@@ -140,20 +148,61 @@ class CustomUI(QWidget):
         h_line2.setFrameShape(QFrame.HLine)
         h_line2.setFrameShadow(QFrame.Sunken)
         
-        self.label6 = QLabel("MessageBox :")
-        self.label6.setStyleSheet("font-size: 11pt;")
+        ############################################################### 메세지 박스
+
+        note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url = self.get_notes_infos()
+
+        self.label6 = QLabel("[RECENT NOTE]")
+        self.label6.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
+
+        h_layout1 = QGridLayout()
+        h_layout1.setSpacing(0)
+        h_layout1.setContentsMargins(0, 0, 0, 0)
+
+        label_pix1 = QLabel()
+        pixmap1 = self.load_pixmap_from_url(creator_thumb) 
+        pixmap1 = pixmap1.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pixmap1 = pixmap1.copy((pixmap1.width()-30)//2, (pixmap1.height()-30)//2, 30, 30)
+        pixmap1= pixmap1.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        pixmap1 = self.circular_pixmap(pixmap1, 30)
+        label_pix1.setPixmap(pixmap1)
+        label_text1 = QLabel(f"Note from {creator_kor_name}")
+        # label_pix1.setStyleSheet("margin: 0px; padding: 0px;")
+        # label_text1.setStyleSheet("margin: 0px; padding: 0px;")
+        h_layout1.addWidget(label_pix1, 0, 0)
+        h_layout1.addWidget(label_text1, 0, 1)
         
-        self.commentBox = QLabel("Lorem Ipsum")
-        self.commentBox.setStyleSheet("border: 1px solid white;")
-        self.commentBox.setFixedHeight(300)
-        #self.commentBox.setFixedWidth(300)
+        
+        # 두 번째 줄 (텍스트 라벨 4개 개별 추가)
+        h_layout2 = QVBoxLayout()
+        label_text2 = QLabel(f"version : {version_name}")
+        label_text3 = QLabel(f"title : {note_title}")
+        label_text4 = QLabel(f"context : {note_body}")
+        h_layout2.addWidget(label_text2)
+        h_layout2.addWidget(label_text3)
+        h_layout2.addWidget(label_text4)
+        
+        # 세 번째 줄 (100x100 QPixmap)
+        label_pix2 = QLabel()
+        pixmap2 = self.load_pixmap_from_url(attachment_url)  # 100x100 이미지 URL
+        pixmap2 = pixmap2.scaled(300, 200, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        label_pix2.setStyleSheet('border: white; padding-left : 5px')
+        label_pix2.setPixmap(pixmap2)
+        
+        # 메인 레이아웃
+        v_layout = QVBoxLayout()
+        # v_layout.addWidget(self.label6)
+        # v_layout.addWidget(label_pix1)
+        # v_layout.addWidget(label_text1)
+        v_layout.addLayout(h_layout1)
+        v_layout.addWidget(label_text2)
+        v_layout.addWidget(label_text3)
+        v_layout.addWidget(label_text4)
+        v_layout.addWidget(label_pix2)
 
         h_line3 = QFrame()
         h_line3.setFrameShape(QFrame.HLine)
         h_line3.setFrameShadow(QFrame.Sunken)
-
-        #self.commentBox = QTextEdit()
-        #self.commentBox.setFixedHeight(100)
         self.button1 = QPushButton("Save As")
         self.button2 = QPushButton("Publish")
         
@@ -167,11 +216,6 @@ class CustomUI(QWidget):
         label_layout.addWidget(self.label4)
         label_layout.addWidget(self.label5)
 
-        commentBox_layout = QVBoxLayout()
-        commentBox_layout.addWidget(self.label6)
-        commentBox_layout.addWidget(self.commentBox)
-
-        # Horizontal layout for buttons
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.button1)
         button_layout.addWidget(self.button2)
@@ -181,7 +225,9 @@ class CustomUI(QWidget):
         layout.addWidget(self.colleagueLabel)
         layout.addLayout(colleague_layout)
         layout.addWidget(h_line2)
-        layout.addLayout(commentBox_layout)
+        #layout.addWidget(self.label6)
+        layout.addLayout(v_layout)
+        #layout.addLayout(commentBox_layout)
         layout.addWidget(h_line3)
         layout.addLayout(button_layout)
         
@@ -205,6 +251,17 @@ class CustomUI(QWidget):
         painter.end()
 
         return masked_pixmap
+    
+    def load_pixmap_from_url(self, url):
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            image = QPixmap()
+            image.loadFromData(BytesIO(response.content).read())
+            return image
+        except Exception as e:
+            print(f"이미지를 불러오는 데 실패했습니다: {e}")
+            return QPixmap()
 
     def get_colleague_info(self) :
 
@@ -241,7 +298,52 @@ class CustomUI(QWidget):
                 colleague_list.append(each_list)
 
         return colleague_list
+    
 
+    def get_notes_infos(self) :
+        self.id  # task id 
+        note = sg.find_one(
+            "Note",
+            [["tasks", "is", {"type": "Task", "id": self.id}]],
+            ["id", "subject", "content", "created_by", "created_at", "note_links", "attachments"],
+            order=[{"field_name": "created_at", "direction": "desc"}]
+        )
+
+        if not note :
+            note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url  = ""
+
+        else : 
+            note_id = note['id']
+            note_title = note['subject']
+            note_body = note['content']
+            #creator_name = note['created_by']['name']
+            creator_id = note['created_by']['id']
+            creator_info = sg.find_one("HumanUser", [["id", "is", creator_id]], ["sg_korean_name", "image"])
+            creator_kor_name = creator_info['sg_korean_name']
+            creator_thumb = creator_info['image']
+            linked_infos = note['note_links']
+            for link in linked_infos :
+                if link['type'] == 'Version' :
+                    version_id = link['id']
+                    version_name = link['name']
+
+            if note["attachments"]:
+                for attachment in note["attachments"]:
+                    attachment_id = attachment["id"]
+                    
+            attachment_data = sg.find_one(
+                "Attachment",
+                [["id", "is", attachment_id]],
+                ["id", "this_file", "name"]
+            )
+            if attachment_data :
+                attachment_url = attachment_data['this_file']['url']
+
+
+        #print(f"note id : {note_id}\nnote_title : {note_title}\nnote_body : {note_body}\ncreator_kor_name : {creator_kor_name}\nversion_name = {version_name}\ncreator_thumb = {creator_thumb}\nattachment_url : {attachment_url}")
+
+        return note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url
+    
     def getClickedTaskObject(self, ct) :
         self.ct = ct
         return self.ct
@@ -259,10 +361,7 @@ class CustomUI(QWidget):
 
     def show_save_as_popup(self):
         save_as_run()
-        """Displays the 'Save As' popup dialog."""
-        # main.save_dialog = SaveAsDialog()
-        # main.save_dialog.show()
-        
+
     def show_publish_popup(self):
         """Displays the 'Publish' popup dialog."""
         publish_dialog = PublishDialog(self)
@@ -339,3 +438,70 @@ def add_custom_ui_to_tab(path, ct=None):
 
 # Call the function to add the custom UI
 #add_custom_ui_to_tab(path)
+
+import maya.cmds as cmds
+from shiboken2 import wrapInstance
+from PySide2 import QtWidgets, QtCore
+import maya.OpenMayaUI as omui
+
+workspace_control_name = "CustomTabUIWorkspaceControl"
+new_workspace_name = "CustomTabUIforReload"
+
+class ReloadUI(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super(ReloadUI, self).__init__(parent)
+
+        # 레이아웃 생성
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # 라벨 1
+        self.label1 = QtWidgets.QLabel("updated task : ", self)
+        layout.addWidget(self.label1)
+
+        # 라벨 2
+        self.label2 = QtWidgets.QLabel("updated pub file : ", self)
+        layout.addWidget(self.label2)
+
+        # 버튼
+        self.button = QtWidgets.QPushButton("reload")
+        layout.addWidget(self.button)
+
+        # 버튼 클릭 시 라벨 1, 2의 텍스트 변경
+        self.button.clicked.connect(self.update_labels)
+
+    def update_labels(self):
+        self.label1.setText("라벨 1: 변경됨!")
+        self.label2.setText("라벨 2: 업데이트 완료!")
+
+def create_workspace_with_ui():
+    """ CustomTabUIforReload 워크스페이스에 UI 추가 """
+    if cmds.workspaceControl(workspace_control_name, query=True, exists=True):
+        print(f"WorkspaceControl '{workspace_control_name}' already exists.")
+
+        # 새로운 워크스페이스를 기존 컨트롤 위쪽에 추가
+        if not cmds.workspaceControl(new_workspace_name, query=True, exists=True):
+            cmds.workspaceControl(
+                new_workspace_name,
+                label="RELOADreload",
+                retain=False,
+                dockToControl=(workspace_control_name, "top")
+            )
+
+        # MQtUtil을 사용하여 workspaceControl의 PySide2 위젯 가져오기
+        ptr = omui.MQtUtil.findControl(new_workspace_name)
+        if ptr:
+            workspace_widget = wrapInstance(int(ptr), QtWidgets.QWidget)
+
+            # PySide2 UI 추가
+            ui = ReloadUI()
+            ui.setParent(workspace_widget)
+            ui.setWindowFlags(QtCore.Qt.Widget)
+
+            # 레이아웃 설정
+            layout = QtWidgets.QVBoxLayout(workspace_widget)
+            layout.addWidget(ui)
+
+            print("✅ PySide2 UI가 'CustomTabUIforReload' workspaceControl에 추가되었습니다!")
+
+# 실행
+create_workspace_with_ui()

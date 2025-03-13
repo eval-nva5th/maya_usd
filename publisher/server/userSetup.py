@@ -10,11 +10,11 @@ app = Flask(__name__)
 sio = socketio.Server(cors_allowed_origins="*")  # 내부망에서 클라이언트 연결 허용
 flask_app = socketio.WSGIApp(sio, app)
 
-SHOTGRID_URL = "https://hi.shotgrid.autodesk.com"
-SCRIPT_NAME = "ssoonnwwoo"
-API_KEY = "i7bnd$zZcatoksolnitceenip"
+sg_url = "https://5thacademy.shotgrid.autodesk.com/"
+script_name = "sy_key"
+api_key = "vkcuovEbxhdoaqp9juqodux^x"
 
-sg = shotgun_api3.Shotgun(SHOTGRID_URL, SCRIPT_NAME, API_KEY)
+sg = shotgun_api3.Shotgun(sg_url, script_name, api_key)
 
 connected_clients = {}
 
