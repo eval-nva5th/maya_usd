@@ -67,24 +67,20 @@ class EncodeProcess:
         #전체 커맨드 문자열로
         full_command = f'{command1} {filter_complex} {command4}'
 
-        # ffmpeg 명령어 실행
-        subprocess.run(full_command, shell=True, check=True)
+        subprocess.run(full_command, shell=True, check= True)
 
-# 값 받아오기
-input_file = "/home/rapa/my_eval/pb_test/asset/shot.mov" #input path
-output_file = "/home/rapa/my_eval/pb_test/asset/shot.mov" #output path
-codec = input_file[-3:] #input path의 마지막 세 문자열을 슬라이싱하여 코덱 value로 사용 (mov or mp4)
+# input_file = "/home/rapa/my_eval/pb_test/asset/shot.mov" #input path
+# output_file = "/home/rapa/my_eval/pb_test/asset/shot.mov" #output path
+# codec = input_file[-3:] #input path의 마지막 세 문자열을 슬라이싱하여 코덱 value로 사용 (mov or mp4)
 
-shot_num = "OPN_0010"
-project_name = "OPN"
-task_name = "task"
-comp_version = "v001"
-start_frame = 1000
+# shot_num = "OPN_0010"
+# project_name = "OPN"
+# task_name = "task"
+# comp_version = "v001"
+# start_frame = 1000
 
-# 실행
-lfc = LastFramecount()
-last_frame = lfc.get_last_framecount(input_file)
-encoder = EncodeProcess()
-encoder.run(input_file, output_file, codec, shot_num, project_name, task_name, comp_version, start_frame, last_frame)
-
-# start_frame, last_frame 은 가져올게.
+# #
+# lfc = LastFramecount()
+# last_frame = lfc.get_last_framecount(input_file)
+# encoder = EncodeProcess()
+# encoder.run(input_file, output_file, codec, shot_num, project_name, task_name, comp_version, start_frame, last_frame)

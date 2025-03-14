@@ -403,36 +403,6 @@ class UI(QMainWindow):
             task_table.setCellWidget(row, 1, widget)
             # 행 높이를 조정하여 잘리지 않도록 설정
             task_table.setRowHeight(row, 80)
-
-    # def login_ui(self):
-    #     """
-    #     로그인 화면 UI
-    #     """
-    #     widget = QWidget()
-    #     layout = QVBoxLayout(widget)
-
-    #     # 네임 임력
-    #     self.name_input = QLineEdit("장순우") ################ 말풍선 제거하기
-    #     # self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
-
-    #     # 이메일 입력
-    #     self.email_input = QLineEdit("f8d783@kw.ac.kr") ################ 말풍선 제거하기
-    #     # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
-
-    #     # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작하도록 연결
-    #     self.email_input.returnPressed.connect(lambda:on_login_clicked(self))
-    #     self.name_input.returnPressed.connect(lambda:on_login_clicked(self))
-
-    #     # 로그인 버튼
-    #     self.login_btn = QPushButton("LOGIN")
-    #     self.login_btn.clicked.connect(lambda:on_login_clicked(self))
-
-    #     # 레이아웃 설정
-    #     layout.addWidget(self.name_input)
-    #     layout.addWidget(self.email_input)
-    #     layout.addWidget(self.login_btn)
-
-    #     return widget # 생성된 창 반환
     
     def center_window(self):
         frame_geometry = self.frameGeometry()  # 창의 프레임 가져오기
