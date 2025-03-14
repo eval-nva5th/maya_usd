@@ -28,7 +28,7 @@ class PublisherDialog(QMainWindow):
         # 파일 경로 Label + LineEdit
         filepath_container = QHBoxLayout()
         filepath_label = QLabel("File path:")
-        self.filepath_input = QLineEdit("/nas/eval/")
+        self.filepath_input = QLineEdit("/nas/eval/show")
 
         # 파일 타입 
         filetype_container = QHBoxLayout()

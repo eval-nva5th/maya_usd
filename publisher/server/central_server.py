@@ -10,9 +10,9 @@ app = Flask(__name__)
 sio = socketio.Server(cors_allowed_origins="*")  # 내부망에서 클라이언트 연결 허용
 flask_app = socketio.WSGIApp(sio, app)
 
-SHOTGRID_URL = "https://hi.shotgrid.autodesk.com"
+SHOTGRID_URL = "https://5thacademy.shotgrid.autodesk.com"
 SCRIPT_NAME = "ssoonnwwoo"
-API_KEY = "i7bnd$zZcatoksolnitceenip"
+API_KEY = "vwzzjtvfwgtyckk1esaAxu*gm"
 
 sg = shotgun_api3.Shotgun(SHOTGRID_URL, SCRIPT_NAME, API_KEY)
 
@@ -20,6 +20,7 @@ connected_clients = {}
 
 @app.route("/notify", methods=["POST"])
 def notify_maya():
+    print("__________________________________________notify maya_______________________________________________")
     try:
         data = request.json.get("data", {})
         if not data:
@@ -91,7 +92,7 @@ def notify_maya():
 @sio.event
 def connect(sid, environ):
     client_ip = environ.get("HTTP_X_FORWARDED_FOR") or environ.get("REMOTE_ADDR", "Unknown")
-    connected_clients[client_ip] = sid  # IP와 SID 매핑 저장
+    connected_clients[client_ip] = sid 
     print(f"[DEBUG] Client connected: {sid} (IP: {client_ip})")
 
 @sio.event

@@ -18,7 +18,6 @@ class PublishManager(Shotgrid):
     def __init__(self, sg_url, script_name, api_key, clicked_task):
         super().__init__(sg_url, script_name, api_key)
         self.clicked_task = clicked_task
-
         self.project_id = clicked_task.proj_id
         self.task_id = clicked_task.id
         self.entity_id = clicked_task.entity_id
@@ -29,9 +28,6 @@ class PublishManager(Shotgrid):
         self.description = ""
         self.thumbnail_path = ""
         self.mov_path = ""
-    # {'type': 'Project', 'id': 122}
-    # {'type': 'Task', 'id': 6194}
-    # {'type': 'Shot', 'id': 1255}
 
     def get_entity_type(self, entity_type):
         return "Shot" if entity_type == "seq" else "Asset"
@@ -40,7 +36,7 @@ class PublishManager(Shotgrid):
     def get_internal_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            s.connect(("8.8.8.8", 80))  # 구글 DNS 서버로 연결하여 내부망 IP 확인
+            s.connect(("8.8.8.8", 80))  
             internal_ip = s.getsockname()[0]
         except Exception:
             internal_ip = "127.0.0.1"
@@ -117,44 +113,44 @@ class PublishManager(Shotgrid):
         
 
 if __name__ == "__main__":
-    SHOTGRID_URL = "https://hi.shotgrid.autodesk.com/"
-    SCRIPT_NAME = "Admin_SY"
-    SCRIPT_KEY = "kbuilvikxtf5v^bfrivDgqhxh"
+    SHOTGRID_URL = "https://5thacademy.shotgrid.autodesk.com/"
+    SCRIPT_NAME = "sy_key"
+    SCRIPT_KEY = "vkcuovEbxhdoaqp9juqodux^x"
 
-    my_dict = {
-        "proj_name" : "eval",
-        "proj_id" : 122,
-        "id" : 6196,
-        "entity_id" : 1255,
-        "entity_name" : "AAB_0010",
-        "entity_type" : "seq",
-        "entity_parent" : "AAB",
-        "step": "Light"
-        }
     # my_dict = {
     #     "proj_name" : "eval",
-    #     "proj_id" : 122,
-    #     "id" : 5827,
-    #     "entity_id" : 1414,
-    #     "entity_name" : "bike",
-    #     "entity_type" : "assets",
-    #     "entity_parent" : "Vehicle",
-    #     "step": "Model"
+    #     "proj_id" : 123,
+    #     "id" : 6084,
+    #     "entity_id" : 1214,
+    #     "entity_name" : "AAB_0010",
+    #     "entity_type" : "seq",
+    #     "entity_parent" : "AAB",
+    #     "step": "Light"
     #     }
+    my_dict = {
+        "proj_name" : "eval",
+        "proj_id" : 123,
+        "id" : 5827,
+        "entity_id" : 1431,
+        "entity_name" : "bike",
+        "entity_type" : "assets",
+        "entity_parent" : "Vehicle",
+        "step": "Model"
+        }
     clicked_task = ClickedTask(my_dict)
     publish_manager = PublishManager(SHOTGRID_URL, SCRIPT_NAME, SCRIPT_KEY, clicked_task)
 
-    file_name = "AAB_0010_light_v001.usd"
-    local_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/scenes/AAB_0010_light_v001.usd"
-    status = "pub"
-    description = "Final render for shot X" 
-    #thumbnail_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/data/AAB_0010_light.jpg" 
-    
-    # file_name = "bike_model_v001.usd"
-    # local_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/scenes/bike_model_v001.usd"
+    # file_name = "AAB_0010_light_v001.usd"
+    # local_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/scenes/AAB_0010_light_v001.usd"
     # status = "pub"
-    # description = "Bike model v001 publish" 
-    # thumbnail_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/data/bike_model_v001.jpg" 
+    # description = "Final render for shot X" 
+    # #thumbnail_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/data/AAB_0010_light.jpg" 
+    
+    file_name = "bike_model_v001.usd"
+    local_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/scenes/bike_model_v001.usd"
+    status = "pub"
+    description = "Bike model v001 publish" 
+    #thumbnail_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/data/bike_model_v001.jpg" 
     
     publish_manager.set_file_name(file_name)
     publish_manager.set_file_path(local_path)
