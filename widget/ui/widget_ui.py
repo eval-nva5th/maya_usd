@@ -78,33 +78,33 @@ class CustomUI(QWidget):
             self.entity_parent = ""
             self.step = ""
 
-        self.label0 = QLabel("[TASK INFO]")
-        self.label0.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
+        taskinfo_label = QLabel("[TASK INFO]")
+        taskinfo_label.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
 
-        self.label1 = QLabel(f"Project : {self.project_name}")
-        self.label2 = QLabel(f"Task : {self.content}")
-        self.label3 = QLabel(f"Dept : {self.step}")
+        projectname_label = QLabel(f"Project : {self.project_name}")
+        contentname_label = QLabel(f"Task : {self.content}")
+        step_label = QLabel(f"Dept : {self.step}")
 
         if self.entity_type == "assets" :
             self.entity_type = "Asset"
-            self.label4 = QLabel(f"Asset type : {self.entity_parent}")
-            self.label5 = QLabel(f"Asset : {self.entity_name}")
+            parent_label = QLabel(f"Asset type : {self.entity_parent}")
+            child_label = QLabel(f"Asset : {self.entity_name}")
 
         if self.entity_type == "seq" :
             self.entity_type = "Shot"
-            self.label4 = QLabel(f"Seq : {self.entity_parent}")
-            self.label5 = QLabel(f"Shot : {self.entity_name}")
+            parent_label = QLabel(f"Seq : {self.entity_parent}")
+            child_label = QLabel(f"Shot : {self.entity_name}")
 
         else : 
-            self.label4 = QLabel(f"parent : {self.entity_parent}")
-            self.label5 = QLabel(f"baby : {self.entity_name}")
+            parent_label = QLabel(f"parent : {self.entity_parent}")
+            child_label = QLabel(f"baby : {self.entity_name}")
 
-        h_line1 = QFrame()
+        h_line1 = QFrame() # 구분선1
         h_line1.setFrameShape(QFrame.HLine)
         h_line1.setFrameShadow(QFrame.Sunken)
 
-        self.colleagueLabel = QLabel("[COLLEAGUE INFO]")
-        self.colleagueLabel.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
+        self.colleagueinfo_label = QLabel("[COLLEAGUE INFO]")
+        self.colleagueinfo_label.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
 
         colleague_list = []
         colleague_list = self.get_colleague_info()
@@ -117,11 +117,10 @@ class CustomUI(QWidget):
             thumb_label.setScaledContents(True)
            
             pixmap = QPixmap()
-            image_data = requests.get(item[3]).content if item[3] else None
+            image_data = requests.get(item[3]).content if item[3] else None # url 이미지 유효성 확인. 아니면 None 리턴
 
             if image_data:
-                pixmap.loadFromData(image_data)
-                
+                pixmap.loadFromData(image_data)      
             else:
                 pixmap = QPixmap("/nas/eval/elements/no_assignee.png")
                 if not pixmap.isNull():
@@ -131,90 +130,88 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
-            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            pixmap = pixmap.copy((pixmap.width()-30)//2, (pixmap.height()-30)//2, 30, 30)
             #pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            pixmap = pixmap.copy((pixmap.width()-30)//2, (pixmap.height()-30)//2, 30, 30)
+            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = self.circular_pixmap(pixmap, 30)
 
             thumb_label.setPixmap(pixmap) 
-            thumb_label.setStyleSheet('border-radius: 15px; border: white; padding-left : 5px')
+            thumb_label.setStyleSheet('padding-left : 5px') #border-radi메s: 15px; border: white;
 
             text_label = QLabel(f"{str(item[0])} : {str(item[1])}")
 
             colleague_layout.addWidget(thumb_label, row, 0)
             colleague_layout.addWidget(text_label, row, 1)
 
-        h_line2 = QFrame()
+        h_line2 = QFrame() #구분선 2
         h_line2.setFrameShape(QFrame.HLine)
         h_line2.setFrameShadow(QFrame.Sunken)
         
-        ############################################################### 메세지 박스
-
         note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url = self.get_notes_infos()
 
-        self.label6 = QLabel("[RECENT NOTE]")
-        self.label6.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
+        noteinfo_label = QLabel("[RECENT NOTE]")
+        noteinfo_label.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
 
-        h_layout1 = QGridLayout()
-        h_layout1.setSpacing(0)
-        h_layout1.setContentsMargins(0, 0, 0, 0)
+        notecreator_layout = QGridLayout()
+        notecreator_layout.setSpacing(0)
+        notecreator_layout.setContentsMargins(0, 0, 0, 0)
 
-        label_pix1 = QLabel()
-        pixmap1 = self.load_pixmap_from_url(creator_thumb) 
+        creatorthumb_label = QLabel()
+        pixmap1 = self.load_pixmap_from_url(creatorthumb_label) 
         pixmap1 = pixmap1.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         pixmap1 = pixmap1.copy((pixmap1.width()-30)//2, (pixmap1.height()-30)//2, 30, 30)
         pixmap1= pixmap1.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         pixmap1 = self.circular_pixmap(pixmap1, 30)
-        label_pix1.setPixmap(pixmap1)
-        label_text1 = QLabel(f"Note from {creator_kor_name}")
-        # label_pix1.setStyleSheet("margin: 0px; padding: 0px;")
-        # label_text1.setStyleSheet("margin: 0px; padding: 0px;")
-        h_layout1.addWidget(label_pix1, 0, 0)
-        h_layout1.addWidget(label_text1, 0, 1)
+        creatorthumb_label.setPixmap(pixmap1)
+        creatorname_label = QLabel(f"Note from {creator_kor_name}")
+        # creatorthumb_label.setStyleSheet("margin: 0px; padding: 0px;")
+        # creatorname_label.setStyleSheet("margin: 0px; padding: 0px;")
+        notecreator_layout.addWidget(creatorthumb_label, 0, 0)
+        notecreator_layout.addWidget(creatorname_label, 0, 1)
         
-        
-        # 두 번째 줄 (텍스트 라벨 4개 개별 추가)
-        h_layout2 = QVBoxLayout()
-        label_text2 = QLabel(f"version : {version_name}")
-        label_text3 = QLabel(f"title : {note_title}")
-        label_text4 = QLabel(f"context : {note_body}")
-        h_layout2.addWidget(label_text2)
-        h_layout2.addWidget(label_text3)
-        h_layout2.addWidget(label_text4)
+
+        notedetail_layout = QVBoxLayout()
+        versionname_label = QLabel(f"version : {version_name}")
+        notetitle_label = QLabel(f"title : {note_title}")
+        notebody_label = QLabel(f"context : {note_body}")
+        notedetail_layout.addWidget(versionname_label)
+        notedetail_layout.addWidget(notetitle_label)
+        notedetail_layout.addWidget(notebody_label)
         
         # 세 번째 줄 (100x100 QPixmap)
-        label_pix2 = QLabel()
-        pixmap2 = self.load_pixmap_from_url(attachment_url)  # 100x100 이미지 URL
-        pixmap2 = pixmap2.scaled(300, 200, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        label_pix2.setStyleSheet('border: white; padding-left : 5px')
-        label_pix2.setPixmap(pixmap2)
+        noteimage_label = QLabel()
+        pixmap2 = self.load_pixmap_from_url(attachment_url)
+        pixmap2 = pixmap2.scaled(320, 180, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
+        noteimage_label.setPixmap(pixmap2)
         
         # 메인 레이아웃
-        v_layout = QVBoxLayout()
-        # v_layout.addWidget(self.label6)
-        # v_layout.addWidget(label_pix1)
-        # v_layout.addWidget(label_text1)
-        v_layout.addLayout(h_layout1)
-        v_layout.addWidget(label_text2)
-        v_layout.addWidget(label_text3)
-        v_layout.addWidget(label_text4)
-        v_layout.addWidget(label_pix2)
+        note_layout = QVBoxLayout()
+        # note_layout.addWidget(noteinfo_label)
+        # note_layout.addWidget(creatorthumb_label)
+        # note_layout.addWidget(creatorname_label)
+        note_layout.addLayout(notecreator_layout)
+        note_layout.addWidget(versionname_label)
+        note_layout.addWidget(notetitle_label)
+        note_layout.addWidget(notebody_label)
+        note_layout.addWidget(noteimage_label)
 
-        h_line3 = QFrame()
+        h_line3 = QFrame() # 구분선 
         h_line3.setFrameShape(QFrame.HLine)
         h_line3.setFrameShadow(QFrame.Sunken)
+        h_line3.setStyleSheet("padding-bottom: 10px;")
         self.button1 = QPushButton("Save As")
         self.button2 = QPushButton("Publish")
         
         layout = QVBoxLayout()
-        # Layout
+
         label_layout = QVBoxLayout()
-        label_layout.addWidget(self.label0)
-        label_layout.addWidget(self.label1)
-        label_layout.addWidget(self.label2)
-        label_layout.addWidget(self.label3)
-        label_layout.addWidget(self.label4)
-        label_layout.addWidget(self.label5)
+        label_layout.addWidget(taskinfo_label)
+        label_layout.addWidget(projectname_label)
+        label_layout.addWidget(contentname_label)
+        label_layout.addWidget(step_label)
+        label_layout.addWidget(parent_label)
+        label_layout.addWidget(child_label)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.button1)
@@ -222,19 +219,19 @@ class CustomUI(QWidget):
 
         layout.addLayout(label_layout)
         layout.addWidget(h_line1)
-        layout.addWidget(self.colleagueLabel)
+        layout.addWidget(self.colleagueinfo_label)
         layout.addLayout(colleague_layout)
         layout.addWidget(h_line2)
-        #layout.addWidget(self.label6)
-        layout.addLayout(v_layout)
+        #layout.addWidget(noteinfo_label)
+        layout.addLayout(note_layout)
         #layout.addLayout(commentBox_layout)
         layout.addWidget(h_line3)
         layout.addLayout(button_layout)
         
         self.setLayout(layout)
 
-        self.button1.clicked.connect(self.show_save_as_popup)
-        self.button2.clicked.connect(self.show_publish_popup)
+        self.button1.clicked.connect(self.on_click_saveas)
+        self.button2.clicked.connect(self.on_click_publish)
 
     def circular_pixmap(self, pixmap, size):
         pixmap = pixmap.scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
@@ -359,10 +356,10 @@ class CustomUI(QWidget):
             self.entity_parent = ct.entity_parent
             self.step = ct.step
 
-    def show_save_as_popup(self):
+    def on_click_saveas(self):
         save_as_run()
 
-    def show_publish_popup(self):
+    def on_click_publish(self):
         """Displays the 'Publish' popup dialog."""
         publish_dialog = PublishDialog(self)
         publish_dialog.exec_()  # Show the dialog modally
