@@ -17,7 +17,7 @@ class LoadingDialog(QDialog):
         self.setFixedSize(200, 200)
         self.setStyleSheet("background-color:black; color:white;")
 
-        loading_mov = "/home/rapa/my_eval/loading/loading_mov/loading.mov"
+        loading_mov = "/nas/eval/elements/loading.mp4"
 
         layout = QVBoxLayout()
 

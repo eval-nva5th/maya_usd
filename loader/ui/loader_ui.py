@@ -14,9 +14,9 @@ from core.data_managers import previous_data, task_data
 class UI(QMainWindow):
     def __init__(self):
 
-        sg_url = "https://hi.shotgrid.autodesk.com/"
-        script_name = "Admin_SY"
-        api_key = "kbuilvikxtf5v^bfrivDgqhxh"
+        sg_url = "https://5thacademy.shotgrid.autodesk.com/"
+        script_name = "sy_key"
+        api_key = "vkcuovEbxhdoaqp9juqodux^x"
         self.user = UserInfo(sg_url, script_name, api_key)
         self.user_name = ""
         self.task_info = TaskInfo(sg_url, script_name, api_key)
@@ -31,7 +31,15 @@ class UI(QMainWindow):
         self.center_window()
 
         self.work_table = QTableWidget(0,3)
+        self.work_table.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
+        self.work_table.setEditTriggers(QTableWidget.NoEditTriggers)  # **모든 셀 편집 막기**
+        self.work_table.horizontalHeader().setVisible(False)  
+        self.work_table.verticalHeader().setVisible(False) 
         self.pub_table = QTableWidget(0,3)
+        self.pub_table.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
+        self.pub_table.setEditTriggers(QTableWidget.NoEditTriggers)  # **모든 셀 편집 막기**
+        self.pub_table.horizontalHeader().setVisible(False) 
+        self.pub_table.verticalHeader().setVisible(False)  
 
     def setup_layout(self):
         """
@@ -41,7 +49,8 @@ class UI(QMainWindow):
         self.task_container = self.make_task_table()
         self.task_container.setMinimumWidth(570)
         self.task_container.setMaximumWidth(570)  # TASK 최소 너비 지정, 안하면 너무 작아짐.
-        self.task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 가로/세로 확장 허용
+        self.task_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding) # 가로/세로 확장 허용
+        #self.task_container.setEditTriggers(QAbstractItemView.NoEditTriggers)  
         
         file_table_widget = QWidget()
         file_table_layout = QVBoxLayout(file_table_widget)
@@ -268,10 +277,17 @@ class UI(QMainWindow):
 
         # 테이블 위젯 생성 (초기 행 개수: 0, 2개 컬럼)
         self.task_table = QTableWidget(0, 3)
+        self.task_table.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
+        self.task_table.setEditTriggers(QTableWidget.NoEditTriggers)  # **모든 셀 편집 막기**
         self.task_table.setHorizontalHeaderLabels(["Thumbnail", "Task Info", "Task ID"])
         self.task_table.setColumnHidden(2, True) # Task ID 숨김
 
         # 테이블 이벤트 처리
+        # self.task_table.cellDoubleClicked.connect(lambda row,col:on_cell_clicked(self,row,col))
+        # self.search_but.clicked.connect(lambda:search_task(self))
+        # self.search_input.returnPressed.connect(lambda:search_task(self))
+        # self.search_input.textChanged.connect(lambda:search_task(self))
+        # self.sort_combo.currentIndexChanged.connect(lambda:on_sort_changed(self)) 이거 둘중 하나로 처리해야함
         self.task_table.cellClicked.connect(lambda row,col:event_handler.on_cell_clicked(self,row,col))
         self.search_but.clicked.connect(lambda:event_handler.search_task(self))
         self.search_input.returnPressed.connect(lambda:event_handler.search_task(self))
@@ -387,36 +403,6 @@ class UI(QMainWindow):
             task_table.setCellWidget(row, 1, widget)
             # 행 높이를 조정하여 잘리지 않도록 설정
             task_table.setRowHeight(row, 80)
-
-    # def login_ui(self):
-    #     """
-    #     로그인 화면 UI
-    #     """
-    #     widget = QWidget()
-    #     layout = QVBoxLayout(widget)
-
-    #     # 네임 임력
-    #     self.name_input = QLineEdit("장순우") ################ 말풍선 제거하기
-    #     # self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
-
-    #     # 이메일 입력
-    #     self.email_input = QLineEdit("f8d783@kw.ac.kr") ################ 말풍선 제거하기
-    #     # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
-
-    #     # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작하도록 연결
-    #     self.email_input.returnPressed.connect(lambda:on_login_clicked(self))
-    #     self.name_input.returnPressed.connect(lambda:on_login_clicked(self))
-
-    #     # 로그인 버튼
-    #     self.login_btn = QPushButton("LOGIN")
-    #     self.login_btn.clicked.connect(lambda:on_login_clicked(self))
-
-    #     # 레이아웃 설정
-    #     layout.addWidget(self.name_input)
-    #     layout.addWidget(self.email_input)
-    #     layout.addWidget(self.login_btn)
-
-    #     return widget # 생성된 창 반환
     
     def center_window(self):
         frame_geometry = self.frameGeometry()  # 창의 프레임 가져오기

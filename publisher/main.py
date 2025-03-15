@@ -1,9 +1,5 @@
-try:
-    from PySide6.QtWidgets import QApplication
-except:
-    from PySide2.QtWidgets import QApplication
-
-from ui.publisher_ui import PublisherDialog
+from PySide2.QtWidgets import QApplication
+from publisher.ui.publisher_ui import PublisherDialog
 import sys
 
 def run():

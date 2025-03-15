@@ -1,12 +1,16 @@
-from PySide2.QtWidgets import QApplication
 import sys
-# from ui.loader_ui import UI
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader/event")
+sys.path.append("/home/rapa/gitkraken/maya_usd/loader/ui")
+sys.path.append("/home/rapa/gitkraken/maya_usd/widget/ui")
+
+from PySide2.QtWidgets import QApplication
+
+from ui.loader_ui import UI
 from ui.login_ui import LoginWidget
 
-# sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
-# sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
-# sys.path.append("/home/rapa/gitkraken/maya_usd/loader/event")
-# sys.path.append("/home/rapa/gitkraken/maya_usd/loader/ui")
+
 
 # # app = QApplication.instance()  # 기존 인스턴스를 가져오기
 # # if not app:

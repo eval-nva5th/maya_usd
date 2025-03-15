@@ -113,10 +113,21 @@ class PublishManager(Shotgrid):
         
 
 if __name__ == "__main__":
-    SHOTGRID_URL = "https://5thacademy.shotgrid.autodesk.com/"
-    SCRIPT_NAME = "sy_key"
-    SCRIPT_KEY = "vkcuovEbxhdoaqp9juqodux^x"
+    sg_url = "https://5thacademy.shotgrid.autodesk.com/"
+    script_name = "sy_key"
+    api_key = "vkcuovEbxhdoaqp9juqodux^x"
 
+    my_dict = {
+        "proj_name" : "eval",
+        "proj_id" : 122,
+        "id" : 6196,
+        "entity_id" : 1255,
+        "entity_name" : "AAB_0010",
+        "entity_type" : "seq",
+        "entity_parent" : "AAB",
+        "step": "Light"
+        }
+    
     # my_dict = {
     #     "proj_name" : "eval",
     #     "proj_id" : 123,
@@ -138,7 +149,7 @@ if __name__ == "__main__":
         "step": "Model"
         }
     clicked_task = ClickedTask(my_dict)
-    publish_manager = PublishManager(SHOTGRID_URL, SCRIPT_NAME, SCRIPT_KEY, clicked_task)
+    publish_manager = PublishManager(sg_url, script_name, api_key, clicked_task)
 
     # file_name = "AAB_0010_light_v001.usd"
     # local_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/scenes/AAB_0010_light_v001.usd"

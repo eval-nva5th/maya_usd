@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QComboBox
 from PySide2.QtCore import Qt
 
 import maya.cmds as cmds
-import sys, os, re
+import os
 from save_as.event.event_handler import open_file_browser, save_file_as, on_version_click
 
 class SaveAsDialog(QMainWindow):
@@ -16,23 +16,21 @@ class SaveAsDialog(QMainWindow):
 
         self.center_window()
 
-        central_widget = QWidget(self)
+        central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout()
 
-        file_path = cmds.file(q=True, sceneName=True) # maya에서 open한 모델 파일 패스.
-        folder_path = os.path.dirname(file_path) # 이름 제외
-        print ("folder_path", folder_path)
-
-        file_name_with_ext = os.path.basename(file_path)  # "IronMan_model_v005.ma"
-        file_name, _ = os.path.splitext(file_name_with_ext)  # 확장자 제거하여 "IronMan_model_v005"
-        print ("filename", file_name)
+        # maya open파일경로, 폴더이름, 파일이름
+        file_path = cmds.file(q=True, sceneName=True) 
+        folder_path = os.path.dirname(file_path)
+        file_name_with_ext = os.path.basename(file_path)
+        file_name, _ = os.path.splitext(file_name_with_ext)
 
         # 파일명 Label + LineEdit
         filename_container = QHBoxLayout()
-        self.filename_label = QLabel("File name:", self)
-        self.filename_input = QLineEdit(file_name,self)
-        self.version_btn = QToolButton(self)
+        self.filename_label = QLabel("File name:")
+        self.filename_input = QLineEdit(file_name)
+        self.version_btn = QToolButton()
         self.version_btn.setCheckable(True)
         self.version_btn.setText("version up")
         self.version_btn.setFixedSize(100, 30)
@@ -40,22 +38,22 @@ class SaveAsDialog(QMainWindow):
 
         # 파일 경로 Label + LineEdit
         filepath_container = QHBoxLayout()
-        self.filepath_label = QLabel("File path:", self)
-        self.filepath_input = QLineEdit(folder_path, self)
-        self.browse_btn = QPushButton("Browse", self)
+        self.filepath_label = QLabel("File path:")
+        self.filepath_input = QLineEdit(folder_path)
+        self.browse_btn = QPushButton("Browse")
         self.filepath_input.setDisabled(True)
 
         # 파일 타입 
         filetype_container = QHBoxLayout()
-        self.filetype_label = QLabel("File of type:", self)
+        self.filetype_label = QLabel("File of type:")
         self.format_combo = QComboBox(self)
         self.format_combo.addItems([".mb", ".ma"])  # 옵션 추가
         self.format_combo.setCurrentText(".mb")  # 기본값 설정
 
         # 저장 여부 버튼
         button_container = QHBoxLayout()
-        self.cancel_btn = QPushButton("Cancel", self)
-        self.save_as_btn = QPushButton("Save As", self)
+        self.cancel_btn = QPushButton("Cancel")
+        self.save_as_btn = QPushButton("Save As")
 
         # Style Sheet
         self.filepath_label.setFixedWidth(80)
@@ -67,8 +65,8 @@ class SaveAsDialog(QMainWindow):
         self.cancel_btn.setFixedSize(100, 30)
 
         style = """
-            color: black;  /* 글씨를 검정색으로 유지 */
-            background-color: #F0F0F0;  /* 배경색 변경 (비활성화된 느낌 최소화) */
+            color: white;  /* 글씨를 검정색으로 유지 */
+            background-color:rgb(93, 93 ,93);  /* 배경색 변경 (비활성화된 느낌 최소화) */
         """
         self.filename_input.setStyleSheet(style)
         self.filepath_input.setStyleSheet(style)

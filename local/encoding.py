@@ -8,7 +8,7 @@ def create_mov_and_extract_jpg(text, mov_output_path, jpg_output_path):
         '-f', 'lavfi',  # 필터 사용
         '-i', 'color=c=black:s=640x360:d=10',  # 1280x720 크기의 검은 배경, 길이 10초
         '-vf', (
-             f"drawtext=text='{text}':fontcolor=white:fontsize=90:line_spacing=10:"
+            f"drawtext=text='{text}':fontcolor=white:fontsize=90:line_spacing=10:"
             "x=(w-text_w)/2:y=(h-text_h)/2:"
             "alpha='1-(t/10)'" 
         ),
