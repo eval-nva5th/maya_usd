@@ -39,7 +39,7 @@ class AssetLibUI(QMainWindow):
         self.grid_layout.setVerticalSpacing(10)
         self.grid_layout.setRowStretch(len(self.asset_list) // 3 + 1, 1) # 상단 정렬
 
-        self.populate_grid(self.asset_list)
+        self.add_cell_to_grid(self.asset_list)
 
         # ScrollArea에 배치
         scroll_content.setLayout(self.grid_layout)
@@ -59,7 +59,7 @@ class AssetLibUI(QMainWindow):
         main_layout.addLayout(button_container)
         central_widget.setLayout(main_layout)
 
-    def populate_grid(self, asset_list):
+    def add_cell_to_grid(self, asset_list):
         self.cell_widgets = []
         for index, (asset_name, image_path) in enumerate(asset_list):
             row = index // 3
@@ -148,7 +148,6 @@ class AssetLibUI(QMainWindow):
     def center_window(self):
         screen_geometry = self.screen().geometry()
         window_geometry = self.frameGeometry()
-
         center_x = screen_geometry.width() // 2 - window_geometry.width() // 2
         center_y = screen_geometry.height() // 2 - window_geometry.height() // 2
         self.setGeometry(center_x, center_y, window_geometry.width(), window_geometry.height())        
@@ -163,19 +162,15 @@ class ClickableWidget(QWidget):
         self.parent_window = parent_window
         self.index = index
         
-
     def mousePressEvent(self, event):
         self.parent_window.select_cell(self)
 
-
     def enterEvent(self, event):
-        """ 마우스가 셀 위에 올라갔을 때 실행 """
         if self in self.parent_window.selected_cells:
             return
         self.setStyleSheet("background-color: #5386A6;border : 2px solid #5386A6;")
 
     def leaveEvent(self, event):
-        """ 마우스가 셀을 벗어났을 때 실행 """
         if self in self.parent_window.selected_cells:
             return 
         self.setStyleSheet("background-color: none;border : 2px solid transparent") 
