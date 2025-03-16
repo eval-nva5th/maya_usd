@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QApplication
 from shotgun_api3 import Shotgun 
 import os, sys, time
-from ui.loading_ui import LoadingDialog
+from loader.ui.loading_ui import LoadingDialog
 
 class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
     def __init__(self, sg_url, script_name, api_key):
@@ -103,6 +103,7 @@ class TaskInfo(Shotgrid) :
             step = task['step']['name']
 
             self.task_dict[current_task_id] = {}
+            self.task_dict[current_task_id]['assignee_id'] = user_id
             self.task_dict[current_task_id]['proj_id'] = proj_id
             self.task_dict[current_task_id]['proj_name']=proj_name
             self.task_dict[current_task_id]['content']=task_name
@@ -329,6 +330,7 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
     def __init__(self, id_dict):
         #{'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827, 'id': 5828}
         self.id = id_dict["id"]
+        self.assignee_id = id_dict["assignee_id"]
         self.content = id_dict["content"]
         self.proj_id = id_dict["proj_id"]
         self.project_name = id_dict["proj_name"]

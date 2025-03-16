@@ -6,11 +6,13 @@ import maya.cmds as cmds
 import maya.utils as mu
 
 import os, sys
-from shotgrid_user_task import ClickedTask
+from loader.shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
-from shotgrid_user_task import UserInfo
-from ui.loader_ui import UI
+from loader.shotgrid_user_task import UserInfo
+from loader.ui import loader_ui
+from widget.ui.widget_ui import CustomUI, add_custom_ui_to_tab
 # from loader.core.data_managers import version_file_data
+
 
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
@@ -45,14 +47,14 @@ def on_login_clicked(ui_instance):                        ######################
 
         else: # 로그인 성공!
             ui_instance.close()
-            loader_ui = UI()
-            loader_ui.user = user
-            loader_ui.user_name = name
-            loader_ui.input_name = name
-            loader_ui.setFixedSize(1100, 800)
-            loader_ui.setCentralWidget(loader_ui.setup_layout()) # 로그인 창을 메인화면으로 변경
-            loader_ui.center_window()
-            loader_ui.show()
+            ui_loader = loader_ui.UI()
+            ui_loader.user = user
+            ui_loader.user_name = name
+            ui_loader.input_name = name
+            ui_loader.setFixedSize(1100, 800)
+            ui_loader.setCentralWidget(ui_loader.setup_layout()) # 로그인 창을 메인화면으로 변경
+            ui_loader.center_window()
+            ui_loader.show()
 
     else: # 이름과 이메일에 값이 없을 때
         popup = QMessageBox()
@@ -146,7 +148,7 @@ def add_file_to_table(table_widget, file_info):
     table_widget.setItem(row, 2, time_item)
 
 def on_work_cell_clicked(table_widget, row, col, ct, path):
-    from widget_ui import CustomUI, add_custom_ui_to_tab
+    
 
     item = table_widget.item(row, col)
     print(ct)

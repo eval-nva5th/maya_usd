@@ -8,7 +8,7 @@ maya_usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../l
 print(f"maya_usd 경로: {maya_usd_path}")
 sys.path.append(maya_usd_path)
 
-from shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
+from loader.shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
 
 class Shotgrid:
     def __init__(self, sg_url, script_name, api_key):
@@ -140,8 +140,10 @@ if __name__ == "__main__":
     #     }
     my_dict = {
         "proj_name" : "eval",
+        "assignee_id" : 112, 
         "proj_id" : 123,
-        "id" : 5827,
+        "id" : 6045,
+        "content" : "bike_rig",
         "entity_id" : 1431,
         "entity_name" : "bike",
         "entity_type" : "assets",

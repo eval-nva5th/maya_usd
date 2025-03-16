@@ -6,6 +6,7 @@ from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 import requests
+from widget.event.widget_event_handler import clicked_get_asset_btn
 
 import sys
 import os
@@ -84,6 +85,8 @@ class CustomUI(QWidget):
         projectname_label = QLabel(f"Project : {self.project_name}")
         contentname_label = QLabel(f"Task : {self.content}")
         step_label = QLabel(f"Dept : {self.step}")
+        get_asset_button = QPushButton("Get Assets")
+        get_asset_button.clicked.connect(clicked_get_asset_btn)
 
         if self.entity_type == "assets" :
             self.entity_type = "Asset"
@@ -130,7 +133,7 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
-            #pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = pixmap.copy((pixmap.width()-30)//2, (pixmap.height()-30)//2, 30, 30)
             pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = self.circular_pixmap(pixmap, 30)
@@ -157,7 +160,7 @@ class CustomUI(QWidget):
         notecreator_layout.setContentsMargins(0, 0, 0, 0)
 
         creatorthumb_label = QLabel()
-        pixmap1 = self.load_pixmap_from_url(creatorthumb_label) 
+        pixmap1 = self.load_pixmap_from_url(creator_thumb) 
         pixmap1 = pixmap1.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         pixmap1 = pixmap1.copy((pixmap1.width()-30)//2, (pixmap1.height()-30)//2, 30, 30)
         pixmap1= pixmap1.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
@@ -182,7 +185,7 @@ class CustomUI(QWidget):
         noteimage_label = QLabel()
         pixmap2 = self.load_pixmap_from_url(attachment_url)
         pixmap2 = pixmap2.scaled(320, 180, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
+        #noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
         noteimage_label.setPixmap(pixmap2)
         
         # 메인 레이아웃
@@ -212,6 +215,7 @@ class CustomUI(QWidget):
         label_layout.addWidget(step_label)
         label_layout.addWidget(parent_label)
         label_layout.addWidget(child_label)
+        label_layout.addWidget(get_asset_button)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.button1)
@@ -398,7 +402,7 @@ class PublishDialog(QDialog):
 
         # Connect buttons to actions
         self.publish_button.clicked.connect(self.publish)
-        self.cancel_button.clicked.connect(self.reject)
+        self.cancel_button.clicked.connect(self.reject) # reject 함수 구현 필요
 
     def publish(self):
         """Handle publish button action."""
