@@ -10,6 +10,10 @@ from loader.event import event_handler
 from shotgrid_user_task import UserInfo, TaskInfo, ClickedTask
 from core.video_player import VideoPlayer
 from core.data_managers import previous_data, task_data
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
 
 class UI(QMainWindow):
     def __init__(self):
@@ -20,7 +24,7 @@ class UI(QMainWindow):
         self.user = UserInfo(sg_url, script_name, api_key)
         self.user_name = ""
         self.task_info = TaskInfo(sg_url, script_name, api_key)
-        self.prefix_path = "/nas/eval/show"
+        self.prefix_path = f"{root_path}/show"
 
         self.input_name = ""
 

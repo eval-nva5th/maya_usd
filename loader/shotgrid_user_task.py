@@ -2,19 +2,19 @@ from PySide2.QtWidgets import QApplication
 from shotgun_api3 import Shotgun 
 import os, sys, time
 from ui.loading_ui import LoadingDialog
+from DefaultConfig import DefaultConfig
 
-from path_config import PathConfig
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
+sg = default_config.shotgrid_connector()
+# class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
+#     def __init__(self, sg_url, script_name, api_key):
+#         self.sg = Shotgun(sg_url, script_name, api_key)
 
-path_config = PathConfig() # 파일루트 얻는 객체 생성
-root_path = path_config.get_root_path()
-
-class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
-    def __init__(self, sg_url, script_name, api_key):
-        self.sg = Shotgun(sg_url, script_name, api_key)
-
-class UserInfo(Shotgrid) : 
-    def __init__(self, sg_url, script_name, api_key):
-        super().__init__(sg_url, script_name, api_key)
+class UserInfo : 
+    # def __init__(self, sg_url, script_name, api_key):
+    #     super().__init__(sg_url, script_name, api_key)
+    def __init__(self) :
         
         self.email = ""
         self.name = ""

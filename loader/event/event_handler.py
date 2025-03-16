@@ -11,6 +11,10 @@ from loader.event.custom_dialog import CustomDialog
 from shotgrid_user_task import UserInfo
 from ui.loader_ui import UI
 from core.add_new_task import *
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
 
 # from loader.core.data_managers import version_file_data
 
@@ -165,6 +169,7 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
        if not is_created :
         dialog = CustomDialog(path, is_dir, is_created, ct)
         dialog.exec()
+        ###### mainwindow 종료
 
     elif item.text() ==  "No File" :
         print("o directory x file")
@@ -174,16 +179,17 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
             print(ct.entity_name, ct.content) 
             dialog = CustomDialog(path, is_dir,is_created, ct)
             dialog.exec()
+            ##### mainwindow 종료
 
     else :
         full_path = f"{path}/{item.text()}"
         cmds.file(full_path, open=True, force=True)
-        #UsdLoader.load_work(ct.project_name, ct.task_name, ct.task_type, ct.step) #여기서
+        #### mainwindow 종료 
 
         add_custom_ui_to_tab(path, ct) ##### 위젯 넣는 함수
 
 def update_prev_work(ui_instance, prev_task_data):
-    prefix_path = "/nas/eval/show"
+    prefix_path = f"{root_path}/show"
     file_path_list = []
     if prev_task_data['id'] != "None":
         print(prev_task_data)

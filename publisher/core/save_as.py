@@ -1,9 +1,13 @@
 import os
 import re
 import maya.cmds as cmds
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
 
 def save_as(project_name, asset_name, asset_type, dept):
-    root_directory = '/nas/eval/show'
+    root_directory = f'{root_path}/show'
     asset_root_path = os.path.join(
     root_directory, project_name, "assets", asset_type, asset_name
     )

@@ -2,6 +2,10 @@ import os, shutil, re
 import maya.cmds as cmds
 from pxr import Usd
 from abc import ABC, abstractmethod
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
 
 class USDExporter(ABC):
     def __init__(self, usd_publish_path):
@@ -50,7 +54,7 @@ class LookdevExportUSD(USDExporter):
         }
 
 
-root_directory = '/nas/eval/show'
+root_directory = f'{root_path}/show'
 
 def publish_model(project_name, asset_name, asset_type, dept):
     if dept != "model":

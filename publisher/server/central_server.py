@@ -5,16 +5,13 @@ import os
 import threading
 import socketio
 import eventlet
+from DefaultConfig import DefaultConfig
+default_config = DefaultConfig()
+sg = default_config.shotgrid_connector()
 
 app = Flask(__name__)
 sio = socketio.Server(cors_allowed_origins="*")  # 내부망에서 클라이언트 연결 허용
 flask_app = socketio.WSGIApp(sio, app)
-
-SHOTGRID_URL = "https://5thacademy.shotgrid.autodesk.com"
-SCRIPT_NAME = "ssoonnwwoo"
-API_KEY = "vwzzjtvfwgtyckk1esaAxu*gm"
-
-sg = shotgun_api3.Shotgun(SHOTGRID_URL, SCRIPT_NAME, API_KEY)
 
 connected_clients = {}
 

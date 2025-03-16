@@ -3,6 +3,10 @@ import os
 import sys
 import socket
 #import maya.cmds as cmds
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+sg = default_config.shotgrid_connector()
 
 maya_usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../loader"))
 print(f"maya_usd 경로: {maya_usd_path}")
@@ -10,13 +14,9 @@ sys.path.append(maya_usd_path)
 
 from shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
 
-class Shotgrid:
-    def __init__(self, sg_url, script_name, api_key):
-        self.sg = Shotgun(sg_url, script_name, api_key)
+class PublishManager:
+    def __init__(self):
 
-class PublishManager(Shotgrid):
-    def __init__(self, sg_url, script_name, api_key, clicked_task):
-        super().__init__(sg_url, script_name, api_key)
         self.clicked_task = clicked_task
         self.project_id = clicked_task.proj_id
         self.task_id = clicked_task.id
@@ -32,7 +32,6 @@ class PublishManager(Shotgrid):
     def get_entity_type(self, entity_type):
         return "Shot" if entity_type == "seq" else "Asset"
     
-
     def get_internal_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:

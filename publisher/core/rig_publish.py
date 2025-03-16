@@ -1,7 +1,11 @@
 import os, shutil, re
 import maya.cmds as cmds
+from DefaultConfig import DefaultConfig
 
-root_directory = '/Users/junsu/Desktop'
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
+
+root_directory = '/Users/junsu/Desktop' ##### 수정 필요
 
 def rig_publish(project_name, asset_name, asset_type, dept):
     """rig publish 실행 함수"""

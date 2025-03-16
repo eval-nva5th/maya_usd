@@ -6,36 +6,19 @@ from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 import requests
-
 import sys
-import os
-
-from PySide2.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout
-from PySide2.QtGui import QPixmap
-from PySide2.QtCore import Qt
-import sys
-import requests
 from io import BytesIO
+from DefaultConfig import DefaultConfig
+default_config = DefaultConfig()
+sg = default_config.shotgrid_connector()
 
-sys.path.append("/home/rapa/maya_usd/save_as")
 from save_as.main import run as save_as_run
+sys.path.append("/home/rapa/maya_usd/save_as")
+sys.path.append("/home/rapa/gitkraken/maya_usd/save_as")
+from DefaultConfig import DefaultConfig
 
-from importlib import reload
-
-publisher_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/save_as")
-sys.path.append(publisher_ui_path)
-
-import main   # 이제 main.py에서 show_ui 함수를 임포트할 수 있습니다
-
-import shotgun_api3
-
-# ShotGrid 서버 정보
-sg_url = "https://5thacademy.shotgrid.autodesk.com/"
-script_name = "sy_key"
-api_key = "vkcuovEbxhdoaqp9juqodux^x"
-
-# ShotGrid API 연결
-sg = shotgun_api3.Shotgun(sg_url, script_name, api_key)
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
 
 path = ""
 
@@ -122,7 +105,7 @@ class CustomUI(QWidget):
             if image_data:
                 pixmap.loadFromData(image_data)      
             else:
-                pixmap = QPixmap("/nas/eval/elements/no_assignee.png")
+                pixmap = QPixmap(f"{root_path}/elements/no_assignee.png")
                 if not pixmap.isNull():
                     pass
                 else:
@@ -360,52 +343,8 @@ class CustomUI(QWidget):
         save_as_run()
 
     def on_click_publish(self):
-        """Displays the 'Publish' popup dialog."""
-        publish_dialog = PublishDialog(self)
-        publish_dialog.exec_()  # Show the dialog modally
-
-class PublishDialog(QDialog):
-    def __init__(self, parent=None):
-        super(PublishDialog, self).__init__(parent)
-        
-        self.setWindowTitle("Publish")
-        
-        # Create Labels and LineEdits for Publish
-        self.label1 = QLabel("Publish Name 1:")
-        self.line_edit1 = QLineEdit()
-        
-        self.label2 = QLabel("Publish Name 2:")
-        self.line_edit2 = QLineEdit()
-
-        # Button
-        self.publish_button = QPushButton("Publish")
-        self.cancel_button = QPushButton("Cancel")
-        
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(self.label1)
-        layout.addWidget(self.line_edit1)
-        layout.addWidget(self.label2)
-        layout.addWidget(self.line_edit2)
-        
-        # Button layout
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(self.publish_button)
-        button_layout.addWidget(self.cancel_button)
-        
-        layout.addLayout(button_layout)
-        self.setLayout(layout)
-
-        # Connect buttons to actions
-        self.publish_button.clicked.connect(self.publish)
-        self.cancel_button.clicked.connect(self.reject)
-
-    def publish(self):
-        """Handle publish button action."""
-        name1 = self.line_edit1.text()
-        name2 = self.line_edit2.text()
-        print(f"Publish - Name 1: {name1}, Name 2: {name2}")
-        self.accept()  # 다이얼로그 닫기
+        ### 여기다가 퍼블리시 실행함수 넣으면 됨
+        pass
 
 def add_custom_ui_to_tab(path, ct=None):
     workspace_control_name = "CustomTabUIWorkspaceControl"
@@ -431,7 +370,6 @@ def add_custom_ui_to_tab(path, ct=None):
 
             custom_ui = CustomUI(path, ct)
             control_widget.layout().addWidget(custom_ui)
-
 
 # Call the function to add the custom UI
 #add_custom_ui_to_tab(path)

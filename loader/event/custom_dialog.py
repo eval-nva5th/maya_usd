@@ -96,6 +96,7 @@ class CustomDialog(QDialog):
 
         self.dialog_flag = False # 필수
         self.accept() # 필수
+        ######## main window 창도 꺼져야함.
 
     def on_click_exit(self) :
         print("종료")

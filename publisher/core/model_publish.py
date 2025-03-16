@@ -3,7 +3,11 @@ from pxr import Usd
 import maya.cmds as cmds
 from publish_usd import ModelExportUSD
 
-root_directory = '/Users/junsu/Desktop'
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
+root_directory = '/Users/junsu/Desktop' ## 물어보고수정
 
 def model_publish(project_name, asset_name, asset_type, dept):
     """model publish 실행 함수"""

@@ -1,5 +1,10 @@
 import os
-prefix_path = "/nas/eval/show"
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
+
+prefix_path = f"{root_path}/show"
 proj_name = "eval"
 entity_type = "assets"
 

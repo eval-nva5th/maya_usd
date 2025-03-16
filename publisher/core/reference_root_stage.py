@@ -1,11 +1,15 @@
 import os
 import maya.cmds as cmds
 from pxr import Usd
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
 
 def first_model_publish(project_name, asset_type, asset_name, dept):
     if dept == "model":
         # asset_root_path에 asset_name의 root stage usda파일 생성 
-        root_directory = '/nas/eval/show'
+        root_directory = f'{root_path}/show'
         asset_root_path = os.path.join(root_directory, project_name, "assets", asset_type, asset_name)
         create_asset_root_usd = os.path.join(asset_root_path, f"{asset_name}.usda")
         # 기존 프로젝트 파일이 존재하면 로드, 없으면 새로 생성

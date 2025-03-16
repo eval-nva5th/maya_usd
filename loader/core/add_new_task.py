@@ -2,10 +2,10 @@ import maya.cmds as cmds
 from pxr import Usd, UsdGeom
 import os, re
 
-from path_config import PathConfig
+from DefaultConfig import DefaultConfig
 
-path_config = PathConfig() # 파일루트 얻는 객체 생성
-root_path = path_config.get_root_path()
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
 root_directory = '/Users/junsu/Desktop'
 root_directory = f"{root_path}/show"
 usd_type_list = ["usd", "usda", "usdc"]

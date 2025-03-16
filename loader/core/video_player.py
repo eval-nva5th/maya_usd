@@ -1,4 +1,3 @@
-
 from PySide2.QtWidgets import QLabel
 from PySide2.QtCore import Qt, QThread, Signal, QTimer
 from PySide2.QtGui import QPixmap, QImage

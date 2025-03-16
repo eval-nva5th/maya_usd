@@ -3,9 +3,13 @@ from pxr import Usd, UsdShade
 import maya.cmds as cmds
 from publish_usd import LookdevExportUSD
 
-root_directory = '/Users/junsu/Desktop'
+from DefaultConfig import DefaultConfig
 
-def lookdev_publish(project_name, asset_name, asset_type, dept):
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
+root_directory = '/Users/junsu/Desktop' ###### 이것도 물어보고 수정!
+
+def lookdev_publish(project_name, asset_name, asset_type, dept) :
     """lookdev publish 실행 함수"""
     if dept != "lookdev":
         print("해당 dept는 사용할 수 없습니다.")

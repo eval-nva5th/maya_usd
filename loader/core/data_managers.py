@@ -1,3 +1,8 @@
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
+
 # self.task_dict 순회 하면서 data 가공 후 add_task_to_table()
 
 def task_data(ui_instance, task_table):
@@ -26,7 +31,7 @@ def task_data(ui_instance, task_table):
         due_date = task_data['due_date']
         
 
-        thumb = f"/nas/eval/show/{proj_name}/{entity_type}/{entity_parent}/{entity_name}/{step}/pub/maya/data/{entity_name}_{step}_v001.jpg"
+        thumb = f"{root_path}/show/{proj_name}/{entity_type}/{entity_parent}/{entity_name}/{step}/pub/maya/data/{entity_name}_{step}_v001.jpg"
 
         for k, v in ui_instance.color_map.items() :
             if status == k :
@@ -53,7 +58,7 @@ def previous_data(ui_instance):
         외부에서 데이터를 받아서 테이블에 추가하는 함수
         """
         user_name = "No data"
-        play_blast = f"/home/rapa/다운로드/output1.mov" #mov파일경로 ### 여기에 null file path 넣기 
+        play_blast = f"{root_path}/elements/output1.mov" #mov파일경로 ### 여기에 null file path 넣기 
         status_text = "fin"
         for k, v in ui_instance.color_map.items() :
             if status_text == k :

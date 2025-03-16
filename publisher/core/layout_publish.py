@@ -2,7 +2,12 @@ import os, shutil, re
 import maya.cmds as cmds
 from publish_usd import LayoutExportUSD
 
-root_directory = '/Users/junsu/Desktop'
+from DefaultConfig import DefaultConfig
+
+default_config = DefaultConfig()
+root_path = default_config.get_root_path()
+
+root_directory = '/Users/junsu/Desktop' ##### 이것도 수정해줘야함. 
 
 def layout_publish(project_name, seq, shot_num, dept):
     """layout publish 실행 함수"""
