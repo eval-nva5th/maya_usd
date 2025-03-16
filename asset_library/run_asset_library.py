@@ -8,4 +8,7 @@ def run():
     # sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    run()
+    app = QApplication()
+    asset_window = AssetLibUI()
+    asset_window.show()
+    sys.exit(app.exec_())
