@@ -10,6 +10,8 @@ from shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
 from shotgrid_user_task import UserInfo
 from ui.loader_ui import UI
+from core.add_new_task import *
+
 # from loader.core.data_managers import version_file_data
 
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
@@ -20,6 +22,7 @@ sys.path.append("/home/rapa/gitkraken/maya_usd/widget")
 sys.path.append("/home/rapa/maya_usd/loader")
 sys.path.append("/home/rapa/maya_usd/loader/ui")
 widget_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/widget/ui")
+
 sys.path.append(widget_ui_path)
 
 def on_login_clicked(ui_instance):                        ######################### 1번 실행중
@@ -78,7 +81,7 @@ def on_cell_clicked(ui_instance, row, _):
     work_list = ct.get_dir_items(work_path)
     update_pub_table(ui_instance, pub_path, pub_list)
     update_work_table(ui_instance, work_path, work_list)
-
+    
     # print(pub_path, work_path)
     # try:
     #     if hasattr(ui_instance, "_work_table_slot"):  # 슬롯이 있는지 확인
@@ -150,7 +153,7 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
 
     item = table_widget.item(row, col)
     print(ct)
-    print(ct.entity_name, ct.content)
+    print(ct.entity_name, ct.content, ct.step)
     print(path)
     print(ct.set_file_name())
     print(f"Clicked item: {item.text()} at row {row}, column {col}")
@@ -160,7 +163,7 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
        print(ct.set_file_name())
        is_dir, is_created = False, False
        if not is_created :
-        dialog = CustomDialog(path, is_dir,is_created, ct)
+        dialog = CustomDialog(path, is_dir, is_created, ct)
         dialog.exec()
 
     elif item.text() ==  "No File" :
@@ -174,11 +177,10 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
 
     else :
         full_path = f"{path}/{item.text()}"
-        cmds.file(full_path, open=True) ################################################################파일여는부분
+        cmds.file(full_path, open=True, force=True)
+        #UsdLoader.load_work(ct.project_name, ct.task_name, ct.task_type, ct.step) #여기서
 
-        print(f"{item.text()}가 열립니다.") 
-
-        add_custom_ui_to_tab(path, ct)
+        add_custom_ui_to_tab(path, ct) ##### 위젯 넣는 함수
 
 def update_prev_work(ui_instance, prev_task_data):
     prefix_path = "/nas/eval/show"

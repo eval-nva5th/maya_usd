@@ -3,6 +3,11 @@ from shotgun_api3 import Shotgun
 import os, sys, time
 from ui.loading_ui import LoadingDialog
 
+from path_config import PathConfig
+
+path_config = PathConfig() # 파일루트 얻는 객체 생성
+root_path = path_config.get_root_path()
+
 class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
     def __init__(self, sg_url, script_name, api_key):
         self.sg = Shotgun(sg_url, script_name, api_key)
@@ -103,6 +108,7 @@ class TaskInfo(Shotgrid) :
             step = task['step']['name']
 
             self.task_dict[current_task_id] = {}
+            self.task_dict[current_task_id]['assignee_id'] = user_id
             self.task_dict[current_task_id]['proj_id'] = proj_id
             self.task_dict[current_task_id]['proj_name']=proj_name
             self.task_dict[current_task_id]['content']=task_name
@@ -292,42 +298,11 @@ class TaskInfo(Shotgrid) :
         prev_task_dict["comment"] = prev_task['comment']
         return prev_task_dict, current_dict
 
-class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠㅠ
-    # _instance = None
-
-    # def __new__(cls, id_dict=None) :
-    #     if not cls._instance:
-    #         cls._instance = super().__new__(cls)
-    #         cls._instance._id_dict = id_dict # 초기화는 여기서 수행
-
-    #         cls._id = None
-    #         cls._content = None
-    #         cls._proj_id = None
-    #         cls._project_name = None
-    #         cls._entity_id = None
-    #         cls._entity_type = None
-    #         cls._entity_name = None
-    #         cls._entity_parent = None
-    #         cls._step = None
-    #         cls._root_path = None
-
-    #     return cls._instance
-    
-    # def initialize(self, id_dict):  # 명시적으로 초기화하는 함수 추가
-    #     if id_dict:
-    #         self.id = id_dict.get('id', None)
-    #         self.content = id_dict.get('content', None)
-    #         self.proj_id = id_dict.get('proj_id', None)
-    #         self.project_name = id_dict.get('proj_name', None)
-    #         self.entity_id = id_dict.get('entity_id', None)
-    #         self.entity_type = id_dict.get('entity_type', None)
-    #         self.entity_name = id_dict.get('entity_name', None)
-    #         self.entity_parent = id_dict.get('entity_parent', None)
-    #         self.step = id_dict('step', None)
-    #         self.root_path = None
+class ClickedTask:
 
     def __init__(self, id_dict):
         #{'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827, 'id': 5828}
+        self.assignee_id = id_dict["assignee_id"]
         self.id = id_dict["id"]
         self.content = id_dict["content"]
         self.proj_id = id_dict["proj_id"]
@@ -337,10 +312,14 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
         self.entity_name = id_dict["entity_name"]
         self.entity_parent = id_dict['entity_parent']
         self.step = id_dict['step'].lower()
-        self.root_path = "/nas/eval/show"
+        self.root_path = f"{root_path}/show"
 
     def __repr__(self):
         return f"ClickedTask(id={self.id}, project_id={self.proj_id}, project_name={self.project_name}, entity_id = {self.entity_id}, entity_type = {self.entity_type}, entity_parent ={self.entity_parent}, step={self.step})"
+    
+    def set_base_path(self):
+        base_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}"
+        return base_path
     
     def set_shallow_path(self):
         shallow_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}"
@@ -360,12 +339,12 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
         #full_path = f"{deep_path}/{self.set_file_name()}"
         if not os.path.exists(deep_path) :
             full_path = f"{deep_path}/{self.set_file_name()}"
-            data_list.append(["/nas/eval/elements/null.png", "No Dir No File", "", full_path])
+            data_list.append([f"{root_path}/elements/null.png", "No Dir No File", "", full_path])
         else : 
             data_list = self.set_file_list(deep_path)
             full_path = f"{deep_path}/{self.set_file_name()}"
             if len(data_list) == 0 :
-                data_list.append(["/nas/eval/elements/null.png", "No File", "", full_path])
+                data_list.append([f"{root_path}/elements/null.png", "No File", "", full_path])
 
         return data_list
     
@@ -378,9 +357,9 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
             else:
                 ext = ''
             if ext == "usd" :
-                ext_image = "/nas/eval/elements/usd_logo"
+                ext_image = f"{root_path}/elements/usd_logo"
             elif ext in ["ma","mb"] :
-                ext_image = "/nas/eval/elements/maya_logo"
+                ext_image = f"{root_path}/elements/maya_logo"
             file_path = os.path.join(path, file)
             last_time = os.path.getmtime(file_path)
             last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
