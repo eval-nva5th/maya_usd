@@ -22,7 +22,7 @@ class AssetLibUI(QMainWindow):
         self.asset_list = self.get_asset_info()
         print(self.asset_list)
         self.setWindowTitle("Asset Library")
-        self.setFixedSize(700, 800)
+        self.setFixedSize(710, 850)
 
         self.center_window()
 
@@ -37,6 +37,7 @@ class AssetLibUI(QMainWindow):
         # Selected num
         self.selected_asset_num = QLabel(f"Selected Asset : {self.selected_num}")
         main_layout.addWidget(self.selected_asset_num)
+        self.selected_asset_num.setStyleSheet("font-size: 20px;")
 
         # QScrollArea
         scroll_area = QScrollArea()
@@ -49,7 +50,7 @@ class AssetLibUI(QMainWindow):
         self.grid_layout.setVerticalSpacing(10)
         self.grid_layout.setRowStretch(len(self.asset_list) // 3 + 1, 1) # 상단 정렬
 
-        self.populate_grid(self.asset_list)
+        self.add_cell_to_grid(self.asset_list)
 
         # ScrollArea에 배치
         scroll_content.setLayout(self.grid_layout)
@@ -69,7 +70,7 @@ class AssetLibUI(QMainWindow):
         main_layout.addLayout(button_container)
         central_widget.setLayout(main_layout)
 
-    def populate_grid(self, asset_list):
+    def add_cell_to_grid(self, asset_list):
         self.cell_widgets = []
         for index, (asset_name, image_path) in enumerate(asset_list):
             row = index // 3
@@ -78,20 +79,21 @@ class AssetLibUI(QMainWindow):
             cell_widget = ClickableWidget(asset_name, self, index, image_path)
             cell_layout = QVBoxLayout()
             cell_layout.setAlignment(Qt.AlignTop)
-            cell_layout.setSpacing(5)
+            cell_layout.setSpacing(0)
             cell_layout.setContentsMargins(0, 0, 0, 0)
-            cell_widget.setFixedSize(190, 160)
+            cell_widget.setFixedSize(210, 180)
 
             # 이미지 QLabel
             image_label = QLabel()
-            image_label.setFixedSize(190, 110)
-            pixmap = QPixmap(image_path).scaled(190, 110, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            image_label.setFixedSize(210, 130)
+            pixmap = QPixmap(image_path).scaled(210, 130, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             image_label.setPixmap(pixmap)
             image_label.setAlignment(Qt.AlignCenter)
 
             # 파일명 QLabel
             text_label = QLabel(asset_name)
             text_label.setAlignment(Qt.AlignCenter)
+            text_label.setStyleSheet("font-size: 14px;")
 
             # 레이아웃에 추가
             cell_layout.addWidget(image_label)
@@ -101,6 +103,7 @@ class AssetLibUI(QMainWindow):
             # QGridLayout에 추가
             self.grid_layout.addWidget(cell_widget, row, col)
             self.cell_widgets.append(cell_widget)
+            cell_widget.setStyleSheet("border : 2px solid transparent;")
 
     def select_cell(self, cell_widget):
         if cell_widget in self.selected_cells:
@@ -114,12 +117,12 @@ class AssetLibUI(QMainWindow):
     def add_to_selection(self, cell_widget):
         if cell_widget not in self.selected_cells:
             self.selected_cells.append(cell_widget)
-            cell_widget.setStyleSheet("background-color: #D6EAF8;")
+            cell_widget.setStyleSheet("background-color: #5386A6;border : 2px solid #5386A6;")
 
     def remove_from_selection(self, cell_widget):
         if cell_widget in self.selected_cells:
             self.selected_cells.remove(cell_widget)
-            cell_widget.setStyleSheet("background-color: none;")
+            cell_widget.setStyleSheet("background-color: none;border : 2px solid transparent")
 
     def get_asset_info(self):
         prefix_path = f"{root_path}/show"
@@ -129,8 +132,8 @@ class AssetLibUI(QMainWindow):
         path_list = [proj_name, entity_type]
         asset_list = []
 
-        asset_type_path = os.path.join(prefix_path, *path_list)
-        asset_type_list = os.listdir(asset_type_path)
+        asset_type_path = os.path.join(prefix_path, *path_list) # /nas/eval/show/eval/assets
+        asset_type_list = os.listdir(asset_type_path) # [character, environment, vehicle, props]
 
         for asset_type in asset_type_list:
             asset_name_path = os.path.join(asset_type_path, asset_type)
@@ -156,7 +159,6 @@ class AssetLibUI(QMainWindow):
     def center_window(self):
         screen_geometry = self.screen().geometry()
         window_geometry = self.frameGeometry()
-
         center_x = screen_geometry.width() // 2 - window_geometry.width() // 2
         center_y = screen_geometry.height() // 2 - window_geometry.height() // 2
         self.setGeometry(center_x, center_y, window_geometry.width(), window_geometry.height())        
@@ -170,10 +172,19 @@ class ClickableWidget(QWidget):
         self.image_path = image_path
         self.parent_window = parent_window
         self.index = index
-
+        
     def mousePressEvent(self, event):
         self.parent_window.select_cell(self)
 
+    def enterEvent(self, event):
+        if self in self.parent_window.selected_cells:
+            return
+        self.setStyleSheet("background-color: #5386A6;border : 2px solid #5386A6;")
+
+    def leaveEvent(self, event):
+        if self in self.parent_window.selected_cells:
+            return 
+        self.setStyleSheet("background-color: none;border : 2px solid transparent") 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

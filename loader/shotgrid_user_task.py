@@ -307,6 +307,7 @@ class ClickedTask:
         #{'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827, 'id': 5828}
         self.assignee_id = id_dict["assignee_id"]
         self.id = id_dict["id"]
+        self.assignee_id = id_dict["assignee_id"]
         self.content = id_dict["content"]
         self.proj_id = id_dict["proj_id"]
         self.project_name = id_dict["proj_name"]

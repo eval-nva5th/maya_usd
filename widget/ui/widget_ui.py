@@ -14,6 +14,14 @@ except Exception :
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 import requests
+from widget.event.widget_event_handler import clicked_get_asset_btn
+
+import sys
+import os
+
+from PySide2.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout
+from PySide2.QtGui import QPixmap
+from PySide2.QtCore import Qt
 import sys
 from io import BytesIO
 from DefaultConfig import DefaultConfig
@@ -75,6 +83,8 @@ class CustomUI(QWidget):
         projectname_label = QLabel(f"Project : {self.project_name}")
         contentname_label = QLabel(f"Task : {self.content}")
         step_label = QLabel(f"Dept : {self.step}")
+        get_asset_button = QPushButton("Get Assets")
+        get_asset_button.clicked.connect(clicked_get_asset_btn)
 
         if self.entity_type == "assets" :
             self.entity_type = "Asset"
@@ -148,7 +158,7 @@ class CustomUI(QWidget):
         notecreator_layout.setContentsMargins(0, 0, 0, 0)
 
         creatorthumb_label = QLabel()
-        pixmap1 = self.load_pixmap_from_url(creator_thumb, "human") 
+        pixmap1 = self.load_pixmap_from_url(creatorthumb_label) 
         pixmap1 = pixmap1.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         pixmap1 = pixmap1.copy((pixmap1.width()-30)//2, (pixmap1.height()-30)//2, 30, 30)
         pixmap1= pixmap1.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
@@ -173,7 +183,7 @@ class CustomUI(QWidget):
         noteimage_label = QLabel()
         pixmap2 = self.load_pixmap_from_url(attachment_url, "note")
         pixmap2 = pixmap2.scaled(320, 180, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
+        #noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
         noteimage_label.setPixmap(pixmap2)
         
         # 메인 레이아웃
@@ -203,6 +213,7 @@ class CustomUI(QWidget):
         label_layout.addWidget(step_label)
         label_layout.addWidget(parent_label)
         label_layout.addWidget(child_label)
+        label_layout.addWidget(get_asset_button)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.button1)
@@ -359,8 +370,52 @@ class CustomUI(QWidget):
         save_as_run()
 
     def on_click_publish(self):
-        ### 여기다가 퍼블리시 실행함수 넣으면 됨
-        pass
+        """Displays the 'Publish' popup dialog."""
+        publish_dialog = PublishDialog(self)
+        publish_dialog.exec_()  # Show the dialog modally
+
+class PublishDialog(QDialog):
+    def __init__(self, parent=None):
+        super(PublishDialog, self).__init__(parent)
+        
+        self.setWindowTitle("Publish")
+        
+        # Create Labels and LineEdits for Publish
+        self.label1 = QLabel("Publish Name 1:")
+        self.line_edit1 = QLineEdit()
+        
+        self.label2 = QLabel("Publish Name 2:")
+        self.line_edit2 = QLineEdit()
+
+        # Button
+        self.publish_button = QPushButton("Publish")
+        self.cancel_button = QPushButton("Cancel")
+        
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(self.label1)
+        layout.addWidget(self.line_edit1)
+        layout.addWidget(self.label2)
+        layout.addWidget(self.line_edit2)
+        
+        # Button layout
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.publish_button)
+        button_layout.addWidget(self.cancel_button)
+        
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+        # Connect buttons to actions
+        self.publish_button.clicked.connect(self.publish)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def publish(self):
+        """Handle publish button action."""
+        name1 = self.line_edit1.text()
+        name2 = self.line_edit2.text()
+        print(f"Publish - Name 1: {name1}, Name 2: {name2}")
+        self.accept()  # 다이얼로그 닫기
 
 def add_custom_ui_to_tab(path, ct=None):
     workspace_control_name = "CustomTabUIWorkspaceControl"

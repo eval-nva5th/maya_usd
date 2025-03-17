@@ -30,13 +30,19 @@ from loader.ui.login_ui import LoginWidget
 # if __name__ == "__main__":
 #     show_ui()
 # ---------------------------------------------------------------로그인 위젯으로 변경함.
+from PySide2.QtWidgets import QApplication
+
+from loader.ui.loader_ui import UI
+from loader.ui.login_ui import LoginWidget
+
+
 def show_ui():
     """ UI를 실행하는 함수 """
     print("UI 인스턴스 생성 시작")
     ui = LoginWidget()
     ui.setFixedSize(400, 200)
-    print("UI 인스턴스 생성 완료")
     ui.show()
+    print("UI 인스턴스 생성 완료")
     return ui  # UI 인스턴스 반환
 
 if __name__ == "__main__":

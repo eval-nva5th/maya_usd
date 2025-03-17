@@ -10,7 +10,7 @@ import maya.cmds as cmds
 import maya.utils as mu
 
 import os, sys
-from shotgrid_user_task import ClickedTask
+from loader.shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
 from shotgrid_user_task import UserInfo
 from loader.ui import loader_ui
@@ -144,7 +144,7 @@ def add_file_to_table(table_widget, file_info):
     table_widget.setItem(row, 2, time_item)
 
 def on_work_cell_clicked(table_widget, row, col, ct, path):
-    from widget.ui.widget_ui import CustomUI, add_custom_ui_to_tab
+    from widget_ui import CustomUI, add_custom_ui_to_tab
 
     item = table_widget.item(row, col)
     print(ct)
