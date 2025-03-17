@@ -26,7 +26,7 @@ from shotgridapi import ShotgridAPI
 root_path = SystemPath().get_root_path()
 sg = ShotgridAPI().shotgrid_connector()
 
-path = ""
+#path = ""
 
 def get_maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
@@ -76,9 +76,9 @@ class CustomUI(QWidget):
         h_line0 = QFrame() # 구분선0
         h_line0.setFrameShape(QFrame.HLine)
         h_line0.setFrameShadow(QFrame.Sunken)
-        get_asset_label = QLabel("[Get Assets]")
+        get_asset_label = QLabel("[ASSET LIBRARY]")
         get_asset_label.setStyleSheet("font-size: 11pt;padding-bottom: 5px;")
-        get_asset_button = QPushButton("Get Assets")
+        get_asset_button = QPushButton("GET ASSETS")
         get_asset_button.setMaximumWidth(320)
         get_asset_button.clicked.connect(clicked_get_asset_btn)
 
@@ -110,7 +110,7 @@ class CustomUI(QWidget):
         
         for row, item in enumerate(colleague_list):
             thumb_label = QLabel(self)
-            thumb_label.setFixedSize(20, 20)
+            #thumb_label.setFixedSize(20, 20)
             thumb_label.setScaledContents(True)
         
             pixmap = QPixmap()
@@ -127,13 +127,13 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
-            pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            #pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = pixmap.copy((pixmap.width()-20)//2, (pixmap.height()-20)//2, 20, 20)
             pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = self.circular_pixmap(pixmap, 20)
 
             thumb_label.setPixmap(pixmap) 
-            thumb_label.setStyleSheet('padding-left : 5px') #border-radi메s: 15px; border: white;
+            thumb_label.setStyleSheet('padding-left : 5px')
 
             text_label = QLabel(f"{str(item[0])} : {str(item[1])}")
 
@@ -144,23 +144,10 @@ class CustomUI(QWidget):
         h_line2.setFrameShape(QFrame.HLine)
         h_line2.setFrameShadow(QFrame.Sunken)
         
-        note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url = self.get_notes_infos()
+        note_title, note_body, creator_kor_name, version_name, attachment_url = self.get_notes_infos()
 
         noteinfo_label = QLabel("[RECENT NOTE]")
         noteinfo_label.setStyleSheet("font-size: 11pt;")
-
-        # notecreator_layout = QGridLayout()
-        # notecreator_layout.setSpacing(0)
-        # notecreator_layout.setContentsMargins(0, 0, 0, 0)
-
-        creatorthumb_label = QLabel()
-        pixmap1 = self.load_pixmap_from_url(creatorthumb_label, "human") 
-        pixmap1 = pixmap1.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        pixmap1 = pixmap1.copy((pixmap1.width()-30)//2, (pixmap1.height()-30)//2, 30, 30)
-        pixmap1= pixmap1.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        pixmap1 = self.circular_pixmap(pixmap1, 30)
-        creatorthumb_label.setPixmap(pixmap1)
-
         notedetail_layout = QVBoxLayout()
         creatorname_label = QLabel(f"Note from {creator_kor_name}")
         versionname_label = QLabel(f"version : {version_name}")
@@ -176,7 +163,7 @@ class CustomUI(QWidget):
         
         # 세 번째 줄 (100x100 QPixmap)
         noteimage_label = QLabel()
-        pixmap2 = self.load_pixmap_from_url(attachment_url, "note")
+        pixmap2 = self.load_pixmap_from_url(attachment_url)
         pixmap2 = pixmap2.scaled(320, 180, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         #noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
         noteimage_label.setPixmap(pixmap2)
@@ -245,7 +232,7 @@ class CustomUI(QWidget):
 
         return masked_pixmap
     
-    def load_pixmap_from_url(self, url, type):
+    def load_pixmap_from_url(self, url):
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -253,10 +240,11 @@ class CustomUI(QWidget):
             image.loadFromData(BytesIO(response.content).read())
             return image
         except Exception as e:
-            if type == "human" :
-                image = QPixmap(f"{root_path}/elements/no_assignee.png")
-            elif type == "note" :
-                image = QPixmap(f"{root_path}/elements/no_image.jpg")
+            image = QPixmap(f"{root_path}/elements/no_image.jpg")
+            # if type == "human" :
+            #     image = QPixmap(f"{root_path}/elements/no_assignee.png")
+            # elif type == "note" :
+            #     image = QPixmap(f"{root_path}/elements/no_image.jpg")
             return image
 
     def get_colleague_info(self) :
@@ -319,9 +307,8 @@ class CustomUI(QWidget):
             note_body = note['content']
             #creator_name = note['created_by']['name']
             creator_id = note['created_by']['id']
-            creator_info = sg.find_one("HumanUser", [["id", "is", creator_id]], ["sg_korean_name", "image"])
-            creator_kor_name = creator_info['sg_korean_name']
-            creator_thumb = creator_info['image']
+            creator_kor_name = sg.find_one("HumanUser", [["id", "is", creator_id]], ["sg_korean_name"])['sg_korean_name']
+            #creator_kor_name = creator_info['sg_korean_name']
             linked_infos = note['note_links']
             for link in linked_infos :
                 if link['type'] == 'Version' :
@@ -340,10 +327,9 @@ class CustomUI(QWidget):
             if attachment_data :
                 attachment_url = attachment_data['this_file']['url']
 
-
         #print(f"note id : {note_id}\nnote_title : {note_title}\nnote_body : {note_body}\ncreator_kor_name : {creator_kor_name}\nversion_name = {version_name}\ncreator_thumb = {creator_thumb}\nattachment_url : {attachment_url}")
 
-        return note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url
+        return note_title, note_body, creator_kor_name, version_name, attachment_url
     
     def getClickedTaskObject(self, ct) :
         self.ct = ct
