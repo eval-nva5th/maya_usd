@@ -1,7 +1,10 @@
 import os, shutil, re
 import maya.cmds as cmds
+from systempath import SystemPath
 
-root_directory = '/Users/junsu/Desktop'
+root_path = SystemPath().get_root_path()
+
+root_directory = f'{root_path}/show' 
 
 def rig_publish(project_name, asset_name, asset_type, dept):
     """rig publish 실행 함수"""

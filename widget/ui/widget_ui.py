@@ -1,42 +1,30 @@
-from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame
-from PySide2.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
-from PySide2.QtWidgets import QHeaderView, QAbstractItemView,QSpacerItem, QSizePolicy
-from PySide2.QtCore import Qt
-from shiboken2 import wrapInstance
+try :
+    from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame
+    from PySide2.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
+    from PySide2.QtWidgets import QHeaderView, QAbstractItemView
+    from PySide2.QtCore import Qt
+    from shiboken2 import wrapInstance
+except Exception :
+    from PySide6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame
+    from PySide6.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
+    from PySide6.QtWidgets import QHeaderView, QAbstractItemView
+    from PySide6.QtCore import Qt
+    from shiboken6 import wrapInstance
+    
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 import requests
 from widget.event.widget_event_handler import clicked_get_asset_btn
-
-import sys
-import os
-
-from PySide2.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout
-from PySide2.QtGui import QPixmap
-from PySide2.QtCore import Qt
-import sys
-import requests
-from io import BytesIO
-
-sys.path.append("/home/rapa/maya_usd/save_as")
 from save_as.main import run as save_as_run
 
-from importlib import reload
+import os
+import sys
+from io import BytesIO
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
 
-publisher_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/save_as")
-sys.path.append(publisher_ui_path)
-
-import main   # 이제 main.py에서 show_ui 함수를 임포트할 수 있습니다
-
-import shotgun_api3
-
-# ShotGrid 서버 정보
-sg_url = "https://5thacademy.shotgrid.autodesk.com/"
-script_name = "sy_key"
-api_key = "vkcuovEbxhdoaqp9juqodux^x"
-
-# ShotGrid API 연결
-sg = shotgun_api3.Shotgun(sg_url, script_name, api_key)
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
 
 path = ""
 
@@ -131,7 +119,7 @@ class CustomUI(QWidget):
             if image_data:
                 pixmap.loadFromData(image_data)      
             else:
-                pixmap = QPixmap("/nas/eval/elements/no_assignee.png")
+                pixmap = QPixmap(f"{root_path}/elements/no_assignee.png")
                 if not pixmap.isNull():
                     pass
                 else:
@@ -166,7 +154,7 @@ class CustomUI(QWidget):
         # notecreator_layout.setContentsMargins(0, 0, 0, 0)
 
         creatorthumb_label = QLabel()
-        pixmap1 = self.load_pixmap_from_url(creator_thumb) 
+        pixmap1 = self.load_pixmap_from_url(creatorthumb_label, "human") 
         pixmap1 = pixmap1.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         pixmap1 = pixmap1.copy((pixmap1.width()-30)//2, (pixmap1.height()-30)//2, 30, 30)
         pixmap1= pixmap1.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
@@ -188,7 +176,7 @@ class CustomUI(QWidget):
         
         # 세 번째 줄 (100x100 QPixmap)
         noteimage_label = QLabel()
-        pixmap2 = self.load_pixmap_from_url(attachment_url)
+        pixmap2 = self.load_pixmap_from_url(attachment_url, "note")
         pixmap2 = pixmap2.scaled(320, 180, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         #noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
         noteimage_label.setPixmap(pixmap2)
@@ -257,7 +245,7 @@ class CustomUI(QWidget):
 
         return masked_pixmap
     
-    def load_pixmap_from_url(self, url):
+    def load_pixmap_from_url(self, url, type):
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -265,8 +253,11 @@ class CustomUI(QWidget):
             image.loadFromData(BytesIO(response.content).read())
             return image
         except Exception as e:
-            print(f"이미지를 불러오는 데 실패했습니다: {e}")
-            return QPixmap()
+            if type == "human" :
+                image = QPixmap(f"{root_path}/elements/no_assignee.png")
+            elif type == "note" :
+                image = QPixmap(f"{root_path}/elements/no_image.jpg")
+            return image
 
     def get_colleague_info(self) :
 
@@ -315,7 +306,12 @@ class CustomUI(QWidget):
         )
 
         if not note :
-            note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url  = ""
+            note_title = ""
+            note_body = ""
+            creator_kor_name = ""
+            version_name = ""
+            creator_thumb = ""
+            attachment_url = ""
 
         else : 
             note_id = note['id']
@@ -406,7 +402,7 @@ class PublishDialog(QDialog):
 
         # Connect buttons to actions
         self.publish_button.clicked.connect(self.publish)
-        self.cancel_button.clicked.connect(self.reject) # reject 함수 구현 필요
+        self.cancel_button.clicked.connect(self.reject)
 
     def publish(self):
         """Handle publish button action."""
@@ -440,73 +436,5 @@ def add_custom_ui_to_tab(path, ct=None):
             custom_ui = CustomUI(path, ct)
             control_widget.layout().addWidget(custom_ui)
 
-
 # Call the function to add the custom UI
 #add_custom_ui_to_tab(path)
-
-import maya.cmds as cmds
-from shiboken2 import wrapInstance
-from PySide2 import QtWidgets, QtCore
-import maya.OpenMayaUI as omui
-
-workspace_control_name = "CustomTabUIWorkspaceControl"
-new_workspace_name = "CustomTabUIforReload"
-
-class ReloadUI(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        super(ReloadUI, self).__init__(parent)
-
-        # 레이아웃 생성
-        layout = QtWidgets.QVBoxLayout(self)
-
-        # 라벨 1
-        self.label1 = QtWidgets.QLabel("updated task : ", self)
-        layout.addWidget(self.label1)
-
-        # 라벨 2
-        self.label2 = QtWidgets.QLabel("updated pub file : ", self)
-        layout.addWidget(self.label2)
-
-        # 버튼
-        self.button = QtWidgets.QPushButton("reload")
-        layout.addWidget(self.button)
-
-        # 버튼 클릭 시 라벨 1, 2의 텍스트 변경
-        self.button.clicked.connect(self.update_labels)
-
-    def update_labels(self):
-        self.label1.setText("라벨 1: 변경됨!")
-        self.label2.setText("라벨 2: 업데이트 완료!")
-
-def create_workspace_with_ui():
-    """ CustomTabUIforReload 워크스페이스에 UI 추가 """
-    if cmds.workspaceControl(workspace_control_name, query=True, exists=True):
-        print(f"WorkspaceControl '{workspace_control_name}' already exists.")
-
-        # 새로운 워크스페이스를 기존 컨트롤 위쪽에 추가
-        if not cmds.workspaceControl(new_workspace_name, query=True, exists=True):
-            cmds.workspaceControl(
-                new_workspace_name,
-                label="RELOADreload",
-                retain=False,
-                dockToControl=(workspace_control_name, "top")
-            )
-
-        # MQtUtil을 사용하여 workspaceControl의 PySide2 위젯 가져오기
-        ptr = omui.MQtUtil.findControl(new_workspace_name)
-        if ptr:
-            workspace_widget = wrapInstance(int(ptr), QtWidgets.QWidget)
-
-            # PySide2 UI 추가
-            ui = ReloadUI()
-            ui.setParent(workspace_widget)
-            ui.setWindowFlags(QtCore.Qt.Widget)
-
-            # 레이아웃 설정
-            layout = QtWidgets.QVBoxLayout(workspace_widget)
-            layout.addWidget(ui)
-
-            print("✅ PySide2 UI가 'CustomTabUIforReload' workspaceControl에 추가되었습니다!")
-
-# 실행
-create_workspace_with_ui()

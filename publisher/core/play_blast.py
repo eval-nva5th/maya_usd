@@ -1,7 +1,10 @@
 import maya.cmds as cmds
 import os, re, shutil, subprocess
 from publisher.core.encoding import EncodeProcess
-from PySide2.QtCore import QTimer
+try :
+    from PySide2.QtCore import QTimer
+except Exception:
+    from PySide6.QtCore import QTimer
 
 class PlayblastManager:
     def __init__(self, file_path, filename_input):

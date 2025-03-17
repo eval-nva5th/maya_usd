@@ -1,6 +1,10 @@
-
-from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
-from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
+try : 
+    from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
+    from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
+except Exception :
+    from PySide6.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
+    from PySide6.QtGui import QPixmap, QPainter, QColor, Qt
+    
 from functools import partial
 import maya.cmds as cmds
 import maya.utils as mu
@@ -8,30 +12,22 @@ import maya.utils as mu
 import os, sys
 from loader.shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
-from loader.shotgrid_user_task import UserInfo
+from shotgrid_user_task import UserInfo
 from loader.ui import loader_ui
-from widget.ui.widget_ui import CustomUI, add_custom_ui_to_tab
-# from loader.core.data_managers import version_file_data
+from core.add_new_task import *
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
 
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
 
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/event")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/ui")
-sys.path.append("/home/rapa/gitkraken/maya_usd/widget") 
-sys.path.append("/home/rapa/maya_usd/loader")
-sys.path.append("/home/rapa/maya_usd/loader/ui")
-widget_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/widget/ui")
-sys.path.append(widget_ui_path)
+#from loader.core.data_managers import version_file_data
 
-def on_login_clicked(ui_instance):                        ######################### 1번 실행중
+def on_login_clicked(ui_instance):                        # 1번 실행중
     """
     로그인 버튼 실행
     """
-    sg_url = "https://5thacademy.shotgrid.autodesk.com/"
-    script_name = "sy_key"
-    api_key = "vkcuovEbxhdoaqp9juqodux^x"
-    user = UserInfo(sg_url, script_name, api_key)
+    user = UserInfo()
 
     name = ui_instance.name_input.text()
     email = ui_instance.email_input.text()
@@ -80,25 +76,13 @@ def on_cell_clicked(ui_instance, row, _):
     work_list = ct.get_dir_items(work_path)
     update_pub_table(ui_instance, pub_path, pub_list)
     update_work_table(ui_instance, work_path, work_list)
-
-    # print(pub_path, work_path)
-    # try:
-    #     if hasattr(ui_instance, "_work_table_slot"):  # 슬롯이 있는지 확인
-    #         ui_instance.work_table.cellDoubleClicked.disconnect(ui_instance._work_table_slot)
-    # except (TypeError, RuntimeError):
-    #     pass  # 연결된 슬롯이 없으면 무시
-
-    # # 새로운 슬롯을 partial로 저장
-    # ui_instance._work_table_slot = partial(on_work_cell_clicked, ui_instance.work_table, ct, work_path)
     
-    # # 새로운 슬롯을 이벤트에 연결
-    # ui_instance.work_table.cellDoubleClicked.connect(ui_instance._work_table_slot)
-
     try:
         ui_instance.work_table.cellDoubleClicked.disconnect()
     except Exception as e:
         print(e)
-        pass  # 연결된 핸들러가 없을 경우 예외 발생할 수 있음, 무시
+        pass  # 연결된 핸들러가 없을 경우 예외 발생할 수 있음, 무시해도 됨
+    
     ui_instance.work_table.cellDoubleClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance.work_table, row, col, ct, work_path))
 
 def update_pub_table(ui_instance, pub_path, pub_list):
@@ -116,8 +100,6 @@ def update_work_table(ui_instance, work_path, work_list):
     for file_info in work_list:
         add_file_to_table(ui_instance.work_table, file_info)
 
-    #ui_instance.work_table.cellClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance, file_info[3], row, col))
-
 def add_file_to_table(table_widget, file_info):
 
     row = table_widget.rowCount()
@@ -132,7 +114,7 @@ def add_file_to_table(table_widget, file_info):
     table_widget.horizontalHeader().setVisible(True) 
     table_widget.verticalHeader().setVisible(False)
 
-    # Image (DCC logo)
+    # 로고
     image_label = QLabel()
     pixmap = QPixmap(file_info[0]).scaled(25, 25)
     image_label.setPixmap(pixmap)
@@ -148,11 +130,11 @@ def add_file_to_table(table_widget, file_info):
     table_widget.setItem(row, 2, time_item)
 
 def on_work_cell_clicked(table_widget, row, col, ct, path):
-    
+    from widget.ui.widget_ui import add_custom_ui_to_tab
 
     item = table_widget.item(row, col)
     print(ct)
-    print(ct.entity_name, ct.content)
+    print(ct.entity_name, ct.content, ct.step)
     print(path)
     print(ct.set_file_name())
     print(f"Clicked item: {item.text()} at row {row}, column {col}")
@@ -162,8 +144,9 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
        print(ct.set_file_name())
        is_dir, is_created = False, False
        if not is_created :
-        dialog = CustomDialog(path, is_dir,is_created, ct)
+        dialog = CustomDialog(path, is_dir, is_created, ct)
         dialog.exec()
+        # mainwindow 종료
 
     elif item.text() ==  "No File" :
         print("o directory x file")
@@ -173,17 +156,17 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
             print(ct.entity_name, ct.content) 
             dialog = CustomDialog(path, is_dir,is_created, ct)
             dialog.exec()
+            #### mainwindow 종료
 
     else :
         full_path = f"{path}/{item.text()}"
-        cmds.file(full_path, open=True) ################################################################파일여는부분
+        cmds.file(full_path, open=True, force=True)
+        #### mainwindow 종료 
 
-        print(f"{item.text()}가 열립니다.") 
-
-        add_custom_ui_to_tab(path, ct)
+        add_custom_ui_to_tab(path, ct) ##### 위젯 넣는 함수
 
 def update_prev_work(ui_instance, prev_task_data):
-    prefix_path = "/nas/eval/show"
+    prefix_path = f"{root_path}/show"
     file_path_list = []
     if prev_task_data['id'] != "None":
         print(prev_task_data)

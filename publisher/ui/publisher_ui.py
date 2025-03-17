@@ -1,9 +1,17 @@
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QToolButton
-from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
-from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
-from PySide2.QtWidgets import QComboBox
-from PySide2 import QtCore
+try : 
+    from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QToolButton
+    from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+    from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
+    from PySide2.QtWidgets import QComboBox
+    from PySide2 import QtCore
+except Exception :
+    from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QToolButton
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide6.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+    from PySide6.QtWidgets import QMessageBox, QPlainTextEdit
+    from PySide6.QtWidgets import QComboBox
+    from PySide6 import QtCore
 
 import sys, os
 import maya.cmds as cmds

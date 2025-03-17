@@ -1,9 +1,18 @@
-from PySide2.QtWidgets import QApplication, QPushButton, QMainWindow, QVBoxLayout, QGridLayout, QScrollArea
-from PySide2.QtWidgets import QHBoxLayout, QWidget, QLabel
-from PySide2.QtGui import QPixmap
-from PySide2.QtCore import Qt
+try:
+    from PySide2.QtWidgets import QApplication, QPushButton, QMainWindow, QVBoxLayout, QGridLayout, QScrollArea
+    from PySide2.QtWidgets import QHBoxLayout, QWidget, QLabel
+    from PySide2.QtGui import QPixmap
+    from PySide2.QtCore import Qt
+except Exception :
+    from PySide6.QtWidgets import QApplication, QPushButton, QMainWindow, QVBoxLayout, QGridLayout, QScrollArea
+    from PySide6.QtWidgets import QHBoxLayout, QWidget, QLabel
+    from PySide6.QtGui import QPixmap
+    from PySide6.QtCore import Qt
+
 import sys, os
 from asset_library.event.ui_event_handler import clicked_load_btn
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
 class AssetLibUI(QMainWindow):
     def __init__(self):
@@ -114,7 +123,7 @@ class AssetLibUI(QMainWindow):
             cell_widget.setStyleSheet("background-color: none;border : 2px solid transparent")
 
     def get_asset_info(self):
-        prefix_path = "/nas/eval/show"
+        prefix_path = f"{root_path}/show"
         proj_name = "eval"
         entity_type = "assets"
 
@@ -132,7 +141,7 @@ class AssetLibUI(QMainWindow):
                 task_path = os.path.join(asset_name_path, asset_name)
                 task_list = os.listdir(task_path)
 
-                jpg_file_name = "/nas/eval/elements/null.png"
+                jpg_file_name = f"{root_path}/elements/null.png"
                 for task in task_list:
                     if task in ["lookdev", "model"]:
                         jpg_path = os.path.join(task_path, task, "pub/maya/data")

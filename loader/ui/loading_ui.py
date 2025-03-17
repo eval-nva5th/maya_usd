@@ -1,7 +1,13 @@
 
-from PySide2.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
-from PySide2.QtCore import Qt, QTimer
+try :
+    from PySide2.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
+    from PySide2.QtCore import Qt, QTimer
+except Exception :
+    from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
+    from PySide6.QtCore import Qt, QTimer
 from loader.core.video_player import VideoPlayer
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
 try:
     import maya.utils
@@ -17,7 +23,7 @@ class LoadingDialog(QDialog):
         self.setFixedSize(200, 200)
         self.setStyleSheet("background-color:black; color:white;")
 
-        loading_mov = "/nas/eval/elements/loading.mp4"
+        loading_mov = f"{root_path}/elements/loading.mp4"
 
         layout = QVBoxLayout()
 

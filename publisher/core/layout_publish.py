@@ -2,7 +2,10 @@ import os, shutil, re
 import maya.cmds as cmds
 from publish_usd import LayoutExportUSD
 
-root_directory = '/Users/junsu/Desktop'
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
+
+root_directory = f"{root_path}/show"
 
 def layout_publish(project_name, seq, shot_num, dept):
     """layout publish 실행 함수"""

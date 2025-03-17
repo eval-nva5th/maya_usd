@@ -1,10 +1,16 @@
-from PySide2.QtWidgets import QFileDialog, QMessageBox
+try :
+    from PySide2.QtWidgets import QFileDialog, QMessageBox
+except Exception :
+    from PySide6.QtWidgets import QFileDialog, QMessageBox
+    
 import maya.cmds as cmds
 import re
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
 def open_file_browser(ui_instance):
         default_filename = ui_instance.filename_input.text().strip()
-        default_filepath = ui_instance.filepath_input.text() if ui_instance.filepath_input.text() else "/nas/eval/"
+        default_filepath = ui_instance.filepath_input.text() if ui_instance.filepath_input.text() else root_path # 이거 수정한거 물어보기
 
         filepath, _ = QFileDialog.getSaveFileName(None, "Select File Path", f"{default_filepath}{default_filename}", "All Files (*)")
         if filepath:

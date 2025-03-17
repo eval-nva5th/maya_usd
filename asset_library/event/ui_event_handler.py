@@ -1,5 +1,8 @@
 import os
-prefix_path = "/nas/eval/show"
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
+
+prefix_path = f"{root_path}/show"
 proj_name = "eval"
 entity_type = "assets"
 

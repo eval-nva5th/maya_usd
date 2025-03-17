@@ -1,4 +1,7 @@
-from PySide2.QtWidgets import QMessageBox
+try : 
+    from PySide2.QtWidgets import QMessageBox
+except Exception :
+    from PySide6.QtWidgets import QMessageBox
 
 def publish(ui_instance):
         filename = ui_instance.filename_input.text().strip()

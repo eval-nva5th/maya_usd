@@ -1,15 +1,9 @@
-import sys
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/event")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/ui")
-sys.path.append("/home/rapa/gitkraken/maya_usd/widget/ui")
+try: 
+    from PySide2.QtWidgets import QApplication
+except Exception :
+    from PySide6.QtWidgets import QApplication
 
-from PySide2.QtWidgets import QApplication
-
-from loader.ui.loader_ui import UI
 from loader.ui.login_ui import LoginWidget
-
 
 def show_ui():
     """ UI를 실행하는 함수 """

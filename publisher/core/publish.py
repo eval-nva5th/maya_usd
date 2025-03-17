@@ -3,6 +3,10 @@ import os
 import sys
 import socket
 #import maya.cmds as cmds
+from systempath import DefaultConfig
+
+default_config = DefaultConfig()
+sg = default_config.shotgrid_connector()
 
 maya_usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../loader"))
 print(f"maya_usd 경로: {maya_usd_path}")
@@ -10,13 +14,9 @@ sys.path.append(maya_usd_path)
 
 from loader.shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
 
-class Shotgrid:
-    def __init__(self, sg_url, script_name, api_key):
-        self.sg = Shotgun(sg_url, script_name, api_key)
+class PublishManager:
+    def __init__(self):
 
-class PublishManager(Shotgrid):
-    def __init__(self, sg_url, script_name, api_key, clicked_task):
-        super().__init__(sg_url, script_name, api_key)
         self.clicked_task = clicked_task
         self.project_id = clicked_task.proj_id
         self.task_id = clicked_task.id
@@ -32,7 +32,6 @@ class PublishManager(Shotgrid):
     def get_entity_type(self, entity_type):
         return "Shot" if entity_type == "seq" else "Asset"
     
-
     def get_internal_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -49,7 +48,7 @@ class PublishManager(Shotgrid):
         # internal_ip = socket.gethostbyname(hostname)
         internal_ip = self.get_internal_ip()
         last_ip = int(internal_ip.split(".")[-1])
-        return self.sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
+        return sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
     
     def set_file_path(self,file_path):
         # file_path = cmds.file(q=True, sn=True)
@@ -90,7 +89,7 @@ class PublishManager(Shotgrid):
         "image" : self.thumbnail_path
         }
 
-        published_file = self.sg.create("PublishedFile", published_file_data)
+        published_file = sg.create("PublishedFile", published_file_data)
         print(published_file)
         return published_file
 
@@ -104,12 +103,12 @@ class PublishManager(Shotgrid):
             "sg_status_list" : "rev",
             "description" : self.description
         }
-        created_version = self.sg.create("Version", version_data)
-        self.sg.upload("Version", created_version["id"], self.mov_path, field_name="sg_uploaded_movie")
+        created_version = sg.create("Version", version_data)
+        sg.upload("Version", created_version["id"], self.mov_path, field_name="sg_uploaded_movie")
         return created_version
     
     def link_version_to_published_file(self, pub_id, version_id):
-        self.sg.update("PublishedFile", pub_id, {"version":{"type":"Version", "id":version_id}})
+        sg.update("PublishedFile", pub_id, {"version":{"type":"Version", "id":version_id}})
         
 
 if __name__ == "__main__":
