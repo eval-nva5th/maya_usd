@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame
 from PySide2.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
-from PySide2.QtWidgets import QHeaderView, QAbstractItemView
+from PySide2.QtWidgets import QHeaderView, QAbstractItemView,QSpacerItem, QSizePolicy
 from PySide2.QtCore import Qt
 from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
@@ -54,7 +54,7 @@ class CustomUI(QWidget):
         
         super().__init__()
         print("*"*30)
-
+        self.setFixedWidth(350)
         print("여기서부터 custom UI 생성을 드가자")
         
         if ct is not None:
@@ -80,12 +80,18 @@ class CustomUI(QWidget):
             self.step = ""
 
         taskinfo_label = QLabel("[TASK INFO]")
-        taskinfo_label.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
+        taskinfo_label.setStyleSheet("font-size: 11pt; padding-bottom: 5px;")
 
         projectname_label = QLabel(f"Project : {self.project_name}")
         contentname_label = QLabel(f"Task : {self.content}")
         step_label = QLabel(f"Dept : {self.step}")
+        h_line0 = QFrame() # 구분선0
+        h_line0.setFrameShape(QFrame.HLine)
+        h_line0.setFrameShadow(QFrame.Sunken)
+        get_asset_label = QLabel("[Get Assets]")
+        get_asset_label.setStyleSheet("font-size: 11pt;padding-bottom: 5px;")
         get_asset_button = QPushButton("Get Assets")
+        get_asset_button.setMaximumWidth(320)
         get_asset_button.clicked.connect(clicked_get_asset_btn)
 
         if self.entity_type == "assets" :
@@ -107,7 +113,7 @@ class CustomUI(QWidget):
         h_line1.setFrameShadow(QFrame.Sunken)
 
         self.colleagueinfo_label = QLabel("[COLLEAGUE INFO]")
-        self.colleagueinfo_label.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
+        self.colleagueinfo_label.setStyleSheet("font-size: 11pt; padding-bottom: 5px;")
 
         colleague_list = []
         colleague_list = self.get_colleague_info()
@@ -116,9 +122,9 @@ class CustomUI(QWidget):
         
         for row, item in enumerate(colleague_list):
             thumb_label = QLabel(self)
-            thumb_label.setFixedSize(30, 30)
+            thumb_label.setFixedSize(20, 20)
             thumb_label.setScaledContents(True)
-           
+        
             pixmap = QPixmap()
             image_data = requests.get(item[3]).content if item[3] else None # url 이미지 유효성 확인. 아니면 None 리턴
 
@@ -133,10 +139,10 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
-            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            pixmap = pixmap.copy((pixmap.width()-30)//2, (pixmap.height()-30)//2, 30, 30)
-            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            pixmap = self.circular_pixmap(pixmap, 30)
+            pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            pixmap = pixmap.copy((pixmap.width()-20)//2, (pixmap.height()-20)//2, 20, 20)
+            pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            pixmap = self.circular_pixmap(pixmap, 20)
 
             thumb_label.setPixmap(pixmap) 
             thumb_label.setStyleSheet('padding-left : 5px') #border-radi메s: 15px; border: white;
@@ -153,11 +159,11 @@ class CustomUI(QWidget):
         note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url = self.get_notes_infos()
 
         noteinfo_label = QLabel("[RECENT NOTE]")
-        noteinfo_label.setStyleSheet("font-size: 11pt; padding-bottom: 10px;")
+        noteinfo_label.setStyleSheet("font-size: 11pt;")
 
-        notecreator_layout = QGridLayout()
-        notecreator_layout.setSpacing(0)
-        notecreator_layout.setContentsMargins(0, 0, 0, 0)
+        # notecreator_layout = QGridLayout()
+        # notecreator_layout.setSpacing(0)
+        # notecreator_layout.setContentsMargins(0, 0, 0, 0)
 
         creatorthumb_label = QLabel()
         pixmap1 = self.load_pixmap_from_url(creator_thumb) 
@@ -166,20 +172,19 @@ class CustomUI(QWidget):
         pixmap1= pixmap1.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         pixmap1 = self.circular_pixmap(pixmap1, 30)
         creatorthumb_label.setPixmap(pixmap1)
-        creatorname_label = QLabel(f"Note from {creator_kor_name}")
-        # creatorthumb_label.setStyleSheet("margin: 0px; padding: 0px;")
-        # creatorname_label.setStyleSheet("margin: 0px; padding: 0px;")
-        notecreator_layout.addWidget(creatorthumb_label, 0, 0)
-        notecreator_layout.addWidget(creatorname_label, 0, 1)
-        
 
         notedetail_layout = QVBoxLayout()
+        creatorname_label = QLabel(f"Note from {creator_kor_name}")
         versionname_label = QLabel(f"version : {version_name}")
         notetitle_label = QLabel(f"title : {note_title}")
         notebody_label = QLabel(f"context : {note_body}")
+        notebody_label.setWordWrap(True)
+        notebody_label.setMaximumWidth(320)
+        notedetail_layout.addWidget(creatorname_label)
         notedetail_layout.addWidget(versionname_label)
         notedetail_layout.addWidget(notetitle_label)
         notedetail_layout.addWidget(notebody_label)
+        notebody_label.setStyleSheet("border-bottom:5px")
         
         # 세 번째 줄 (100x100 QPixmap)
         noteimage_label = QLabel()
@@ -193,16 +198,13 @@ class CustomUI(QWidget):
         # note_layout.addWidget(noteinfo_label)
         # note_layout.addWidget(creatorthumb_label)
         # note_layout.addWidget(creatorname_label)
-        note_layout.addLayout(notecreator_layout)
-        note_layout.addWidget(versionname_label)
-        note_layout.addWidget(notetitle_label)
-        note_layout.addWidget(notebody_label)
+        note_layout.addLayout(notedetail_layout)
         note_layout.addWidget(noteimage_label)
 
         h_line3 = QFrame() # 구분선 
         h_line3.setFrameShape(QFrame.HLine)
         h_line3.setFrameShadow(QFrame.Sunken)
-        h_line3.setStyleSheet("padding-bottom: 10px;")
+        # h_line3.setStyleSheet("padding-bottom: 10px;")
         self.button1 = QPushButton("Save As")
         self.button2 = QPushButton("Publish")
         
@@ -215,6 +217,8 @@ class CustomUI(QWidget):
         label_layout.addWidget(step_label)
         label_layout.addWidget(parent_label)
         label_layout.addWidget(child_label)
+        label_layout.addWidget(h_line0)
+        label_layout.addWidget(get_asset_label)
         label_layout.addWidget(get_asset_button)
 
         button_layout = QHBoxLayout()
@@ -226,7 +230,7 @@ class CustomUI(QWidget):
         layout.addWidget(self.colleagueinfo_label)
         layout.addLayout(colleague_layout)
         layout.addWidget(h_line2)
-        #layout.addWidget(noteinfo_label)
+        layout.addWidget(noteinfo_label)
         layout.addLayout(note_layout)
         #layout.addLayout(commentBox_layout)
         layout.addWidget(h_line3)
@@ -419,14 +423,14 @@ def add_custom_ui_to_tab(path, ct=None):
         cmds.deleteUI(workspace_control_name) # 기존 패널 삭제
     else : 
         pass
-    cmds.workspaceControl(workspace_control_name, label="Save / Publish", retain=False, dockToControl=("AttributeEditor", "right"))
-    
+    cmds.workspaceControl(workspace_control_name, label="Save / Publish", retain=False, dockToControl=("AttributeEditor", "right"), wp="fixed", width=200, collapse=True)
     control_ptr = omui.MQtUtil.findControl(workspace_control_name)
     control_widget = wrapInstance(int(control_ptr), QWidget)
 
     if "custom_ui" not in locals() or custom_ui is None:
         custom_ui = CustomUI(path, ct)
         control_widget.layout().addWidget(custom_ui)
+        cmds.evalDeferred(lambda: cmds.workspaceControl(workspace_control_name, edit=True, collapse=False))
     else :
         if custom_ui.current_widget is not None:
             custom_ui.current_widget.close()

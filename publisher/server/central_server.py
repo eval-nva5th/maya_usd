@@ -62,10 +62,10 @@ def notify_maya():
         message_text = f"{message_dict['project_name']}  |  {message_dict['published_file_name']}  |  {message_dict['created_by']}  |  {message_dict['created_at']}"
 
         
-        # for ip in assignees_ip_list:
-        #     sio.emit("shotgrid_notification", {"message_dict": message_dict}, room=ip)
+        for ip in assignees_ip_list:
+            sio.emit("shotgrid_notification", {"message_dict": message_dict}, room=ip)
             
-        #     print(f"Sent signal to {ip}")
+            print(f"Sent signal to {ip}")
 
         for ip in assignees_ip_list:
             if ip in connected_clients:
@@ -104,7 +104,7 @@ def disconnect(sid):
             break
 
 def start_socketio_server():
-    eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 6000)), flask_app)
+    eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 5000)), flask_app)
 
 def run_flask_in_thread():
     print("Central Server is running at other thread")
