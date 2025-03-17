@@ -1,7 +1,11 @@
 
-from PySide2.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
-from PySide2.QtCore import Qt, QTimer
-#from loader.core.video_player import VideoPlayer
+try :
+    from PySide2.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
+    from PySide2.QtCore import Qt, QTimer
+except Exception :
+    from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
+    from PySide6.QtCore import Qt, QTimer
+from loader.core.video_player import VideoPlayer
 from DefaultConfig import DefaultConfig
 
 default_config = DefaultConfig()

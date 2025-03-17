@@ -5,7 +5,7 @@ from DefaultConfig import DefaultConfig
 default_config = DefaultConfig()
 root_path = default_config.get_root_path()
 
-root_directory = '/Users/junsu/Desktop' ##### 수정 필요
+root_directory = f'{root_path}/show' 
 
 def rig_publish(project_name, asset_name, asset_type, dept):
     """rig publish 실행 함수"""

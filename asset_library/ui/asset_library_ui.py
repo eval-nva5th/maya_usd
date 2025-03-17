@@ -1,7 +1,14 @@
-from PySide2.QtWidgets import QApplication, QPushButton, QMainWindow, QVBoxLayout, QGridLayout, QScrollArea
-from PySide2.QtWidgets import QHBoxLayout, QWidget, QLabel
-from PySide2.QtGui import QPixmap
-from PySide2.QtCore import Qt
+try:
+    from PySide2.QtWidgets import QApplication, QPushButton, QMainWindow, QVBoxLayout, QGridLayout, QScrollArea
+    from PySide2.QtWidgets import QHBoxLayout, QWidget, QLabel
+    from PySide2.QtGui import QPixmap
+    from PySide2.QtCore import Qt
+except Exception :
+    from PySide6.QtWidgets import QApplication, QPushButton, QMainWindow, QVBoxLayout, QGridLayout, QScrollArea
+    from PySide6.QtWidgets import QHBoxLayout, QWidget, QLabel
+    from PySide6.QtGui import QPixmap
+    from PySide6.QtCore import Qt
+
 import sys, os
 from asset_library.event.ui_event_handler import clicked_load_btn
 from DefaultConfig import DefaultConfig

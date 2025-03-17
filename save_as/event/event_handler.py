@@ -1,4 +1,8 @@
-from PySide2.QtWidgets import QFileDialog, QMessageBox
+try :
+    from PySide2.QtWidgets import QFileDialog, QMessageBox
+except Exception :
+    from PySide6.QtWidgets import QFileDialog, QMessageBox
+    
 import maya.cmds as cmds
 import re
 from DefaultConfig import DefaultConfig

@@ -1,4 +1,8 @@
-from PySide2.QtWidgets import QApplication
+try :
+    from PySide2.QtWidgets import QApplication
+except Exception :
+    from PySide6.QtWidgets import QApplication
+    
 from shotgun_api3 import Shotgun 
 import os, sys, time
 from ui.loading_ui import LoadingDialog
@@ -9,11 +13,9 @@ root_path = default_config.get_root_path()
 sg = default_config.shotgrid_connector()
 # class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
 #     def __init__(self, sg_url, script_name, api_key):
-#         self.sg = Shotgun(sg_url, script_name, api_key)
+#         sg = Shotgun(sg_url, script_name, api_key)
 
 class UserInfo : 
-    # def __init__(self, sg_url, script_name, api_key):
-    #     super().__init__(sg_url, script_name, api_key)
     def __init__(self) :
         
         self.email = ""
@@ -27,7 +29,7 @@ class UserInfo :
         kname_filter = ['sg_korean_name', 'is', self.name]
         #name_filter = ['name', 'is', self.name]
         email_filter = ['email', 'is', self.email]
-        self.userinfo = self.sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
+        self.userinfo = sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
         
         if not len(self.userinfo) == 0 :
             self.id = self.userinfo[0]['id'] # id 받기
@@ -69,22 +71,23 @@ class UserInfo :
     def create_local_path(self) :
         pass
 
-class TaskInfo(Shotgrid) :
-    
-    def __init__(self, sg_url, script_name, api_key):
-        super().__init__(sg_url, script_name, api_key)
+class TaskInfo :
+    def __init__(self):
         self.task_dict = {}
         self.prev_task_dict = {}
 
     def get_user_task(self, user_id):
         #UserInfo에서 갖고온 id를 파라미터로 갖고와 그 아이디에 해당하는 태스크를 딕트 형식으로 저장
 
-        loading_window = LoadingDialog()
-        loading_window.show()
-        QApplication.processEvents() ##### 문제되려남........
+        '''
+        로딩창 실행 코드인데 잠시 주석처리 해두었습니다!
+        '''
+        # loading_window = LoadingDialog()
+        # loading_window.show()
+        # QApplication.processEvents() ##### 문제되려남........
 
         id_filter = {'type': 'HumanUser', 'id': user_id}
-        tasks = self.sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
+        tasks = sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
         total_tasks = len(tasks)
         print(f"할당된 태스크 정보를 가져오는 중입니다 ... 총 {total_tasks}개")
 
@@ -92,8 +95,8 @@ class TaskInfo(Shotgrid) :
             progress_text = (f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
             print (progress_text)
 
-            loading_window.set_loading_text(progress_text)
-            QApplication.processEvents() ##### 문제되려남........
+            # loading_window.set_loading_text(progress_text)
+            # QApplication.processEvents() ##### 문제되려남........
 
             current_task_id = task['id']
             proj_name = task['project']['name']
@@ -131,11 +134,11 @@ class TaskInfo(Shotgrid) :
                 fields = ["id", "code", "description", "published_file_type", "entity"]
                 filters = [["task", "is", {"type": "Task", "id": prev_task_id}]]
 
-                published_file = self.sg.find_one("PublishedFile", filters, fields)
+                published_file = sg.find_one("PublishedFile", filters, fields)
                 comment = published_file.get('description', 'No Description')
 
                 # ShotGrid에서 Previous Task data 가져오기
-                prev_task_data = self.sg.find_one(
+                prev_task_data = sg.find_one(
                                                 "Task", 
                                                 [["id", "is", prev_task_id]], 
                                                 ["project","content", "entity","step", "task_assignees","task_reviewers", "sg_status_list"]
@@ -145,11 +148,11 @@ class TaskInfo(Shotgrid) :
                 entity_type = prev_task_data['entity']['type']
                 entity_id = prev_task_data['entity']['id']
                 if entity_type == "Shot":
-                    entity_data = self.sg.find_one("Shot", [["id", "is", entity_id]], ["sg_sequence"])
+                    entity_data = sg.find_one("Shot", [["id", "is", entity_id]], ["sg_sequence"])
                     prev_task_category = entity_data.get("sg_sequence", {}).get("name", "No Sequence")
 
                 elif entity_type == "Asset":
-                    entity_data = self.sg.find_one("Asset", [["id", "is", entity_id]], ["sg_asset_type"])
+                    entity_data = sg.find_one("Asset", [["id", "is", entity_id]], ["sg_asset_type"])
                     prev_task_category = entity_data.get("sg_asset_type", "No Asset Type")
                 
                 prev_task_name = prev_task_data['entity'].get('name') or prev_task_data['entity'].get('name')
@@ -191,14 +194,14 @@ class TaskInfo(Shotgrid) :
     def branch_entity_type(self, entity_type, task_id, entity_id) :
 
         if entity_type == "Shot" :
-            seq_contents = self.sg.find("Shot", [["id", "is", entity_id]], ["tasks", "sg_sequence"])
+            seq_contents = sg.find("Shot", [["id", "is", entity_id]], ["tasks", "sg_sequence"])
             
             seq_name = seq_contents[0]['sg_sequence']['name']
             self.task_dict[task_id]['entity_type'] = "seq"
             self.task_dict[task_id]['entity_parent'] = seq_name
             
         elif entity_type == "Asset" :
-            asset_contents = self.sg.find("Asset", [["id", "is", entity_id]], ["tasks", "sg_asset_type"])
+            asset_contents = sg.find("Asset", [["id", "is", entity_id]], ["tasks", "sg_asset_type"])
 
             asset_category_name = asset_contents[0]['sg_asset_type']
             self.task_dict[task_id]['entity_type'] = "assets"
@@ -233,7 +236,7 @@ class TaskInfo(Shotgrid) :
         fields = ["id", "content", "step", "sg_status_list", "task_assignees"]
 
         # ShotGrid API에서 태스크 조회
-        tasks = self.sg.find("Task", filters, fields)
+        tasks = sg.find("Task", filters, fields)
 
         for task in tasks:
             task_assignees = " ,".join([assignee['name'] for assignee in task['task_assignees']])
@@ -274,7 +277,7 @@ class TaskInfo(Shotgrid) :
                     return prev_task_id
         return None
 
-    #### asset 일 시 {5828: {'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827}
+    # asset 일 시 {5828: {'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827}
     def on_click_task(self, id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
         current_task_id = id
         current_dict = {}
@@ -386,7 +389,7 @@ if __name__ == "__main__":
     task.get_user_task(user_id)
     prev_task_dict, current_dict = task.on_click_task(6192) 
 
-    c = ClickedTask(current_dict) ############### how to make clicked_task Object
+    c = ClickedTask(current_dict) # how to make clicked_task Object
 
     print(c.id, c.proj_id, c.entity_id, c.entity_type, c.entity_parent, c.step, c. root_path)
     shallow_path = c.set_shallow_path()

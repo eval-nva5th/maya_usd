@@ -7,7 +7,7 @@ from DefaultConfig import DefaultConfig
 
 default_config = DefaultConfig()
 root_path = default_config.get_root_path()
-root_directory = '/Users/junsu/Desktop' ## 물어보고수정
+root_directory = f"{root_path}/show"
 
 def model_publish(project_name, asset_name, asset_type, dept):
     """model publish 실행 함수"""

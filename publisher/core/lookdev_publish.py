@@ -7,7 +7,7 @@ from DefaultConfig import DefaultConfig
 
 default_config = DefaultConfig()
 root_path = default_config.get_root_path()
-root_directory = '/Users/junsu/Desktop' ###### 이것도 물어보고 수정!
+root_directory = f"{root_path}/show"
 
 def lookdev_publish(project_name, asset_name, asset_type, dept) :
     """lookdev publish 실행 함수"""

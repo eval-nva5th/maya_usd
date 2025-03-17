@@ -1,4 +1,7 @@
-from PySide2.QtWidgets import QApplication
+try :
+    from PySide2.QtWidgets import QApplication
+except Exception :
+    from PySide6.QtWidgets import QApplication
 from publisher.ui.publisher_ui import PublisherDialog
 import sys
 

@@ -1,3 +1,8 @@
+try: 
+    from PySide2.QtWidgets import QApplication
+except Exception :
+    from PySide6.QtWidgets import QApplication
+
 import sys
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
@@ -5,12 +10,9 @@ sys.path.append("/home/rapa/gitkraken/maya_usd/loader/event")
 sys.path.append("/home/rapa/gitkraken/maya_usd/loader/ui")
 sys.path.append("/home/rapa/gitkraken/maya_usd/widget/ui")
 
-from PySide2.QtWidgets import QApplication
-
-from ui.loader_ui import UI
-from ui.login_ui import LoginWidget
-
-
+sys.path.append("/Users/seungyeonshin/Documents/github/maya_usd/loader/ui")
+#from ui.loader_ui import UI
+from loader.ui.login_ui import LoginWidget
 
 # # app = QApplication.instance()  # 기존 인스턴스를 가져오기
 # # if not app:

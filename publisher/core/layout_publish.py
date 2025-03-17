@@ -7,7 +7,7 @@ from DefaultConfig import DefaultConfig
 default_config = DefaultConfig()
 root_path = default_config.get_root_path()
 
-root_directory = '/Users/junsu/Desktop' ##### 이것도 수정해줘야함. 
+root_directory = f"{root_path}/show"
 
 def layout_publish(project_name, seq, shot_num, dept):
     """layout publish 실행 함수"""

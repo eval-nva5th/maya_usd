@@ -1,6 +1,12 @@
-from PySide2.QtWidgets import QLabel
-from PySide2.QtCore import Qt, QThread, Signal, QTimer
-from PySide2.QtGui import QPixmap, QImage
+try :
+    from PySide2.QtWidgets import QLabel
+    from PySide2.QtCore import Qt, QThread, Signal, QTimer
+    from PySide2.QtGui import QPixmap, QImage
+except Exception :
+    from PySide6.QtWidgets import QLabel
+    from PySide6.QtCore import Qt, QThread, Signal, QTimer
+    from PySide6.QtGui import QPixmap, QImage
+    
 import cv2
 
 try:

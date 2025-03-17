@@ -1,9 +1,17 @@
-
-from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
-from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
-from PySide2.QtGui import QPixmap, QPainter, QColor
-from PySide2.QtWidgets import QHeaderView, QAbstractItemView
-from PySide2.QtCore import Qt
+try : 
+    from PySide2.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
+    from PySide2.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+    from PySide2.QtGui import QPixmap, QPainter, QColor
+    from PySide2.QtWidgets import QHeaderView, QAbstractItemView
+    from PySide2.QtCore import Qt
+    
+except Exception :
+    from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QMainWindow, QHBoxLayout, QTableWidgetItem, QSizePolicy
+    from PySide6.QtGui import QPixmap, QPainter, QColor
+    from PySide6.QtWidgets import QHeaderView, QAbstractItemView
+    from PySide6.QtCore import Qt
+    
 import maya.cmds as cmds
 
 from loader.event import event_handler
@@ -18,12 +26,13 @@ root_path = default_config.get_root_path()
 class UI(QMainWindow):
     def __init__(self):
 
-        sg_url = "https://5thacademy.shotgrid.autodesk.com/"
-        script_name = "sy_key"
-        api_key = "vkcuovEbxhdoaqp9juqodux^x"
-        self.user = UserInfo(sg_url, script_name, api_key)
+        # sg_url = "https://5thacademy.shotgrid.autodesk.com/"
+        # script_name = "sy_key"
+        # api_key = "vkcuovEbxhdoaqp9juqodux^x"
+        
+        self.user = UserInfo()
         self.user_name = ""
-        self.task_info = TaskInfo(sg_url, script_name, api_key)
+        self.task_info = TaskInfo()
         self.prefix_path = f"{root_path}/show"
 
         self.input_name = ""

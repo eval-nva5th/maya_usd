@@ -20,9 +20,9 @@ class DefaultConfig:
 
         if system == 'Linux':  # 리눅스
             self.root_path = "nas/eval"
-            self.file_root_path = ""  # this is for syspath
+            self.file_root_path = ""
         elif system == 'Darwin':  # 맥
-            self.root_path = '/Users/user/myfolder'  ## must be modified. show 파트 이전까지임
+            self.root_path = '/Volumes/TD_VFX/eval'
             self.file_root_path = ""
         else:
             self.root_path = ""
@@ -39,5 +39,5 @@ class DefaultConfig:
     def get_root_path(self):
         return self.root_path
     
-    def get_file_root_path(self):
-        return self.file_root_path
+    # def get_file_root_path(self):
+    #     return self.file_root_path

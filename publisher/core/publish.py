@@ -48,7 +48,7 @@ class PublishManager:
         # internal_ip = socket.gethostbyname(hostname)
         internal_ip = self.get_internal_ip()
         last_ip = int(internal_ip.split(".")[-1])
-        return self.sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
+        return sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
     
     def set_file_path(self,file_path):
         # file_path = cmds.file(q=True, sn=True)
@@ -89,7 +89,7 @@ class PublishManager:
         "image" : self.thumbnail_path
         }
 
-        published_file = self.sg.create("PublishedFile", published_file_data)
+        published_file = sg.create("PublishedFile", published_file_data)
         print(published_file)
         return published_file
 
@@ -103,12 +103,12 @@ class PublishManager:
             "sg_status_list" : "rev",
             "description" : self.description
         }
-        created_version = self.sg.create("Version", version_data)
-        self.sg.upload("Version", created_version["id"], self.mov_path, field_name="sg_uploaded_movie")
+        created_version = sg.create("Version", version_data)
+        sg.upload("Version", created_version["id"], self.mov_path, field_name="sg_uploaded_movie")
         return created_version
     
     def link_version_to_published_file(self, pub_id, version_id):
-        self.sg.update("PublishedFile", pub_id, {"version":{"type":"Version", "id":version_id}})
+        sg.update("PublishedFile", pub_id, {"version":{"type":"Version", "id":version_id}})
         
 
 if __name__ == "__main__":
