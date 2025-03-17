@@ -4,6 +4,7 @@ try :
     from PySide2.QtGui import QPixmap, QPainter, QColor
     from PySide2.QtWidgets import QHeaderView, QAbstractItemView
     from PySide2.QtCore import Qt
+    import maya.cmds as cmds
     
 except Exception :
     from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QTableWidget, QComboBox
@@ -12,7 +13,7 @@ except Exception :
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
     from PySide6.QtCore import Qt
     
-import maya.cmds as cmds
+
 
 from loader.event import event_handler
 from shotgrid_user_task import UserInfo, TaskInfo
@@ -345,7 +346,8 @@ class UI(QMainWindow):
             row = task_table.rowCount()
             task_table.insertRow(row)  # 새로운 행 추가
             task_table.setItem(row, 2, QTableWidgetItem(str(task_id)))
-            task_table.setRowHeight(row, 80)  
+            task_table.setRowHeight(row, 108)
+            task_table.setColumnWidth(0, 192)  
             task_table.resizeRowsToContents()
 
             task_name = QLabel(task_name)
@@ -361,10 +363,12 @@ class UI(QMainWindow):
 
             # 썸네일
             task_thumb = QLabel()
+            task_thumb.setFixedWidth(192)
+            task_thumb.setFixedHeight(108)
             pixmap = QPixmap(thumb)  # 이미지 파일 경로
-            task_thumb.setPixmap(pixmap.scaled(120, 70))  # 크기 조절
+            task_thumb.setPixmap(pixmap.scaled(192, 108))  # 크기 조절
             task_thumb.setAlignment(Qt.AlignCenter)  # 이미지를 중앙 정렬
-            task_thumb.setScaledContents(True)  # QLabel 크기에 맞게 이미지 조정
+            # task_thumb.setScaledContents(True)  # QLabel 크기에 맞게 이미지 조정
             task_table.setCellWidget(row, 0, task_thumb)
 
             # 상태 표시 (● 빨간색 원)
@@ -410,8 +414,6 @@ class UI(QMainWindow):
 
             # 테이블 위젯 추가
             task_table.setCellWidget(row, 1, widget)
-            # 행 높이를 조정하여 잘리지 않도록 설정
-            task_table.setRowHeight(row, 80)
     
     def center_window(self):
         frame_geometry = self.frameGeometry()  # 창의 프레임 가져오기

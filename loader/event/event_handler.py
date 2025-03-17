@@ -83,7 +83,7 @@ def on_cell_clicked(ui_instance, row, _):
         print(e)
         pass  # 연결된 핸들러가 없을 경우 예외 발생할 수 있음, 무시해도 됨
     
-    ui_instance.work_table.cellDoubleClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance.work_table, row, col, ct, work_path))
+    ui_instance.work_table.cellDoubleClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance,ui_instance.work_table, row, col, ct, work_path))
 
 def update_pub_table(ui_instance, pub_path, pub_list):
 
@@ -129,7 +129,7 @@ def add_file_to_table(table_widget, file_info):
     time_item = QTableWidgetItem(file_info[2]) #if file_info[2] else "Unknown")
     table_widget.setItem(row, 2, time_item)
 
-def on_work_cell_clicked(table_widget, row, col, ct, path):
+def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
     from widget.ui.widget_ui import add_custom_ui_to_tab
 
     item = table_widget.item(row, col)
@@ -147,6 +147,7 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
         dialog = CustomDialog(path, is_dir, is_created, ct)
         dialog.exec()
         # mainwindow 종료
+        ui_instance.close()
 
     elif item.text() ==  "No File" :
         print("o directory x file")
@@ -157,13 +158,16 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
             dialog = CustomDialog(path, is_dir,is_created, ct)
             dialog.exec()
             #### mainwindow 종료
+            ui_instance.close()
 
     else :
         full_path = f"{path}/{item.text()}"
         cmds.file(full_path, open=True, force=True)
         #### mainwindow 종료 
+        ui_instance.close()
 
         add_custom_ui_to_tab(path, ct) ##### 위젯 넣는 함수
+    
 
 def update_prev_work(ui_instance, prev_task_data):
     prefix_path = f"{root_path}/show"
