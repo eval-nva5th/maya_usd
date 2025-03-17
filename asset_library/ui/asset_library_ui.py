@@ -11,10 +11,8 @@ except Exception :
 
 import sys, os
 from asset_library.event.ui_event_handler import clicked_load_btn
-from DefaultConfig import DefaultConfig
-
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
 class AssetLibUI(QMainWindow):
     def __init__(self):

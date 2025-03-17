@@ -12,7 +12,7 @@ except Exception:
     from PySide6.QtWidgets import QComboBox
 
 import sys
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/")
+# sys.path.append("/home/rapa/gitkraken/maya_usd/loader/")
 
 class PublisherDialog(QMainWindow):
     def __init__(self):

@@ -1,9 +1,8 @@
 import os, shutil, re
 import maya.cmds as cmds
-from DefaultConfig import DefaultConfig
+from systempath import SystemPath
 
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+root_path = SystemPath().get_root_path()
 
 root_directory = f'{root_path}/show' 
 

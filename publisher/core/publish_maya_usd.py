@@ -2,10 +2,9 @@ import os, shutil, re
 import maya.cmds as cmds
 from pxr import Usd
 from abc import ABC, abstractmethod
-from DefaultConfig import DefaultConfig
 
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
 class USDExporter(ABC):
     def __init__(self, usd_publish_path):

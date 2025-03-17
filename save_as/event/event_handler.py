@@ -5,10 +5,8 @@ except Exception :
     
 import maya.cmds as cmds
 import re
-from DefaultConfig import DefaultConfig
-
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
 def open_file_browser(ui_instance):
         default_filename = ui_instance.filename_input.text().strip()

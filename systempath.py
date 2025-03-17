@@ -1,7 +1,6 @@
 import platform
-from shotgun_api3 import Shotgun
 
-class DefaultConfig:
+class SystemPath:
     _instance = None
     
     sg_url = "https://5thacademy.shotgrid.autodesk.com/"
@@ -10,9 +9,8 @@ class DefaultConfig:
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(DefaultConfig, cls).__new__(cls)
+            cls._instance = super(SystemPath, cls).__new__(cls)
             cls._instance._init_paths()
-            cls._instance.shotgrid_connector()  # Initialize Shotgun connector
         return cls._instance
 
     def _init_paths(self):
@@ -27,17 +25,11 @@ class DefaultConfig:
         else:
             self.root_path = ""
             self.file_root_path = ""
-    
-    def shotgrid_connector(self):
-        self.sg = Shotgun(
-            DefaultConfig.sg_url,
-            DefaultConfig.script_name,
-            DefaultConfig.api_key
-        )
-        return self.sg
-
+            
     def get_root_path(self):
         return self.root_path
     
     # def get_file_root_path(self):
     #     return self.file_root_path
+    
+    

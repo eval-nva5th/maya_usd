@@ -5,9 +5,8 @@ import os
 import threading
 import socketio
 import eventlet
-from DefaultConfig import DefaultConfig
-default_config = DefaultConfig()
-sg = default_config.shotgrid_connector()
+from shotgridapi import ShotgridAPI
+sg = ShotgridAPI().shotgrid_connector()
 
 app = Flask(__name__)
 sio = socketio.Server(cors_allowed_origins="*")  # 내부망에서 클라이언트 연결 허용

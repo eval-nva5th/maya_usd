@@ -1,8 +1,7 @@
 import shotgun_api3 
 
-from DefaultConfig import DefaultConfig
-default_config = DefaultConfig()
-sg = default_config.shotgrid_connector()
+from shotgridapi import ShotgridAPI
+sg = ShotgridAPI().shotgrid_connector()
 
 # SHOTGRID_URL = "https://nashotgrid.shotgrid.autodesk.com/"
 # SCRIPT_NAME = "test"

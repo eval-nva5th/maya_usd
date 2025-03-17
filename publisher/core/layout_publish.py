@@ -2,10 +2,8 @@ import os, shutil, re
 import maya.cmds as cmds
 from publish_usd import LayoutExportUSD
 
-from DefaultConfig import DefaultConfig
-
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
 root_directory = f"{root_path}/show"
 

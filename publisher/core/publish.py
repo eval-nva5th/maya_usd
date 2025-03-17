@@ -3,7 +3,7 @@ import os
 import sys
 import socket
 #import maya.cmds as cmds
-from DefaultConfig import DefaultConfig
+from systempath import DefaultConfig
 
 default_config = DefaultConfig()
 sg = default_config.shotgrid_connector()

@@ -3,10 +3,9 @@ from pxr import Usd
 import maya.cmds as cmds
 from publish_usd import ModelExportUSD
 
-from DefaultConfig import DefaultConfig
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
 root_directory = f"{root_path}/show"
 
 def model_publish(project_name, asset_name, asset_type, dept):

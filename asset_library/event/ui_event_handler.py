@@ -1,8 +1,6 @@
 import os
-from DefaultConfig import DefaultConfig
-
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
 prefix_path = f"{root_path}/show"
 proj_name = "eval"

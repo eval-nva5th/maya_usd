@@ -3,10 +3,8 @@ from pxr import Usd, UsdShade
 import maya.cmds as cmds
 from publish_usd import LookdevExportUSD
 
-from DefaultConfig import DefaultConfig
-
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 root_directory = f"{root_path}/show"
 
 def lookdev_publish(project_name, asset_name, asset_type, dept) :

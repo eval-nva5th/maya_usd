@@ -1,7 +1,7 @@
 import os
 import maya.cmds as cmds
 from pxr import Usd
-from DefaultConfig import DefaultConfig
+from systempath import DefaultConfig
 
 default_config = DefaultConfig()
 root_path = default_config.get_root_path()

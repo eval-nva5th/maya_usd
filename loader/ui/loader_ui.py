@@ -15,21 +15,15 @@ except Exception :
 import maya.cmds as cmds
 
 from loader.event import event_handler
-from shotgrid_user_task import UserInfo, TaskInfo, ClickedTask
+from shotgrid_user_task import UserInfo, TaskInfo
 from core.video_player import VideoPlayer
 from core.data_managers import previous_data, task_data
-from DefaultConfig import DefaultConfig
+from systempath import SystemPath
 
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+root_path = SystemPath().get_root_path()
 
 class UI(QMainWindow):
-    def __init__(self):
-
-        # sg_url = "https://5thacademy.shotgrid.autodesk.com/"
-        # script_name = "sy_key"
-        # api_key = "vkcuovEbxhdoaqp9juqodux^x"
-        
+    def __init__(self):        
         self.user = UserInfo()
         self.user_name = ""
         self.task_info = TaskInfo()
@@ -123,16 +117,18 @@ class UI(QMainWindow):
         self.video_widget.setStyleSheet("border: 2px solid #555; border-radius: 5px;")
 
         # 원본 크기 가져오기 (비율 유지)
-        original_size = self.video_widget.size()  # 또는 self.video_widget.size()
-        default_width = original_size.width()/2.5
-        default_height = original_size.height()/2.5
+        # original_size = self.video_widget.size()  # 또는 self.video_widget.size()
+        # default_width = original_size.width()/2.5
+        # default_height = original_size.height()/2.5
 
         #self.video_widget.setAspectRatioMode(True)
-        self.video_widget.setFixedSize(default_width, default_height)
+        # self.video_widget.setFixedSize(default_width, default_height)
 
         # 비율 유지하며 크기 자동 조정
         self.video_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.video_widget.setScaledContents(True)  # 자동으로 크기 조절 (비율 유지)
+        
+        self.video_widget.setFixedSize(240, 135)
 
         #정보 라벨
         previous_work = QLabel("PREVIOUS WORK")
@@ -181,9 +177,9 @@ class UI(QMainWindow):
             item.setTextAlignment(Qt.AlignCenter)  # 가운데 정렬 적용
             self.info_table.setItem(row, 1, item)  # 1열에 아이템 추가
 
-        self.dept_name = QTableWidgetItem("No data")
+        self.dept_name = QTableWidgetItem("NULL")
         self.user_name = QTableWidgetItem(user)
-        self.reviewer_text = QTableWidgetItem("Not Assigned")
+        self.reviewer_text = QTableWidgetItem("NULL")
         
         self.info_table.setItem(0, 2, self.dept_name)   # Dept
         self.info_table.setItem(1, 2, self.user_name)  # Assignee

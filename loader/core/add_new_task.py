@@ -2,11 +2,9 @@ import maya.cmds as cmds
 from pxr import Usd, UsdGeom
 import os, re
 
-from DefaultConfig import DefaultConfig
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
-root_directory = '/Users/junsu/Desktop'
 root_directory = f"{root_path}/show"
 usd_type_list = ["usd", "usda", "usdc"]
 

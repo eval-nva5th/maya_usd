@@ -4,7 +4,7 @@ except Exception :
     from PySide6.QtWidgets import QApplication
 
 import sys
-sys.path.append("/home/rapa/maya_usd/save_as")
+# sys.path.append("/home/rapa/maya_usd/save_as")
 
 import core
 import event

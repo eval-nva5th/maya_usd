@@ -1,10 +1,11 @@
 import os
 import re
 import maya.cmds as cmds
-from DefaultConfig import DefaultConfig
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
 
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
 
 def save_as(project_name, asset_name, asset_type, dept):
     root_directory = f'{root_path}/show'

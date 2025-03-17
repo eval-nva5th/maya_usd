@@ -6,14 +6,11 @@ except Exception :
 from shotgun_api3 import Shotgun 
 import os, sys, time
 from ui.loading_ui import LoadingDialog
-from DefaultConfig import DefaultConfig
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
 
-default_config = DefaultConfig()
-root_path = default_config.get_root_path()
-sg = default_config.shotgrid_connector()
-# class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
-#     def __init__(self, sg_url, script_name, api_key):
-#         sg = Shotgun(sg_url, script_name, api_key)
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
 
 class UserInfo : 
     def __init__(self) :
