@@ -1,5 +1,7 @@
-
-from PySide2.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QApplication
+try : 
+    from PySide2.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QApplication
+except Exception :
+    from PySide6.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QApplication
 import maya.cmds as cmds
 
 from event.event_handler import on_login_clicked

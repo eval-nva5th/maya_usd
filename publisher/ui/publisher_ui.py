@@ -1,9 +1,17 @@
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QToolButton
-from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
-from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
-from PySide2.QtWidgets import QComboBox
-from PySide2 import QtCore
+try : 
+    from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QToolButton
+    from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+    from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
+    from PySide2.QtWidgets import QComboBox
+    from PySide2 import QtCore
+except Exception :
+    from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QToolButton
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide6.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+    from PySide6.QtWidgets import QMessageBox, QPlainTextEdit
+    from PySide6.QtWidgets import QComboBox
+    from PySide6 import QtCore
 
 import sys, os
 import maya.cmds as cmds
@@ -48,6 +56,7 @@ class PublisherDialog(QMainWindow):
         filepath_label = QLabel("File path:")
         self.filepath_input = QLineEdit(folder_path)
         self.filepath_input.setDisabled(True)
+        #self.filepath_input = QLineEdit("/nas/eval/show")
 
         # 파일 타입 
         filetype_container = QHBoxLayout()

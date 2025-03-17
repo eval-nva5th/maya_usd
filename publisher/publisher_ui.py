@@ -1,11 +1,18 @@
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
-from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
-from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
-from PySide2.QtWidgets import QComboBox
+try : 
+    from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
+    from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide2.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+    from PySide2.QtWidgets import QMessageBox, QPlainTextEdit
+    from PySide2.QtWidgets import QComboBox
+except Exception:
+    from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide6.QtWidgets import QHBoxLayout, QPushButton, QFileDialog
+    from PySide6.QtWidgets import QMessageBox, QPlainTextEdit
+    from PySide6.QtWidgets import QComboBox
 
 import sys
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/")
+# sys.path.append("/home/rapa/gitkraken/maya_usd/loader/")
 
 class PublisherDialog(QMainWindow):
     def __init__(self):

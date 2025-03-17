@@ -3,22 +3,21 @@ import os
 import sys
 import socket
 #import maya.cmds as cmds
+from systempath import DefaultConfig
+
+default_config = DefaultConfig()
+sg = default_config.shotgrid_connector()
 
 maya_usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../loader"))
 print(f"maya_usd 경로: {maya_usd_path}")
 sys.path.append(maya_usd_path)
 
-from shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
+from loader.shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
 
-class Shotgrid:
-    def __init__(self, sg_url, script_name, api_key):
-        self.sg = Shotgun(sg_url, script_name, api_key)
+class PublishManager:
+    def __init__(self):
 
-class PublishManager(Shotgrid):
-    def __init__(self, sg_url, script_name, api_key, clicked_task):
-        super().__init__(sg_url, script_name, api_key)
         self.clicked_task = clicked_task
-
         self.project_id = clicked_task.proj_id
         self.task_id = clicked_task.id
         self.entity_id = clicked_task.entity_id
@@ -29,18 +28,14 @@ class PublishManager(Shotgrid):
         self.description = ""
         self.thumbnail_path = ""
         self.mov_path = ""
-    # {'type': 'Project', 'id': 122}
-    # {'type': 'Task', 'id': 6194}
-    # {'type': 'Shot', 'id': 1255}
 
     def get_entity_type(self, entity_type):
         return "Shot" if entity_type == "seq" else "Asset"
     
-
     def get_internal_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            s.connect(("8.8.8.8", 80))  # 구글 DNS 서버로 연결하여 내부망 IP 확인
+            s.connect(("8.8.8.8", 80))  
             internal_ip = s.getsockname()[0]
         except Exception:
             internal_ip = "127.0.0.1"
@@ -53,7 +48,7 @@ class PublishManager(Shotgrid):
         # internal_ip = socket.gethostbyname(hostname)
         internal_ip = self.get_internal_ip()
         last_ip = int(internal_ip.split(".")[-1])
-        return self.sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
+        return sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
     
     def set_file_path(self,file_path):
         # file_path = cmds.file(q=True, sn=True)
@@ -94,7 +89,7 @@ class PublishManager(Shotgrid):
         "image" : self.thumbnail_path
         }
 
-        published_file = self.sg.create("PublishedFile", published_file_data)
+        published_file = sg.create("PublishedFile", published_file_data)
         print(published_file)
         return published_file
 
@@ -108,12 +103,12 @@ class PublishManager(Shotgrid):
             "sg_status_list" : "rev",
             "description" : self.description
         }
-        created_version = self.sg.create("Version", version_data)
-        self.sg.upload("Version", created_version["id"], self.mov_path, field_name="sg_uploaded_movie")
+        created_version = sg.create("Version", version_data)
+        sg.upload("Version", created_version["id"], self.mov_path, field_name="sg_uploaded_movie")
         return created_version
     
     def link_version_to_published_file(self, pub_id, version_id):
-        self.sg.update("PublishedFile", pub_id, {"version":{"type":"Version", "id":version_id}})
+        sg.update("PublishedFile", pub_id, {"version":{"type":"Version", "id":version_id}})
         
 
 if __name__ == "__main__":
@@ -134,29 +129,40 @@ if __name__ == "__main__":
     
     # my_dict = {
     #     "proj_name" : "eval",
-    #     "proj_id" : 122,
-    #     "id" : 5827,
-    #     "entity_id" : 1414,
-    #     "entity_name" : "bike",
-    #     "entity_type" : "assets",
-    #     "entity_parent" : "Vehicle",
-    #     "step": "Model"
+    #     "proj_id" : 123,
+    #     "id" : 6084,
+    #     "entity_id" : 1214,
+    #     "entity_name" : "AAB_0010",
+    #     "entity_type" : "seq",
+    #     "entity_parent" : "AAB",
+    #     "step": "Light"
     #     }
-    
+    my_dict = {
+        "proj_name" : "eval",
+        "assignee_id" : 112, 
+        "proj_id" : 123,
+        "id" : 6045,
+        "content" : "bike_rig",
+        "entity_id" : 1431,
+        "entity_name" : "bike",
+        "entity_type" : "assets",
+        "entity_parent" : "Vehicle",
+        "step": "Model"
+        }
     clicked_task = ClickedTask(my_dict)
     publish_manager = PublishManager(sg_url, script_name, api_key, clicked_task)
 
-    file_name = "AAB_0010_light_v001.usd"
-    local_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/scenes/AAB_0010_light_v001.usd"
-    status = "pub"
-    description = "Final render for shot X" 
-    #thumbnail_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/data/AAB_0010_light.jpg" 
-    
-    # file_name = "bike_model_v001.usd"
-    # local_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/scenes/bike_model_v001.usd"
+    # file_name = "AAB_0010_light_v001.usd"
+    # local_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/scenes/AAB_0010_light_v001.usd"
     # status = "pub"
-    # description = "Bike model v001 publish" 
-    # thumbnail_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/data/bike_model_v001.jpg" 
+    # description = "Final render for shot X" 
+    # #thumbnail_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/data/AAB_0010_light.jpg" 
+    
+    file_name = "bike_model_v001.usd"
+    local_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/scenes/bike_model_v001.usd"
+    status = "pub"
+    description = "Bike model v001 publish" 
+    #thumbnail_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/data/bike_model_v001.jpg" 
     
     publish_manager.set_file_name(file_name)
     publish_manager.set_file_path(local_path)

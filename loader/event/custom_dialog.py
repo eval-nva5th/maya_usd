@@ -1,8 +1,11 @@
-from PySide2.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
+try :
+    from PySide2.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
+except Exception :
+    from PySide6.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
+    
 import maya.cmds as cmds
 import os, sys
-
-
+from core.add_new_task import *
 
 class CustomDialog(QDialog):
     def __init__(self, path, is_dir, is_created, ct):
@@ -11,7 +14,13 @@ class CustomDialog(QDialog):
         self.is_dir = is_dir
         self.is_created = is_created
         #self.ct = ct
+        self.entity_type = ct.entity_type
+        self.entity_name = ct.entity_name
+        self.base_path = ct.set_base_path()
         self.file_name = ct.set_file_name()
+        self.project_name = ct.project_name()
+        self.shallow_path = ct.set_shallow_path()
+        self.dept = ct.step
         # Set up the dialog layout
         # Create two LineEdits
         self.line_edit = QLineEdit(self)
@@ -68,33 +77,30 @@ class CustomDialog(QDialog):
             self.switch.setText(".mb")
 
     def on_click_create(self, path):
-        line_edit_text = self.line_edit.text()
+        self.file_name = self.line_edit.text()
         ext = self.switch.text()
-        run_path = f"{path}/{line_edit_text}{ext}"
-        print(run_path)
+        # run_path = f"{path}/{self.file_name}{ext}"
+        # print(run_path)
 
         if self.is_dir :
             pass
+        
         else :
-            os.makedirs(path)
-            print(f"'{path}' 경로가 생성되었습니다.")
-            self.is_dir = False
+            UsdLoader.create_folders(self.base_path, self.dept) 
+            self.is_dir = True
+        
+        if self.entity_type == "Asset" :
+            UsdLoader.load_model_reference(self.base_path, self.dept, self.file_name, ext, self.entity_name)
             
-        cmds.file(rename=run_path)
-        if ext == ".ma" :
-            save_type = "mayaAscii"
-        elif ext == ".mb" :
-            save_type = "mayaBinary"
+        elif self.entity_type == "Shot" :
+            UsdLoader.load_shot_reference(self.base_path, self.dept, self.file_name, ext, self.entity_name, self.project_name)
+            
+        else :
+            print("뭐임?")
 
-        cmds.file(save=True, type=save_type)
-        print(f"씬 파일 '{run_path}'가 저장되었습니다.")
-        self.is_created = True
-        print(self.ct.entity_id, self.ct.task_id, self.ct.proj_id)
-
-        cmds.file(run_path, open=True) #################################### 여는 방법 수정
-        print(f"{run_path}가 열립니다.")
-        self.dialog_flag = False
-        self.accept()
+        self.dialog_flag = False # 필수
+        self.accept() # 필수
+        ######## main window 창도 꺼져야함.
 
     def on_click_exit(self) :
         print("종료")

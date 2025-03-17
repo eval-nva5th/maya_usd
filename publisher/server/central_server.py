@@ -5,21 +5,18 @@ import os
 import threading
 import socketio
 import eventlet
+from shotgridapi import ShotgridAPI
+sg = ShotgridAPI().shotgrid_connector()
 
 app = Flask(__name__)
 sio = socketio.Server(cors_allowed_origins="*")  # 내부망에서 클라이언트 연결 허용
 flask_app = socketio.WSGIApp(sio, app)
 
-sg_url = "https://5thacademy.shotgrid.autodesk.com/"
-script_name = "sy_key"
-api_key = "vkcuovEbxhdoaqp9juqodux^x"
-
-sg = shotgun_api3.Shotgun(sg_url, script_name, api_key)
-
 connected_clients = {}
 
 @app.route("/notify", methods=["POST"])
 def notify_maya():
+    print("__________________________________________notify maya_______________________________________________")
     try:
         data = request.json.get("data", {})
         if not data:
@@ -61,10 +58,10 @@ def notify_maya():
         message_text = f"{message_dict['project_name']}  |  {message_dict['published_file_name']}  |  {message_dict['created_by']}  |  {message_dict['created_at']}"
 
         
-        # for ip in assignees_ip_list:
-        #     sio.emit("shotgrid_notification", {"message_dict": message_dict}, room=ip)
+        for ip in assignees_ip_list:
+            sio.emit("shotgrid_notification", {"message_dict": message_dict}, room=ip)
             
-        #     print(f"Sent signal to {ip}")
+            print(f"Sent signal to {ip}")
 
         for ip in assignees_ip_list:
             if ip in connected_clients:
@@ -91,7 +88,7 @@ def notify_maya():
 @sio.event
 def connect(sid, environ):
     client_ip = environ.get("HTTP_X_FORWARDED_FOR") or environ.get("REMOTE_ADDR", "Unknown")
-    connected_clients[client_ip] = sid  # IP와 SID 매핑 저장
+    connected_clients[client_ip] = sid 
     print(f"[DEBUG] Client connected: {sid} (IP: {client_ip})")
 
 @sio.event
@@ -103,7 +100,7 @@ def disconnect(sid):
             break
 
 def start_socketio_server():
-    eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 6000)), flask_app)
+    eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 5000)), flask_app)
 
 def run_flask_in_thread():
     print("Central Server is running at other thread")

@@ -1,11 +1,14 @@
 import shotgun_api3 
 
-SHOTGRID_URL = "https://nashotgrid.shotgrid.autodesk.com/"
-SCRIPT_NAME = "test"
-API_KEY = "hetgdrcey?8coevsotrgwTnhv"
+from shotgridapi import ShotgridAPI
+sg = ShotgridAPI().shotgrid_connector()
 
-# ShotGrid 연결
-sg = shotgun_api3.Shotgun(SHOTGRID_URL, SCRIPT_NAME, API_KEY)
+# SHOTGRID_URL = "https://nashotgrid.shotgrid.autodesk.com/"
+# SCRIPT_NAME = "test"
+# API_KEY = "hetgdrcey?8coevsotrgwTnhv"
+
+# # ShotGrid 연결
+# sg = shotgun_api3.Shotgun(SHOTGRID_URL, SCRIPT_NAME, API_KEY)
 
 # 프로젝트 정보 가져오기
 #project = sg.find_one("Project", [["name", "is", "eval"]])

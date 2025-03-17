@@ -46,7 +46,7 @@ class EncodeProcess:
             f'drawtext=text=\'{text3}\':fontcolor=white:fontsize=20:x=20:y=h*0.9+((h*0.1-text_h)/2),'  # 하단 좌측
             f'drawtext=text=\'{text4}\':fontcolor=white:fontsize=20:x=(w-text_w)/2:y=h*0.9+((h*0.1-text_h)/2),'  # 하단 중앙
             'drawtext=text=\'TC %{pts\\:hms}\':fontcolor=white:fontsize=15:x=w-text_w-20:y=h*0.94-text_h,'  # 하단 우측 첫번째줄 - 타임코드
-            f'drawtext=text=\'%{{eif\\:n+{start_num}\\:d}} / \':fontcolor=white:fontsize=15:x=w-(text_w*3):y=h*0.95,'  # 하단 우측 두번째줄 - 실시간 프레임카운트
+            f'drawtext=text=\'%{{eif\\:n+{start_num}\\:d}} /   \':fontcolor=white:fontsize=15:x=w-(text_w*3):y=h*0.95,'  # 하단 우측 두번째줄 - 실시간 프레임카운트
             f'drawtext=text=\'{start_num}-{last_num}\':fontcolor=white:fontsize=15:x=w-text_w-20:y=h*0.95'  # 하단 우측 두번째줄 - 첫프레임 마지막프레임
         )
         return command

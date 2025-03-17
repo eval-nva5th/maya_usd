@@ -1,12 +1,15 @@
-from PySide2.QtWidgets import QApplication
+try :
+    from PySide2.QtWidgets import QApplication
+except Exception :
+    from PySide6.QtWidgets import QApplication
 from publisher.ui.publisher_ui import PublisherDialog
 import sys
 
 def run():
-    # app = QApplication()
+    #app = QApplication()
     save_dialog = PublisherDialog()
     save_dialog.show()
-    # sys.exit(app.exec_())
+    #sys.exit(app.exec_())
 
 if __name__ == "__main__":
     run()
