@@ -18,7 +18,7 @@ class EncodeProcess:
     def input_command(self, input_file):
         #input_file 파일주소
         # 시작 커맨드
-        command = f'ffmpeg -i "{input_file}"'
+        command = f'ffmpeg -y -i "{input_file}"'
         return command
 
     def output_codec_command(self, output_file, codec):

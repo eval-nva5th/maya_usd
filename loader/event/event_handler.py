@@ -8,7 +8,6 @@ except Exception :
 from functools import partial
 import maya.cmds as cmds
 import maya.utils as mu
-
 import os, sys
 from loader.shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
@@ -17,10 +16,10 @@ from loader.ui import loader_ui
 from core.add_new_task import *
 from systempath import SystemPath
 from shotgridapi import ShotgridAPI
-
+from widget.ui.widget_ui import CustomUI, add_custom_ui_to_tab
+# from loader.core.data_managers import version_file_data
 root_path = SystemPath().get_root_path()
 sg = ShotgridAPI().shotgrid_connector()
-
 #from loader.core.data_managers import version_file_data
 
 def on_login_clicked(ui_instance):                        # 1번 실행중
@@ -104,7 +103,6 @@ def add_file_to_table(table_widget, file_info):
 
     row = table_widget.rowCount()
     table_widget.insertRow(row)
-     
     table_widget.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
     table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
     table_widget.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
@@ -129,9 +127,13 @@ def add_file_to_table(table_widget, file_info):
     time_item = QTableWidgetItem(file_info[2]) #if file_info[2] else "Unknown")
     table_widget.setItem(row, 2, time_item)
 
+<<<<<<< Updated upstream
 def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
     from widget.ui.widget_ui import add_custom_ui_to_tab
 
+=======
+def on_work_cell_clicked(table_widget, row, col, ct, path):
+>>>>>>> Stashed changes
     item = table_widget.item(row, col)
     print(ct)
     print(ct.entity_name, ct.content, ct.step)
@@ -140,6 +142,7 @@ def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
     print(f"Clicked item: {item.text()} at row {row}, column {col}")
 
     if item.text() == "No Dir No File":
+<<<<<<< Updated upstream
        print(f"Open directory or create a new file at path")
        print(ct.set_file_name())
        is_dir, is_created = False, False
@@ -148,6 +151,14 @@ def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
         dialog.exec()
         # mainwindow 종료
         ui_instance.close()
+=======
+        print(f"Open directory or create a new file at path")
+        print(ct.set_file_name())
+        is_dir, is_created = False, False
+        if not is_created :
+            dialog = CustomDialog(path, is_dir,is_created, ct)
+            dialog.exec()
+>>>>>>> Stashed changes
 
     elif item.text() ==  "No File" :
         print("o directory x file")
@@ -162,9 +173,14 @@ def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
 
     else :
         full_path = f"{path}/{item.text()}"
+<<<<<<< Updated upstream
         cmds.file(full_path, open=True, force=True)
         #### mainwindow 종료 
         ui_instance.close()
+=======
+        print ("full_path", full_path)
+        cmds.file(full_path, open=True, force=True) ################################################################파일여는부분
+>>>>>>> Stashed changes
 
         add_custom_ui_to_tab(path, ct) ##### 위젯 넣는 함수
     
