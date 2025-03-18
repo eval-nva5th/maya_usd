@@ -3,10 +3,10 @@ import os
 import sys
 import socket
 #import maya.cmds as cmds
-from systempath import DefaultConfig
-
-default_config = DefaultConfig()
-sg = default_config.shotgrid_connector()
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
 
 maya_usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../loader"))
 print(f"maya_usd 경로: {maya_usd_path}")

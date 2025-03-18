@@ -29,7 +29,7 @@ class PlayblastManager:
         self.setup()
         output_file = f"{self.new_path}/playblast.mov"
 
-        print ("플레이 블라스트 시작~~~~~~~~~~~~~.")
+        print ("플레이 블라스트 시작")
         cmds.lookThru(self.camera_name) # 선택된 카메라 활성화
         cmds.select(clear=True) # 오브젝트 선택 해제
 
@@ -80,7 +80,7 @@ class PlayblastManager:
         return output_file
 
     def capture_frame(self, frame_number, path):
-        """특정 프레임을 이미지 1장으로 저장""" 
+        """플레이블라스트 이미지 저장""" 
         cmds.grid(toggle=False)
         cmds.playblast(
             startTime=frame_number,
@@ -126,7 +126,7 @@ class PlayblastManager:
         path_parts = self.new_path.strip("/").split("/")
         if len(path_parts) >= 8:  
             self.project_name = path_parts[3]
-            self.entity_name = path_parts[6]  # 원래 리스트로 가져와야 오류 방지됨
+            self.entity_name = path_parts[6]
             self.task_name = path_parts[7]
             return f"{self.entity_name}_{self.task_name}"
         return "unknown_filename"
@@ -199,7 +199,7 @@ class PlayblastManager:
         print(f"선택된 샷 카메라: {shot_cameras[0]}")
         return shot_cameras[0]
 
-    def get_seq_frame_range(self): # 셀프 빼도 상관이 없을까?
+    def get_seq_frame_range(self):
         """샷의 시작 및 종료 프레임 가져오기"""
         print("get_seq_frame_range() 실행")
         start_frame = int(cmds.playbackOptions(query=True, minTime=True))
@@ -234,7 +234,7 @@ class PlayblastManager:
         if max_size < 1:
             max_size = 10
 
-        distance = max_size * 3.0
+        distance = max_size * 5.0
 
         # 카메라 생성
         camera, camera_shape = cmds.camera(name="turntable_camera")
@@ -242,13 +242,12 @@ class PlayblastManager:
 
         # 카메라 위치 조정
         cmds.xform(camera_group, worldSpace=True, translation=[center_x, center_y, center_z])
-        cmds.xform(camera, relative=True, translation=[0, 0, distance * 1.1])
+        cmds.xform(camera, relative=True, translation=[0, 0, distance * 2.0])
 
         # Near/Far Clipping Plane 조정 : 16:57 추가
         cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 10)  # 기존 5에서 10으로 확대
         cmds.setAttr(f"{camera_shape}.nearClipPlane", 0.01)  # 작은 오브젝트가 잘리지 않도록 설정
-
-        cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 5)
+        # cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 5)
 
         # Aim Constraint 추가 (삭제하지 않음)
         cmds.aimConstraint(asset, camera, aimVector=[0, 0, -1], upVector=[0, 1, 0], worldUpType="scene")
@@ -263,7 +262,6 @@ class PlayblastManager:
         camera_rotation = cmds.xform(camera, query=True, worldSpace=True, rotation=True)
         print(f"Camera Position: {camera_pos}")
         print(f"Camera Rotation: {camera_rotation}")
-
         print(f"카메라 생성 완료: {camera}")
 
         return camera_group, camera
@@ -319,8 +317,7 @@ class PlayblastManager:
         versioned_mov = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.mov"
         master_mov = f"{self.new_path}/{self.filename}.mov"
         codec = playblast_mov[-3:]
-
-        print ("versioned_mov 저장경로오오오오오오오오오 ",versioned_mov)
+        print ("versioned_mov 저장경로",versioned_mov)
 
         # 마스터 MOV 파일 저장
         encoder = EncodeProcess()
@@ -333,7 +330,7 @@ class PlayblastManager:
         print(f"저장 완료: {master_mov}, {versioned_mov}")
 
     def check_playblast_file(self, file_path):
-        """파일이 존재할 때까지 반복 확인 (비동기 방식)"""
+        """파일이 존재할 때까지 반복 확인"""
         if os.path.exists(file_path):
             if not self.file_checked: # 중복 실행 방지
                 self.file_checked = True
@@ -342,4 +339,4 @@ class PlayblastManager:
             return
         else:
             print(f"플레이블라스트 파일 대기 중... {file_path}")
-            QTimer.singleShot(500, lambda: self.check_playblast_file(file_path))  # 500ms 후 다시 체크
+            QTimer.singleShot(500, lambda: self.check_playblast_file(file_path))

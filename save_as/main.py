@@ -5,9 +5,9 @@ except Exception :
 
 import sys
 from save_as.ui.save_as_ui import SaveAsDialog
-def run():
+def run(ct):
     # app = QApplication(sys.argv)
-    save_dialog = SaveAsDialog()
+    save_dialog = SaveAsDialog(ct)
     save_dialog.show()
     # sys.exit(app.exec_())
     return save_dialog
