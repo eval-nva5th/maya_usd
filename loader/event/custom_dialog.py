@@ -5,7 +5,7 @@ except Exception :
     
 import maya.cmds as cmds
 import os, sys
-from loader.core.add_new_task import *
+from loader.core.add_new_task import UsdLoader
 
 class CustomDialog(QDialog):
     def __init__(self, path, is_dir, is_created, ct):
