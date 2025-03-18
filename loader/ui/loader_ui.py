@@ -13,12 +13,9 @@ except Exception :
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
     from PySide6.QtCore import Qt
     
-
-
-from loader.event import event_handler
-from shotgrid_user_task import UserInfo, TaskInfo
-from core.video_player import VideoPlayer
-from core.data_managers import previous_data, task_data
+from loader.shotgrid_user_task import UserInfo, TaskInfo
+from loader.core.video_player import VideoPlayer
+from loader.core.data_managers import previous_data, task_data
 from systempath import SystemPath
 
 root_path = SystemPath().get_root_path()
@@ -116,14 +113,6 @@ class UI(QMainWindow):
         #동영상파일 재생
         self.video_widget = VideoPlayer(pb)
         self.video_widget.setStyleSheet("border: 2px solid #555; border-radius: 5px;")
-
-        # 원본 크기 가져오기 (비율 유지)
-        # original_size = self.video_widget.size()  # 또는 self.video_widget.size()
-        # default_width = original_size.width()/2.5
-        # default_height = original_size.height()/2.5
-
-        #self.video_widget.setAspectRatioMode(True)
-        # self.video_widget.setFixedSize(default_width, default_height)
 
         # 비율 유지하며 크기 자동 조정
         self.video_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -292,17 +281,13 @@ class UI(QMainWindow):
         self.task_table.setHorizontalHeaderLabels(["Thumbnail", "Task Info", "Task ID"])
         self.task_table.setColumnHidden(2, True) # Task ID 숨김
 
+        from loader.event.event_handler import LoaderEvent
         # 테이블 이벤트 처리
-        # self.task_table.cellDoubleClicked.connect(lambda row,col:on_cell_clicked(self,row,col))
-        # self.search_but.clicked.connect(lambda:search_task(self))
-        # self.search_input.returnPressed.connect(lambda:search_task(self))
-        # self.search_input.textChanged.connect(lambda:search_task(self))
-        # self.sort_combo.currentIndexChanged.connect(lambda:on_sort_changed(self)) 이거 둘중 하나로 처리해야함
-        self.task_table.cellClicked.connect(lambda row,col:event_handler.on_cell_clicked(self,row,col))
-        self.search_but.clicked.connect(lambda:event_handler.search_task(self))
-        self.search_input.returnPressed.connect(lambda:event_handler.search_task(self))
-        self.search_input.textChanged.connect(lambda:event_handler.search_task(self))
-        self.sort_combo.currentIndexChanged.connect(lambda:event_handler.on_sort_changed(self))
+        self.task_table.cellClicked.connect(lambda row,col:LoaderEvent.on_cell_clicked(self,row,col))
+        self.search_but.clicked.connect(lambda:LoaderEvent.search_task(self))
+        self.search_input.returnPressed.connect(lambda:LoaderEvent.search_task(self))
+        self.search_input.textChanged.connect(lambda:LoaderEvent.search_task(self))
+        self.sort_combo.currentIndexChanged.connect(lambda:LoaderEvent.on_sort_changed(self))
 
         # 테이블 크기설정
         self.task_table.setColumnWidth(0, 180)  # 로고 열 (좁게 설정)

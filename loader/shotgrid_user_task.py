@@ -4,8 +4,9 @@ except Exception :
     from PySide6.QtWidgets import QApplication
     
 from shotgun_api3 import Shotgun 
+
 import os, sys, time
-from ui.loading_ui import LoadingDialog
+from loader.ui.loading_ui import LoadingDialog
 from systempath import SystemPath
 from shotgridapi import ShotgridAPI
 
@@ -375,8 +376,8 @@ if __name__ == "__main__":
     script_name = "sy_key"
     api_key = "vkcuovEbxhdoaqp9juqodux^x"
 
-    user = UserInfo(sg_url, script_name, api_key)
-    task = TaskInfo(sg_url, script_name, api_key)
+    user = UserInfo()
+    task = TaskInfo()
 
     email = "f8d783@kw.ac.kr" #"p2xch@naver.com" 
     name = "장순우"

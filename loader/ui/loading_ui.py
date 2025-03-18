@@ -5,6 +5,7 @@ try :
 except Exception :
     from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
     from PySide6.QtCore import Qt, QTimer
+    
 from loader.core.video_player import VideoPlayer
 from systempath import SystemPath
 root_path = SystemPath().get_root_path()

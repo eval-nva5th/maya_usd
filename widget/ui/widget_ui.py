@@ -16,6 +16,7 @@ import maya.cmds as cmds
 import requests
 from widget.event.widget_event_handler import clicked_get_asset_btn
 from save_as.main import run as save_as_run
+from publisher.main import run as publish_run
 
 import os
 import sys
@@ -81,7 +82,8 @@ class CustomUI(QWidget):
         get_asset_button = QPushButton("GET ASSETS")
         get_asset_button.setMaximumWidth(320)
         get_asset_button.clicked.connect(clicked_get_asset_btn)
-
+        
+        print(f"*** {self.entity_type}")
         if self.entity_type == "assets" :
             self.entity_type = "Asset"
             parent_label = QLabel(f"Asset type : {self.entity_parent}")
@@ -110,7 +112,7 @@ class CustomUI(QWidget):
         
         for row, item in enumerate(colleague_list):
             thumb_label = QLabel(self)
-            #thumb_label.setFixedSize(20, 20)
+            thumb_label.setFixedSize(20, 20)
             thumb_label.setScaledContents(True)
         
             pixmap = QPixmap()
@@ -127,9 +129,11 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
+            pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            
+            #pixmap = pixmap.copy((pixmap.width()-20)//2, (pixmap.height()-20)//2, 20, 20)
+            
             #pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            pixmap = pixmap.copy((pixmap.width()-20)//2, (pixmap.height()-20)//2, 20, 20)
-            pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             pixmap = self.circular_pixmap(pixmap, 20)
 
             thumb_label.setPixmap(pixmap) 
@@ -350,52 +354,7 @@ class CustomUI(QWidget):
         save_as_run()
 
     def on_click_publish(self):
-        """Displays the 'Publish' popup dialog."""
-        publish_dialog = PublishDialog(self)
-        publish_dialog.exec_()  # Show the dialog modally
-
-class PublishDialog(QDialog):
-    def __init__(self, parent=None):
-        super(PublishDialog, self).__init__(parent)
-        
-        self.setWindowTitle("Publish")
-        
-        # Create Labels and LineEdits for Publish
-        self.label1 = QLabel("Publish Name 1:")
-        self.line_edit1 = QLineEdit()
-        
-        self.label2 = QLabel("Publish Name 2:")
-        self.line_edit2 = QLineEdit()
-
-        # Button
-        self.publish_button = QPushButton("Publish")
-        self.cancel_button = QPushButton("Cancel")
-        
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(self.label1)
-        layout.addWidget(self.line_edit1)
-        layout.addWidget(self.label2)
-        layout.addWidget(self.line_edit2)
-        
-        # Button layout
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(self.publish_button)
-        button_layout.addWidget(self.cancel_button)
-        
-        layout.addLayout(button_layout)
-        self.setLayout(layout)
-
-        # Connect buttons to actions
-        self.publish_button.clicked.connect(self.publish)
-        self.cancel_button.clicked.connect(self.reject)
-
-    def publish(self):
-        """Handle publish button action."""
-        name1 = self.line_edit1.text()
-        name2 = self.line_edit2.text()
-        print(f"Publish - Name 1: {name1}, Name 2: {name2}")
-        self.accept()  # 다이얼로그 닫기
+        publish_run()
 
 def add_custom_ui_to_tab(path, ct=None):
     workspace_control_name = "CustomTabUIWorkspaceControl"

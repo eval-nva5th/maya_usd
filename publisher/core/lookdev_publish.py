@@ -1,7 +1,7 @@
 import os, shutil, re
 from pxr import Usd, UsdShade
 import maya.cmds as cmds
-from publish_usd import LookdevExportUSD
+from publisher.core.publish_usd import LookdevExportUSD
 
 from systempath import SystemPath
 root_path = SystemPath().get_root_path()

@@ -18,7 +18,7 @@ import maya.cmds as cmds
 from publisher.core.play_blast import PlayblastManager
 from publisher.event.event_handler import publish
 from save_as.event.event_handler import open_file_browser, save_file_as, on_version_click
-from core.video_player import VideoPlayer
+from loader.core.video_player import VideoPlayer
 
 class PublisherDialog(QMainWindow):
     playblast_done = QtCore.Signal(str) # Playblast 작업이 완료되었을 때 해당 시그널을 방출
