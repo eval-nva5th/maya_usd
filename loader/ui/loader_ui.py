@@ -26,7 +26,6 @@ class UI(QMainWindow):
         
         self.user = UserInfo()
         self.task_info = task_info
-        print(f"ui 클래스 내 {type(self.task_info)}")
         self.user_name = ""
         self.prefix_path = f"{root_path}/show"
         self.input_name = ""
@@ -350,6 +349,7 @@ class UI(QMainWindow):
             task_thumb = QLabel()
             task_thumb.setFixedWidth(192)
             task_thumb.setFixedHeight(108)
+            print(f"if thumb is null : {thumb}")
             pixmap = QPixmap(thumb)  # 이미지 파일 경로
             task_thumb.setPixmap(pixmap.scaled(192, 108))  # 크기 조절
             task_thumb.setAlignment(Qt.AlignCenter)  # 이미지를 중앙 정렬

@@ -21,17 +21,12 @@ class TaskInfoThread(QThread):
     def __init__(self, user_id):
         super().__init__()
         self.user_id = user_id  # user_id 저장
-        print(f"****** {self.user_id}")
 
     def run(self):
         task_info = TaskInfo()
-        print(f"쓰레드 클래스 내 타입 {type(task_info)}")
         task_info.get_user_task(self.user_id)
-        print("A")
         task_dict = task_info.get_task_dict()  # Task 데이터 가져오기
-        print(f"로딩 쓰레드에서 딕트 받아짐 !!!!!! {task_dict}")
         self.finished_signal.emit(task_info)  # 완료 신호 전달 ######## 이게 문제같음
-        print ("테스크 데이터 가져오기 완룡!!!!!!!!!!!!!!!!!!!!!!!!")
 
 # class TaskThread(QThread):
 #     progress_signal = Signal(str)
@@ -81,18 +76,6 @@ class UserInfo :
     def get_userid(self) :
         return self.id
     
-    # asset 파트인지 seq 파트인지 구별을 위해 사용되는 함수
-    def get_user_part(self, entity_type):
-        asset_dept = {"model", "lookdev", "rig"}
-        seq_dept = {"matchmove", "layout", "light", "animation", "comp"}
-
-        if entity_type.lower() in asset_dept :
-            return "assets"
-        elif entity_type.lower() in seq_dept :
-            return "seq"
-        else :
-            return "unknown"
-        
     def show_loading(self) :
         pass
 
@@ -210,21 +193,10 @@ class TaskInfo :
                 self.prev_task_dict[prev_task_id]["reviewers"] = prev_task_reviewers
                 self.prev_task_dict[prev_task_id]["status"] = prev_task_status
                 self.prev_task_dict[prev_task_id]["comment"] = comment
+                
             else :
-                self.prev_task_dict[prev_task_id]["id"] = "None"
-                self.prev_task_dict[prev_task_id]["proj_name"] = "None"
-                self.prev_task_dict[prev_task_id]["type_name"] = "None"
-                self.prev_task_dict[prev_task_id]["category"] = "None"
-                self.prev_task_dict[prev_task_id]["name"] = "None"
+                pass
 
-                self.prev_task_dict[prev_task_id]["task_name"] = "None"
-                self.prev_task_dict[prev_task_id]["step"] = "None"
-                self.prev_task_dict[prev_task_id]["assignees"] = "None"
-                self.prev_task_dict[prev_task_id]["reviewers"] = "None"
-                self.prev_task_dict[prev_task_id]["status"] = "None"
-                self.prev_task_dict[prev_task_id]["comment"] = "None"
-
-            
     def branch_entity_type(self, entity_type, task_id, entity_id) :
 
         if entity_type == "Shot" :
@@ -320,19 +292,34 @@ class TaskInfo :
         
         prev_task_dict = {}
         prev_task_id = self.task_dict[current_task_id]['prev_task_id']
-        prev_task = self.prev_task_dict[prev_task_id]
-        prev_task_dict["id"] = prev_task_id
-        prev_task_dict["proj_name"] = prev_task['proj_name']
-        prev_task_dict["type_name"] = prev_task['type_name']
-        prev_task_dict["category"] = prev_task['category']
-        prev_task_dict["name"] = prev_task['name']            
+        if self.prev_task_dict.get(prev_task_id) == None :
+            prev_task_dict["id"] = 0
+            prev_task_dict["proj_name"] = ""
+            prev_task_dict["type_name"] = ""
+            prev_task_dict["category"] = ""
+            prev_task_dict["name"] = ""            
 
-        prev_task_dict["task_name"] = prev_task['task_name']
-        prev_task_dict["step"] = prev_task['step']
-        prev_task_dict["assignees"] = prev_task['assignees']
-        prev_task_dict["reviewers"] = prev_task['reviewers']
-        prev_task_dict["status"] = prev_task['status']
-        prev_task_dict["comment"] = prev_task['comment']
+            prev_task_dict["task_name"] = ""
+            prev_task_dict["step"] = ""
+            prev_task_dict["assignees"] = ""
+            prev_task_dict["reviewers"] = ""
+            prev_task_dict["status"] = ""
+            prev_task_dict["comment"] = ""
+            
+        else :
+            prev_task = self.prev_task_dict[prev_task_id]
+            prev_task_dict["id"] = prev_task_id
+            prev_task_dict["proj_name"] = prev_task['proj_name']
+            prev_task_dict["type_name"] = prev_task['type_name']
+            prev_task_dict["category"] = prev_task['category']
+            prev_task_dict["name"] = prev_task['name']            
+
+            prev_task_dict["task_name"] = prev_task['task_name']
+            prev_task_dict["step"] = prev_task['step']
+            prev_task_dict["assignees"] = prev_task['assignees']
+            prev_task_dict["reviewers"] = prev_task['reviewers']
+            prev_task_dict["status"] = prev_task['status']
+            prev_task_dict["comment"] = prev_task['comment']
         return prev_task_dict, current_dict
 
 class ClickedTask:
@@ -443,3 +430,5 @@ if __name__ == "__main__":
 
     work_list = c.get_dir_items(work_deep_path)
     print(f"work list : {work_list}")
+
+#clicked task를 받아와. 

@@ -55,6 +55,7 @@ class CustomUI(QWidget):
         if ct is not None:
             if hasattr(ct, 'id') and hasattr(ct, 'entity_id'):
                 print(f"ct.id: {ct.id}, ct.entity_id: {ct.entity_id}, ct.proj_name = {ct.project_name}, {ct.content}, {ct.entity_type}, {ct.entity_name}")
+                self.ct = ct
                 self.id = ct.id
                 self.entity_id = ct.entity_id
                 self.project_name = ct.project_name
@@ -90,7 +91,6 @@ class CustomUI(QWidget):
         get_asset_button.setMaximumWidth(320)
         get_asset_button.clicked.connect(clicked_get_asset_btn)
         
-        print(f"*** {self.entity_type}")
         if self.entity_type == "assets" :
             self.entity_type = "Asset"
             parent_label = QLabel(f"Asset type : {self.entity_parent}")
@@ -107,11 +107,14 @@ class CustomUI(QWidget):
         
         # ct 받아오기가 필요함
         self.toggle_button = QPushButton(self.status, self)
-        self.toggle_button.setStyleSheet("right-padding: 5px;")
+        self.toggle_button.setStyleSheet("padding-right: 5px;")
         self.toggle_button.setFixedSize(40, 20)
         self.toggle_button.setCheckable(True)  # 버튼을 체크 가능하게 설정
         self.toggle_button.setChecked(False)# 초기 상태를 False로 설정
-        
+        self.toggle_button.setEnabled(True)
+        if self.toggle_button.text() == "fin" :
+            self.toggle_button.setEnabled(False)
+            
         self.toggle_button_color()
         
         if self.status == "wtg" :
@@ -421,7 +424,7 @@ class CustomUI(QWidget):
     def show_publish_ui(self, video_path):
         """ Playblast 완료 후 `PublisherDialog` 띄우기 """
         print(f"Playblast 완료! 파일 경로: {video_path}")
-        self.publish_dialog = PublisherDialog(video_path)  # 파일 경로를 전달
+        self.publish_dialog = PublisherDialog(video_path, self.ct)  # 파일 경로를 전달
         self.publish_dialog.show()
 
 class PlayblastChecker(QThread): # 플레이 블라스트 체크 클래스.

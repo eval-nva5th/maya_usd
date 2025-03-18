@@ -1,5 +1,6 @@
 from systempath import SystemPath
 root_path = SystemPath().get_root_path()
+import os
 
 # self.task_dict 순회 하면서 data 가공 후 add_task_to_table()
 
@@ -29,7 +30,11 @@ def task_data(ui_instance, task_table):
         due_date = task_data['due_date']
         
 
-        thumb = f"{root_path}/show/{proj_name}/{entity_type}/{entity_parent}/{entity_name}/{step}/pub/maya/data/{entity_name}_{step}_v001.jpg"
+        thumb = f"{root_path}/show/{proj_name}/{entity_type}/{entity_parent}/{entity_name}/{step}/pub/maya/data/{entity_name}_{step}.jpg"
+        if not os.path.exists(thumb):
+            thumb = f"{root_path}/elements/no_image.jpg"
+        else:
+            pass
 
         for k, v in ui_instance.color_map.items() :
             if status == k :

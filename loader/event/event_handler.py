@@ -65,7 +65,6 @@ class LoaderEvent :
 
                 ui_instance.task_thread = TaskInfoThread(user.id)
                 ui_instance.task_thread.start()
-                print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 ui_instance.task_thread.finished_signal.connect(
                     lambda task_info: LoaderEvent.show_loader_ui(user, name, ui_instance.loading_window, task_info)
                 )
@@ -81,7 +80,6 @@ class LoaderEvent :
         """
         로딩이 끝나면 로더 UI 실행
         """
-        print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~qqqq")
         loader_window = loaderUIClass(task_info)
         loader_window.user = user
         loader_window.user_name = name
@@ -173,10 +171,6 @@ class LoaderEvent :
         from widget.ui.widget_ui import add_custom_ui_to_tab
 
         item = table_widget.item(row, col)
-        print(ct)
-        print(ct.entity_name, ct.content, ct.step)
-        print(path)
-        print(ct.set_file_name())
         print(f"Clicked item: {item.text()} at row {row}, column {col}")
 
         if item.text() == "No Dir No File":
@@ -212,7 +206,7 @@ class LoaderEvent :
     def update_prev_work(ui_instance, prev_task_data):
         prefix_path = f"{root_path}/show"
         file_path_list = []
-        if prev_task_data['id'] != "None":
+        if prev_task_data['id'] != 0 :
             print(prev_task_data)
             prev_task_id = prev_task_data['id']
             prev_task_name = prev_task_data['task_name']

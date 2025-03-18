@@ -21,10 +21,12 @@ from save_as.event.event_handler import open_file_browser, save_file_as, on_vers
 from loader.core.video_player import VideoPlayer
 
 class PublisherDialog(QMainWindow):
-    def __init__(self, video_path):
+    def __init__(self, video_path, ct):
         super().__init__()
         self.setWindowTitle("Publish")
         self.setGeometry(100, 100, 650, 1000)
+        print(f"** 퍼블리시에 드디어 clickedtask가 들어오다 {ct}")
+        print(f"task id : {ct.id}")
 
         self.center_window()
 

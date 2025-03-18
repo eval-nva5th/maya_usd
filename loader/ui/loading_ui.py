@@ -13,7 +13,6 @@ root_path = SystemPath().get_root_path()
 class LoadingDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        print ("로딩중")
         self.setWindowTitle("Loading...")
         self.setModal(True)
         self.setFixedSize(200, 200)
