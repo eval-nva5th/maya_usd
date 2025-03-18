@@ -175,14 +175,14 @@ def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
     print(f"Clicked item: {item.text()} at row {row}, column {col}")
 
     if item.text() == "No Dir No File":
-       print(f"Open directory or create a new file at path")
-       print(ct.set_file_name())
-       is_dir, is_created = False, False
-       if not is_created :
-        dialog = CustomDialog(path, is_dir, is_created, ct)
-        dialog.exec()
-        # mainwindow 종료
-        ui_instance.close()
+        print(f"Open directory or create a new file at path")
+        print(ct.set_file_name())
+        is_dir, is_created = False, False
+        if not is_created :
+            dialog = CustomDialog(path, is_dir, is_created, ct)
+            dialog.exec()
+            # mainwindow 종료
+            ui_instance.close()
 
     elif item.text() ==  "No File" :
         print("o directory x file")
@@ -197,6 +197,7 @@ def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
 
     else :
         full_path = f"{path}/{item.text()}"
+        print(full_path)
         cmds.file(full_path, open=True, force=True)
         #### mainwindow 종료 
         ui_instance.close()

@@ -123,8 +123,8 @@ def load_model_reference(project_name, asset_name, asset_type, dept):
                     cmds.file(root_usd_reference_path, reference=True, defaultNamespace=True)
                     break
                     
-        # except Exception as e:
-        #     print(f"오류: {e}")
+    except Exception as e:
+        print(f"오류: {e}")
 
 
 def load_shot_reference(project_name, shot_name, shot_num, dept): 
