@@ -1,8 +1,15 @@
-from PySide2.QtWidgets import QMainWindow, QWidget, QPushButton, QToolButton
-from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
-from PySide2.QtWidgets import QHBoxLayout
-from PySide2.QtWidgets import QComboBox
-from PySide2.QtCore import Qt
+try : 
+    from PySide2.QtWidgets import QMainWindow, QWidget, QPushButton, QToolButton
+    from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide2.QtWidgets import QHBoxLayout
+    from PySide2.QtWidgets import QComboBox
+    from PySide2.QtCore import Qt
+except Exception :
+    from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton, QToolButton
+    from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
+    from PySide6.QtWidgets import QHBoxLayout
+    from PySide6.QtWidgets import QComboBox
+    from PySide6.QtCore import Qt
 
 import maya.cmds as cmds
 import os
@@ -98,7 +105,7 @@ class SaveAsDialog(QMainWindow):
         layout.addLayout(filetype_container)
         layout.addLayout(button_container)
         central_widget.setLayout(layout)
-    
+
     def center_window(self):
         screen_geometry = self.screen().geometry()  # 현재 창이 표시되는 화면의 전체 크기
         window_geometry = self.frameGeometry()  # 현재 창의 크기 정보

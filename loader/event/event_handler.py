@@ -1,33 +1,34 @@
-
-from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
-from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
-from functools import partial
+try : 
+    from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
+    from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
+except Exception :
+    from PySide6.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
+    from PySide6.QtGui import QPixmap, QPainter, QColor, Qt
+    
 import maya.cmds as cmds
 import maya.utils as mu
-
 import os, sys
-from shotgrid_user_task import ClickedTask
+from loader.shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
-from shotgrid_user_task import UserInfo
-from loader.ui.loader_ui import UI
-# from loader.core.data_managers import version_file_data
+from shotgrid_user_task import UserInfo, TaskInfoThread
+from loader.ui import loader_ui
+from core.add_new_task import *
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
 
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/core")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/event")
-sys.path.append("/home/rapa/gitkraken/maya_usd/loader/ui")
-sys.path.append("/home/rapa/gitkraken/maya_usd/widget") 
-widget_ui_path = os.path.abspath("/home/rapa/gitkraken/maya_usd/widget/ui")
-sys.path.append(widget_ui_path)
+from loader.ui.loading_ui import LoadingDialog
+from PySide2.QtWidgets import QApplication
 
-def on_login_clicked(ui_instance):                        ######################### 1번 실행중
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
+
+#from loader.core.data_managers import version_file_data
+
+def on_login_clicked(ui_instance):                        # 1번 실행중
     """
     로그인 버튼 실행
     """
-    sg_url = "https://5thacademy.shotgrid.autodesk.com/"
-    script_name = "sy_key"
-    api_key = "vkcuovEbxhdoaqp9juqodux^x"
-    user = UserInfo(sg_url, script_name, api_key)
+    user = UserInfo()
 
     name = ui_instance.name_input.text()
     email = ui_instance.email_input.text()
@@ -41,16 +42,31 @@ def on_login_clicked(ui_instance):                        ######################
             popup.setText("아이디 또는 이메일이 일치하지 않습니다")
             popup.exec()
 
-        else: # 로그인 성공!
+        # else: # 로그인 성공!
+        #     ui_instance.close()
+        #     main_window = loader_ui.UI()
+        #     main_window.user = user
+        #     main_window.user_name = name
+        #     main_window.input_name = name
+        #     main_window.setFixedSize(1100, 800)
+        #     main_window.setCentralWidget(main_window.setup_layout()) # 로그인 창을 메인화면으로 변경
+        #     main_window.center_window()
+        #     main_window.show()
+
+        else:  # 로그인 성공!
             ui_instance.close()
-            loader_ui = UI()
-            loader_ui.user = user
-            loader_ui.user_name = name
-            loader_ui.input_name = name
-            loader_ui.setFixedSize(1100, 800)
-            loader_ui.setCentralWidget(loader_ui.setup_layout()) # 로그인 창을 메인화면으로 변경
-            loader_ui.center_window()
-            loader_ui.show()
+
+            # 로딩창 먼저 띄우기
+            ui_instance.loading_window = LoadingDialog()
+            ui_instance.loading_window.show()
+            QApplication.processEvents()  # UI 즉시 업데이트
+
+            ui_instance.task_thread = TaskInfoThread(user.id)
+            ui_instance.task_thread.start()
+            print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            ui_instance.task_thread.finished_signal.connect(
+                lambda task_info: show_loader_ui(user, name, ui_instance.loading_window, task_info)
+            )
 
     else: # 이름과 이메일에 값이 없을 때
         popup = QMessageBox()
@@ -58,6 +74,26 @@ def on_login_clicked(ui_instance):                        ######################
         popup.setWindowTitle("Failure")
         popup.setText("이름과 이메일을 입력해주세요")
         popup.exec()
+
+def show_loader_ui(user, name, loading_window, task_info):
+    """
+    로딩이 끝나면 로더 UI 실행
+    """
+    print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~qqqq")
+    loader_window = loader_ui.UI(task_info)
+    loader_window.user = user
+    loader_window.user_name = name
+    loader_window.input_name = name
+    loader_window.setFixedSize(1100, 800)
+    loader_window.setCentralWidget(loader_window.setup_layout())
+    loader_window.center_window()
+
+    # TaskInfo 설정
+    #loader_window.set_task_info(task_info)
+    # 로딩창 닫기
+    loading_window.close()
+    # 로더 UI 실행
+    loader_window.show()
 
 def on_cell_clicked(ui_instance, row, _):
     if not ui_instance:
@@ -76,26 +112,14 @@ def on_cell_clicked(ui_instance, row, _):
     work_list = ct.get_dir_items(work_path)
     update_pub_table(ui_instance, pub_path, pub_list)
     update_work_table(ui_instance, work_path, work_list)
-
-    # print(pub_path, work_path)
-    # try:
-    #     if hasattr(ui_instance, "_work_table_slot"):  # 슬롯이 있는지 확인
-    #         ui_instance.work_table.cellDoubleClicked.disconnect(ui_instance._work_table_slot)
-    # except (TypeError, RuntimeError):
-    #     pass  # 연결된 슬롯이 없으면 무시
-
-    # # 새로운 슬롯을 partial로 저장
-    # ui_instance._work_table_slot = partial(on_work_cell_clicked, ui_instance.work_table, ct, work_path)
     
-    # # 새로운 슬롯을 이벤트에 연결
-    # ui_instance.work_table.cellDoubleClicked.connect(ui_instance._work_table_slot)
-
     try:
         ui_instance.work_table.cellDoubleClicked.disconnect()
     except Exception as e:
         print(e)
-        pass  # 연결된 핸들러가 없을 경우 예외 발생할 수 있음, 무시
-    ui_instance.work_table.cellDoubleClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance.work_table, row, col, ct, work_path))
+        pass  # 연결된 핸들러가 없을 경우 예외 발생할 수 있음, 무시해도 됨
+    
+    ui_instance.work_table.cellDoubleClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance,ui_instance.work_table, row, col, ct, work_path))
 
 def update_pub_table(ui_instance, pub_path, pub_list):
 
@@ -112,13 +136,10 @@ def update_work_table(ui_instance, work_path, work_list):
     for file_info in work_list:
         add_file_to_table(ui_instance.work_table, file_info)
 
-    #ui_instance.work_table.cellClicked.connect(lambda row, col: on_work_cell_clicked(ui_instance, file_info[3], row, col))
-
 def add_file_to_table(table_widget, file_info):
 
     row = table_widget.rowCount()
     table_widget.insertRow(row)
-     
     table_widget.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
     table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
     table_widget.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
@@ -128,7 +149,7 @@ def add_file_to_table(table_widget, file_info):
     table_widget.horizontalHeader().setVisible(True) 
     table_widget.verticalHeader().setVisible(False)
 
-    # Image (DCC logo)
+    # 로고
     image_label = QLabel()
     pixmap = QPixmap(file_info[0]).scaled(25, 25)
     image_label.setPixmap(pixmap)
@@ -143,12 +164,12 @@ def add_file_to_table(table_widget, file_info):
     time_item = QTableWidgetItem(file_info[2]) #if file_info[2] else "Unknown")
     table_widget.setItem(row, 2, time_item)
 
-def on_work_cell_clicked(table_widget, row, col, ct, path):
-    from widget_ui import CustomUI, add_custom_ui_to_tab
+def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
+    from widget.ui.widget_ui import add_custom_ui_to_tab
 
     item = table_widget.item(row, col)
     print(ct)
-    print(ct.entity_name, ct.content)
+    print(ct.entity_name, ct.content, ct.step)
     print(path)
     print(ct.set_file_name())
     print(f"Clicked item: {item.text()} at row {row}, column {col}")
@@ -158,8 +179,10 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
        print(ct.set_file_name())
        is_dir, is_created = False, False
        if not is_created :
-        dialog = CustomDialog(path, is_dir,is_created, ct)
+        dialog = CustomDialog(path, is_dir, is_created, ct)
         dialog.exec()
+        # mainwindow 종료
+        ui_instance.close()
 
     elif item.text() ==  "No File" :
         print("o directory x file")
@@ -169,17 +192,20 @@ def on_work_cell_clicked(table_widget, row, col, ct, path):
             print(ct.entity_name, ct.content) 
             dialog = CustomDialog(path, is_dir,is_created, ct)
             dialog.exec()
+            #### mainwindow 종료
+            ui_instance.close()
 
     else :
         full_path = f"{path}/{item.text()}"
-        cmds.file(full_path, open=True) ################################################################파일여는부분
+        cmds.file(full_path, open=True, force=True)
+        #### mainwindow 종료 
+        ui_instance.close()
 
-        print(f"{item.text()}가 열립니다.") 
-
-        add_custom_ui_to_tab(path, ct)
+        add_custom_ui_to_tab(path, ct) ##### 위젯 넣는 함수
+    
 
 def update_prev_work(ui_instance, prev_task_data):
-    prefix_path = "/nas/eval/show"
+    prefix_path = f"{root_path}/show"
     file_path_list = []
     if prev_task_data['id'] != "None":
         print(prev_task_data)

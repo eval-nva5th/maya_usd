@@ -1,15 +1,55 @@
-from PySide2.QtWidgets import QApplication
+try :
+    from PySide2.QtWidgets import QApplication
+    from PySide2.QtCore import QThread, Signal, QMetaObject, Qt
+except Exception :
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QThread, Signal, QMetaObject, Qt
+    
 from shotgun_api3 import Shotgun 
 import os, sys, time
-from ui.loading_ui import LoadingDialog
+from ui import loading_ui
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
 
-class Shotgrid : # 부모 클래스 (이름 수정 필요) 샷건 인포 한번에 뿌릴라고 만들었습니다. 모든 샷그리드 클래스 상속받아야함.
-    def __init__(self, sg_url, script_name, api_key):
-        self.sg = Shotgun(sg_url, script_name, api_key)
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
 
-class UserInfo(Shotgrid) : 
-    def __init__(self, sg_url, script_name, api_key):
-        super().__init__(sg_url, script_name, api_key)
+class TaskInfoThread(QThread):
+    finished_signal = Signal(object)  # 리스트 형태로 TaskInfo 데이터 전달
+
+    def __init__(self, user_id):
+        super().__init__()
+        self.user_id = user_id  # user_id 저장
+        print(f"****** {self.user_id}")
+
+    def run(self):
+        task_info = TaskInfo()
+        print(f"쓰레드 클래스 내 타입 {type(task_info)}")
+        task_info.get_user_task(self.user_id)
+        print("A")
+        task_dict = task_info.get_task_dict()  # Task 데이터 가져오기
+        print(f"로딩 쓰레드에서 딕트 받아짐 !!!!!! {task_dict}")
+        self.finished_signal.emit(task_info)  # 완료 신호 전달 ######## 이게 문제같음
+        print ("테스크 데이터 가져오기 완룡!!!!!!!!!!!!!!!!!!!!!!!!")
+
+# class TaskThread(QThread):
+#     progress_signal = Signal(str)
+
+#     def run(self):
+#         """ 진행 상태를 실시간으로 업데이트 """
+#         for i, task in enumerate(self.tasks, start=1):
+#             progress_text = f"처리 중: {i}/{self.total_tasks} ({(i/self.total_tasks)*100:.2f}%) 완료"
+
+#             # UI 스레드에서 안전하게 실행
+#             QMetaObject.invokeMethod(self, "emit_progress", Qt.QueuedConnection, progress_text)
+
+#             self.msleep(50)  # 속도 조절
+
+#     def emit_progress(self, text):
+#         self.progress_signal.emit(text)
+
+class UserInfo : 
+    def __init__(self) :
         
         self.email = ""
         self.name = ""
@@ -22,7 +62,7 @@ class UserInfo(Shotgrid) :
         kname_filter = ['sg_korean_name', 'is', self.name]
         #name_filter = ['name', 'is', self.name]
         email_filter = ['email', 'is', self.email]
-        self.userinfo = self.sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
+        self.userinfo = sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
         
         if not len(self.userinfo) == 0 :
             self.id = self.userinfo[0]['id'] # id 받기
@@ -64,31 +104,31 @@ class UserInfo(Shotgrid) :
     def create_local_path(self) :
         pass
 
-class TaskInfo(Shotgrid) :
-    
-    def __init__(self, sg_url, script_name, api_key):
-        super().__init__(sg_url, script_name, api_key)
+class TaskInfo :
+    def __init__(self):
+        self.task_thread = None
         self.task_dict = {}
         self.prev_task_dict = {}
 
     def get_user_task(self, user_id):
         #UserInfo에서 갖고온 id를 파라미터로 갖고와 그 아이디에 해당하는 태스크를 딕트 형식으로 저장
-
-        loading_window = LoadingDialog()
-        loading_window.show()
-        QApplication.processEvents() ##### 문제되려남........
-
+        '''
+        로딩창 실행 코드인데 잠시 주석처리 해두었습니다!
+        '''
         id_filter = {'type': 'HumanUser', 'id': user_id}
-        tasks = self.sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
+        tasks = sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
         total_tasks = len(tasks)
         print(f"할당된 태스크 정보를 가져오는 중입니다 ... 총 {total_tasks}개")
+
+        # self.task_thread = TaskThread(tasks, total_tasks)
+        # self.task_thread.progress_signal.connect(self.loading_window.set_loading_text)  # 로딩창 업데이트
+        # print("Thread Started")
+        # self.task_thread.start()
 
         for i, task in enumerate(tasks, start=1) :
             progress_text = (f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
             print (progress_text)
-
-            loading_window.set_loading_text(progress_text)
-            QApplication.processEvents() ##### 문제되려남........
+            # self.task_thread.progress_signal.emit(progress_text)
 
             current_task_id = task['id']
             proj_name = task['project']['name']
@@ -103,6 +143,7 @@ class TaskInfo(Shotgrid) :
             step = task['step']['name']
 
             self.task_dict[current_task_id] = {}
+            self.task_dict[current_task_id]['assignee_id'] = user_id
             self.task_dict[current_task_id]['proj_id'] = proj_id
             self.task_dict[current_task_id]['proj_name']=proj_name
             self.task_dict[current_task_id]['content']=task_name
@@ -125,11 +166,11 @@ class TaskInfo(Shotgrid) :
                 fields = ["id", "code", "description", "published_file_type", "entity"]
                 filters = [["task", "is", {"type": "Task", "id": prev_task_id}]]
 
-                published_file = self.sg.find_one("PublishedFile", filters, fields)
+                published_file = sg.find_one("PublishedFile", filters, fields)
                 comment = published_file.get('description', 'No Description')
 
                 # ShotGrid에서 Previous Task data 가져오기
-                prev_task_data = self.sg.find_one(
+                prev_task_data = sg.find_one(
                                                 "Task", 
                                                 [["id", "is", prev_task_id]], 
                                                 ["project","content", "entity","step", "task_assignees","task_reviewers", "sg_status_list"]
@@ -139,11 +180,11 @@ class TaskInfo(Shotgrid) :
                 entity_type = prev_task_data['entity']['type']
                 entity_id = prev_task_data['entity']['id']
                 if entity_type == "Shot":
-                    entity_data = self.sg.find_one("Shot", [["id", "is", entity_id]], ["sg_sequence"])
+                    entity_data = sg.find_one("Shot", [["id", "is", entity_id]], ["sg_sequence"])
                     prev_task_category = entity_data.get("sg_sequence", {}).get("name", "No Sequence")
 
                 elif entity_type == "Asset":
-                    entity_data = self.sg.find_one("Asset", [["id", "is", entity_id]], ["sg_asset_type"])
+                    entity_data = sg.find_one("Asset", [["id", "is", entity_id]], ["sg_asset_type"])
                     prev_task_category = entity_data.get("sg_asset_type", "No Asset Type")
                 
                 prev_task_name = prev_task_data['entity'].get('name') or prev_task_data['entity'].get('name')
@@ -181,18 +222,19 @@ class TaskInfo(Shotgrid) :
                 self.prev_task_dict[prev_task_id]["reviewers"] = "None"
                 self.prev_task_dict[prev_task_id]["status"] = "None"
                 self.prev_task_dict[prev_task_id]["comment"] = "None"
+
             
     def branch_entity_type(self, entity_type, task_id, entity_id) :
 
         if entity_type == "Shot" :
-            seq_contents = self.sg.find("Shot", [["id", "is", entity_id]], ["tasks", "sg_sequence"])
+            seq_contents = sg.find("Shot", [["id", "is", entity_id]], ["tasks", "sg_sequence"])
             
             seq_name = seq_contents[0]['sg_sequence']['name']
             self.task_dict[task_id]['entity_type'] = "seq"
             self.task_dict[task_id]['entity_parent'] = seq_name
             
         elif entity_type == "Asset" :
-            asset_contents = self.sg.find("Asset", [["id", "is", entity_id]], ["tasks", "sg_asset_type"])
+            asset_contents = sg.find("Asset", [["id", "is", entity_id]], ["tasks", "sg_asset_type"])
 
             asset_category_name = asset_contents[0]['sg_asset_type']
             self.task_dict[task_id]['entity_type'] = "assets"
@@ -227,7 +269,7 @@ class TaskInfo(Shotgrid) :
         fields = ["id", "content", "step", "sg_status_list", "task_assignees"]
 
         # ShotGrid API에서 태스크 조회
-        tasks = self.sg.find("Task", filters, fields)
+        tasks = sg.find("Task", filters, fields)
 
         for task in tasks:
             task_assignees = " ,".join([assignee['name'] for assignee in task['task_assignees']])
@@ -268,7 +310,7 @@ class TaskInfo(Shotgrid) :
                     return prev_task_id
         return None
 
-    #### asset 일 시 {5828: {'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827}
+    # asset 일 시 {5828: {'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827}
     def on_click_task(self, id) : # 특정 태스크의 아이디에 해당하는 내부 정보들을 딕트의 형식으로 리턴
         current_task_id = id
         current_dict = {}
@@ -292,43 +334,13 @@ class TaskInfo(Shotgrid) :
         prev_task_dict["comment"] = prev_task['comment']
         return prev_task_dict, current_dict
 
-class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠㅠ
-    # _instance = None
-
-    # def __new__(cls, id_dict=None) :
-    #     if not cls._instance:
-    #         cls._instance = super().__new__(cls)
-    #         cls._instance._id_dict = id_dict # 초기화는 여기서 수행
-
-    #         cls._id = None
-    #         cls._content = None
-    #         cls._proj_id = None
-    #         cls._project_name = None
-    #         cls._entity_id = None
-    #         cls._entity_type = None
-    #         cls._entity_name = None
-    #         cls._entity_parent = None
-    #         cls._step = None
-    #         cls._root_path = None
-
-    #     return cls._instance
-    
-    # def initialize(self, id_dict):  # 명시적으로 초기화하는 함수 추가
-    #     if id_dict:
-    #         self.id = id_dict.get('id', None)
-    #         self.content = id_dict.get('content', None)
-    #         self.proj_id = id_dict.get('proj_id', None)
-    #         self.project_name = id_dict.get('proj_name', None)
-    #         self.entity_id = id_dict.get('entity_id', None)
-    #         self.entity_type = id_dict.get('entity_type', None)
-    #         self.entity_name = id_dict.get('entity_name', None)
-    #         self.entity_parent = id_dict.get('entity_parent', None)
-    #         self.step = id_dict('step', None)
-    #         self.root_path = None
+class ClickedTask:
 
     def __init__(self, id_dict):
         #{'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827, 'id': 5828}
+        self.assignee_id = id_dict["assignee_id"]
         self.id = id_dict["id"]
+        self.assignee_id = id_dict["assignee_id"]
         self.content = id_dict["content"]
         self.proj_id = id_dict["proj_id"]
         self.project_name = id_dict["proj_name"]
@@ -337,10 +349,14 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
         self.entity_name = id_dict["entity_name"]
         self.entity_parent = id_dict['entity_parent']
         self.step = id_dict['step'].lower()
-        self.root_path = "/nas/eval/show"
+        self.root_path = f"{root_path}/show"
 
     def __repr__(self):
         return f"ClickedTask(id={self.id}, project_id={self.proj_id}, project_name={self.project_name}, entity_id = {self.entity_id}, entity_type = {self.entity_type}, entity_parent ={self.entity_parent}, step={self.step})"
+    
+    def set_base_path(self):
+        base_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}"
+        return base_path
     
     def set_shallow_path(self):
         shallow_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}"
@@ -360,12 +376,12 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
         #full_path = f"{deep_path}/{self.set_file_name()}"
         if not os.path.exists(deep_path) :
             full_path = f"{deep_path}/{self.set_file_name()}"
-            data_list.append(["/nas/eval/elements/null.png", "No Dir No File", "", full_path])
+            data_list.append([f"{root_path}/elements/null.png", "No Dir No File", "", full_path])
         else : 
             data_list = self.set_file_list(deep_path)
             full_path = f"{deep_path}/{self.set_file_name()}"
             if len(data_list) == 0 :
-                data_list.append(["/nas/eval/elements/null.png", "No File", "", full_path])
+                data_list.append([f"{root_path}/elements/null.png", "No File", "", full_path])
 
         return data_list
     
@@ -378,9 +394,9 @@ class ClickedTask: ###################### 싱글톤의 사용? 그게뭐지..ㅠ
             else:
                 ext = ''
             if ext == "usd" :
-                ext_image = "/nas/eval/elements/usd_logo"
+                ext_image = f"{root_path}/elements/usd_logo"
             elif ext in ["ma","mb"] :
-                ext_image = "/nas/eval/elements/maya_logo"
+                ext_image = f"{root_path}/elements/maya_logo"
             file_path = os.path.join(path, file)
             last_time = os.path.getmtime(file_path)
             last_time_str = time.strftime('%m/%d %H:%M:%S', time.localtime(last_time))
@@ -407,7 +423,7 @@ if __name__ == "__main__":
     task.get_user_task(user_id)
     prev_task_dict, current_dict = task.on_click_task(6192) 
 
-    c = ClickedTask(current_dict) ############### how to make clicked_task Object
+    c = ClickedTask(current_dict) # how to make clicked_task Object
 
     print(c.id, c.proj_id, c.entity_id, c.entity_type, c.entity_parent, c.step, c. root_path)
     shallow_path = c.set_shallow_path()

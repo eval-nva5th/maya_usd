@@ -1,7 +1,10 @@
-from PySide2.QtWidgets import QApplication
+try : 
+    from PySide2.QtWidgets import QApplication
+except Exception :
+    from PySide6.QtWidgets import QApplication
 
 import sys
-sys.path.append("/home/rapa/maya_usd/save_as")
+# sys.path.append("/home/rapa/maya_usd/save_as")
 
 import core
 import event
@@ -13,5 +16,5 @@ def run():
     # sys.exit(app.exec_())
     return save_dialog
 
-if __name__ == "__main__":
-    run()
+# if __name__ == "__main__":
+# run()

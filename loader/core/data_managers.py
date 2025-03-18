@@ -1,3 +1,6 @@
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
+
 # self.task_dict 순회 하면서 data 가공 후 add_task_to_table()
 
 def task_data(ui_instance, task_table):
@@ -26,7 +29,7 @@ def task_data(ui_instance, task_table):
         due_date = task_data['due_date']
         
 
-        thumb = f"/nas/eval/show/{proj_name}/{entity_type}/{entity_parent}/{entity_name}/{step}/pub/maya/data/{entity_name}_{step}_v001.jpg"
+        thumb = f"{root_path}/show/{proj_name}/{entity_type}/{entity_parent}/{entity_name}/{step}/pub/maya/data/{entity_name}_{step}_v001.jpg"
 
         for k, v in ui_instance.color_map.items() :
             if status == k :
@@ -52,12 +55,12 @@ def previous_data(ui_instance):
         """
         외부에서 데이터를 받아서 테이블에 추가하는 함수
         """
-        user_name = "No data"
-        play_blast = f"/home/rapa/다운로드/output1.mov" #mov파일경로 ### 여기에 null file path 넣기 
+        user_name = "NULL"
+        play_blast = f"{root_path}/elements/no_video.mp4" #mov파일경로 ### 여기에 null file path 넣기 
         status_text = "fin"
         for k, v in ui_instance.color_map.items() :
             if status_text == k :
                 status_color = v
-        comment_text = "나는 나와의 싸움에서 졌다. 하지만 이긴것도 나다\n-장순우-"
+        comment_text = "NULL"
         
         return ui_instance.previous_work_item(user_name, play_blast, status_color, status_text, comment_text)

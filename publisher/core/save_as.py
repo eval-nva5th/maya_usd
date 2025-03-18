@@ -1,9 +1,20 @@
 import os
 import re
 import maya.cmds as cmds
+<<<<<<< HEAD
 
 def save_as(project_name, asset_name, asset_type, dept):
     root_directory = '/nas/eval/show'
+=======
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
+
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
+
+def save_as(project_name, asset_name, asset_type, dept):
+    root_directory = f'{root_path}/show'
+>>>>>>> 5a6ae0e1741dd843f1d46a06403a97460a5dfad1
     asset_root_path = os.path.join(
     root_directory, project_name, "assets", asset_type, asset_name
     )
