@@ -105,7 +105,7 @@ class SaveAsDialog(QMainWindow):
         layout.addLayout(filetype_container)
         layout.addLayout(button_container)
         central_widget.setLayout(layout)
-    
+
     def center_window(self):
         screen_geometry = self.screen().geometry()  # 현재 창이 표시되는 화면의 전체 크기
         window_geometry = self.frameGeometry()  # 현재 창의 크기 정보

@@ -1,5 +1,5 @@
 import maya.cmds as cmds
-import os, re, shutil, subprocess
+import os, re, shutil, subprocess, time
 from publisher.core.encoding import EncodeProcess
 try :
     from PySide2.QtCore import QTimer
@@ -27,6 +27,9 @@ class PlayblastManager:
     def run_playblast(self):
         """플레이블라스트 실행"""
         self.setup()
+        output_file = f"{self.new_path}/playblast.mov"
+
+        print ("플레이 블라스트 시작~~~~~~~~~~~~~.")
         cmds.lookThru(self.camera_name) # 선택된 카메라 활성화
         cmds.select(clear=True) # 오브젝트 선택 해제
 
@@ -38,16 +41,10 @@ class PlayblastManager:
 
         print(f"저장될 파일 이름: {self.filename}")
 
-        # 저장 경로 확인 및 생성
-        if not os.path.exists(self.new_path):
-            os.makedirs(self.new_path)
-
         if self.camera_name:
             cmds.lookThru(self.camera_name)
         else:
             raise RuntimeError("카메라를 찾을 수 없어 플레이블라스트를 실행할 수 없습니다.")
-
-        output_file = f"{self.new_path}/playblast.mov"
 
         # 플레이블라스트 실행
         result = cmds.playblast(
@@ -73,10 +70,8 @@ class PlayblastManager:
 
         print(f"플레이블라스트 완료! 저장된 파일: {output_file}")
 
-        # 스크린샷 캡쳐 2개
-        versioned_jpg = f"{self.new_path}/{self.version_filename}.jpg"
+        # 스크린샷 캡쳐 1개
         master_jpg = f"{self.new_path}/{self.filename}.jpg"
-        self.capture_frame(self.start_frame, versioned_jpg)
         self.capture_frame(self.start_frame, master_jpg)
 
         if self.mode == "asset":
@@ -143,6 +138,7 @@ class PlayblastManager:
 
         version_match = re.search(r'(_v\d{3})$', filename)
         self.version = version_match.group(1) if version_match else ""  # 버전 정보만 저장
+        self.clean_version = self.version.lstrip("_")
 
         # 버전 정보 제거
         filename = re.sub(r'_v\d{3}$', '', filename)
@@ -252,7 +248,6 @@ class PlayblastManager:
         cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 10)  # 기존 5에서 10으로 확대
         cmds.setAttr(f"{camera_shape}.nearClipPlane", 0.01)  # 작은 오브젝트가 잘리지 않도록 설정
 
-
         cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 5)
 
         # Aim Constraint 추가 (삭제하지 않음)
@@ -294,7 +289,6 @@ class PlayblastManager:
         # 카메라 및 부모 제거
         camera_objects = cmds.ls(cameras=True)  # 씬 내 모든 카메라 가져오기
         camera_parents = cmds.listRelatives(camera_objects, parent=True) or []  # 카메라 부모 가져오기
-        
         # 라이트 및 부모 제거
         lights = cmds.ls(lights=True)  # 씬 내 모든 라이트 가져오기
         light_parents = cmds.listRelatives(lights, parent=True) or []  # 라이트 부모 가져오기
@@ -318,19 +312,24 @@ class PlayblastManager:
         print(f"찾은 에셋 리스트: {matched_assets}")
         return matched_assets[0]  # 첫 번째 에셋 반환
 
-    def save_playblast_files(self):
+    def save_playblast_files(self, version):
         """플레이블라스트 파일 저장 (MOV버전 포함)"""
         # 저장할 파일명 정리
         playblast_mov = f"{self.new_path}/playblast.mov"
-        versioned_mov = f"{self.new_path}/{self.version_filename}.mov"
+        versioned_mov = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.mov"
         master_mov = f"{self.new_path}/{self.filename}.mov"
         codec = playblast_mov[-3:]
 
+        print ("versioned_mov 저장경로오오오오오오오오오 ",versioned_mov)
+
         # 마스터 MOV 파일 저장
         encoder = EncodeProcess()
-        encoder.run(playblast_mov, master_mov, codec, self.entity_name, self.project_name, self.task_name, self.version, self.start_frame, self.end_frame)
+        encoder.run(playblast_mov, master_mov, codec, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
         #버전 포함 MOV 파일 저장 (슬레이트 추가)
-        encoder.run(playblast_mov, versioned_mov, codec, self.entity_name, self.project_name, self.task_name, self.version, self.start_frame, self.end_frame)
+        encoder.run(playblast_mov, versioned_mov, codec, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
+
+        versioned_jpg = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.jpg"
+        self.capture_frame(self.start_frame, versioned_jpg)
         print(f"저장 완료: {master_mov}, {versioned_mov}")
 
     def check_playblast_file(self, file_path):
@@ -340,6 +339,7 @@ class PlayblastManager:
                 self.file_checked = True
                 print(f"플레이블라스트 파일 확인됨! {file_path}")
                 self.save_playblast_files()
+            return
         else:
             print(f"플레이블라스트 파일 대기 중... {file_path}")
             QTimer.singleShot(500, lambda: self.check_playblast_file(file_path))  # 500ms 후 다시 체크

@@ -1,7 +1,9 @@
 try :
     from PySide2.QtWidgets import QApplication
+    from PySide2.QtCore import QThread, Signal, QMetaObject, Qt
 except Exception :
     from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QThread, Signal, QMetaObject, Qt
     
 from shotgun_api3 import Shotgun 
 
@@ -12,6 +14,40 @@ from shotgridapi import ShotgridAPI
 
 root_path = SystemPath().get_root_path()
 sg = ShotgridAPI().shotgrid_connector()
+
+class TaskInfoThread(QThread):
+    finished_signal = Signal(object)  # 리스트 형태로 TaskInfo 데이터 전달
+
+    def __init__(self, user_id):
+        super().__init__()
+        self.user_id = user_id  # user_id 저장
+        print(f"****** {self.user_id}")
+
+    def run(self):
+        task_info = TaskInfo()
+        print(f"쓰레드 클래스 내 타입 {type(task_info)}")
+        task_info.get_user_task(self.user_id)
+        print("A")
+        task_dict = task_info.get_task_dict()  # Task 데이터 가져오기
+        print(f"로딩 쓰레드에서 딕트 받아짐 !!!!!! {task_dict}")
+        self.finished_signal.emit(task_info)  # 완료 신호 전달 ######## 이게 문제같음
+        print ("테스크 데이터 가져오기 완룡!!!!!!!!!!!!!!!!!!!!!!!!")
+
+# class TaskThread(QThread):
+#     progress_signal = Signal(str)
+
+#     def run(self):
+#         """ 진행 상태를 실시간으로 업데이트 """
+#         for i, task in enumerate(self.tasks, start=1):
+#             progress_text = f"처리 중: {i}/{self.total_tasks} ({(i/self.total_tasks)*100:.2f}%) 완료"
+
+#             # UI 스레드에서 안전하게 실행
+#             QMetaObject.invokeMethod(self, "emit_progress", Qt.QueuedConnection, progress_text)
+
+#             self.msleep(50)  # 속도 조절
+
+#     def emit_progress(self, text):
+#         self.progress_signal.emit(text)
 
 class UserInfo : 
     def __init__(self) :
@@ -71,30 +107,29 @@ class UserInfo :
 
 class TaskInfo :
     def __init__(self):
+        self.task_thread = None
         self.task_dict = {}
         self.prev_task_dict = {}
 
     def get_user_task(self, user_id):
         #UserInfo에서 갖고온 id를 파라미터로 갖고와 그 아이디에 해당하는 태스크를 딕트 형식으로 저장
-
         '''
         로딩창 실행 코드인데 잠시 주석처리 해두었습니다!
         '''
-        # loading_window = LoadingDialog()
-        # loading_window.show()
-        # QApplication.processEvents() ##### 문제되려남........
-
         id_filter = {'type': 'HumanUser', 'id': user_id}
         tasks = sg.find("Task", [["task_assignees", "is", id_filter]], ["project", "content", "entity", "start_date", "due_date","sg_status_list", "step"])
         total_tasks = len(tasks)
         print(f"할당된 태스크 정보를 가져오는 중입니다 ... 총 {total_tasks}개")
 
+        # self.task_thread = TaskThread(tasks, total_tasks)
+        # self.task_thread.progress_signal.connect(self.loading_window.set_loading_text)  # 로딩창 업데이트
+        # print("Thread Started")
+        # self.task_thread.start()
+
         for i, task in enumerate(tasks, start=1) :
             progress_text = (f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
             print (progress_text)
-
-            # loading_window.set_loading_text(progress_text)
-            # QApplication.processEvents() ##### 문제되려남........
+            # self.task_thread.progress_signal.emit(progress_text)
 
             current_task_id = task['id']
             proj_name = task['project']['name']
@@ -188,6 +223,7 @@ class TaskInfo :
                 self.prev_task_dict[prev_task_id]["reviewers"] = "None"
                 self.prev_task_dict[prev_task_id]["status"] = "None"
                 self.prev_task_dict[prev_task_id]["comment"] = "None"
+
             
     def branch_entity_type(self, entity_type, task_id, entity_id) :
 

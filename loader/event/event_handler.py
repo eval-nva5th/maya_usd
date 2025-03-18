@@ -1,13 +1,12 @@
 try : 
-    from PySide2.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
+    from PySide2.QtWidgets import QApplication, QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
     from PySide2.QtGui import QPixmap, QPainter, QColor, Qt
 except Exception :
-    from PySide6.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
+    from PySide6.QtWidgets import QApplication, QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
     from PySide6.QtGui import QPixmap, QPainter, QColor, Qt
     
 import maya.cmds as cmds
 import maya.utils as mu
-
 import os, sys
 from loader.shotgrid_user_task import ClickedTask
 from loader.event.custom_dialog import CustomDialog
@@ -16,6 +15,10 @@ from loader.ui.loader_ui import UI as loaderUIClass
 from loader.core.add_new_task import *
 from systempath import SystemPath
 from shotgridapi import ShotgridAPI
+
+from loader.ui.loading_ui import LoadingDialog
+from loader.shotgrid_user_task import TaskInfoThread
+# from loader.event.event_handler import LoaderEvent
 
 root_path = SystemPath().get_root_path()
 sg = ShotgridAPI().shotgrid_connector()
@@ -41,16 +44,31 @@ class LoaderEvent :
                 popup.setText("아이디 또는 이메일이 일치하지 않습니다")
                 popup.exec()
 
-            else: # 로그인 성공!
+            # else: # 로그인 성공!
+        #     ui_instance.close()
+        #     main_window = loader_ui.UI()
+        #     main_window.user = user
+        #     main_window.user_name = name
+        #     main_window.input_name = name
+        #     main_window.setFixedSize(1100, 800)
+        #     main_window.setCentralWidget(main_window.setup_layout()) # 로그인 창을 메인화면으로 변경
+        #     main_window.center_window()
+        #     main_window.show()
+
+            else:  # 로그인 성공!
                 ui_instance.close()
-                ui_loader = loaderUIClass()
-                ui_loader.user = user
-                ui_loader.user_name = name
-                ui_loader.input_name = name
-                ui_loader.setFixedSize(1100, 800)
-                ui_loader.setCentralWidget(ui_loader.setup_layout()) # 로그인 창을 메인화면으로 변경
-                ui_loader.center_window()
-                ui_loader.show()
+
+                # 로딩창 먼저 띄우기
+                ui_instance.loading_window = LoadingDialog()
+                ui_instance.loading_window.show()
+                QApplication.processEvents()  # UI 즉시 업데이트
+
+                ui_instance.task_thread = TaskInfoThread(user.id)
+                ui_instance.task_thread.start()
+                print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                ui_instance.task_thread.finished_signal.connect(
+                    lambda task_info: LoaderEvent.show_loader_ui(user, name, ui_instance.loading_window, task_info)
+                )
 
         else: # 이름과 이메일에 값이 없을 때
             popup = QMessageBox()
@@ -58,6 +76,26 @@ class LoaderEvent :
             popup.setWindowTitle("Failure")
             popup.setText("이름과 이메일을 입력해주세요")
             popup.exec()
+            
+    def show_loader_ui(user, name, loading_window, task_info):
+        """
+        로딩이 끝나면 로더 UI 실행
+        """
+        print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~qqqq")
+        loader_window = loaderUIClass(task_info)
+        loader_window.user = user
+        loader_window.user_name = name
+        loader_window.input_name = name
+        loader_window.setFixedSize(1100, 800)
+        loader_window.setCentralWidget(loader_window.setup_layout())
+        loader_window.center_window()
+
+        # TaskInfo 설정
+        #loader_window.set_task_info(task_info)
+        # 로딩창 닫기
+        loading_window.close()
+        # 로더 UI 실행
+        loader_window.show()
             
     @staticmethod
     def on_cell_clicked(ui_instance, row, _):
@@ -84,16 +122,15 @@ class LoaderEvent :
             pass  # 연결된 핸들러가 없을 경우 예외 발생할 수 있음, 무시해도 됨
         
         ui_instance.work_table.cellDoubleClicked.connect(lambda row, col: LoaderEvent.on_work_cell_clicked(ui_instance,ui_instance.work_table, row, col, ct, work_path))
-
+        
     @staticmethod
     def update_pub_table(ui_instance, pub_list):
-
         ui_instance.pub_table.setRowCount(0)
-
+        
         for file_info in pub_list:
             # Example of file_info: ["/nas/eval/elements/null.png", "Click for new dir and file", "", path]
             LoaderEvent.add_file_to_table(ui_instance.pub_table, file_info)
-
+            
     def update_work_table(ui_instance, work_list):
 
         ui_instance.work_table.setRowCount(0)  # Clear existing rows

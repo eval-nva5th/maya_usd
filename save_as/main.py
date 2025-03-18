@@ -12,5 +12,5 @@ def run():
     # sys.exit(app.exec_())
     return save_dialog
 
-if __name__ == "__main__":
-    run()
+# if __name__ == "__main__":
+# run()

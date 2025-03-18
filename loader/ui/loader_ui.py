@@ -21,17 +21,17 @@ from systempath import SystemPath
 root_path = SystemPath().get_root_path()
 
 class UI(QMainWindow):
-    def __init__(self):        
+    def __init__(self, task_info):
+        super().__init__()        
+        
         self.user = UserInfo()
+        self.task_info = task_info
+        print(f"ui 클래스 내 {type(self.task_info)}")
         self.user_name = ""
-        self.task_info = TaskInfo()
         self.prefix_path = f"{root_path}/show"
-
         self.input_name = ""
-
         self.task_data_dict = []
 
-        super().__init__()
         self.setWindowTitle("EVAL LOADER")
         self.center_window()
 

@@ -5,6 +5,7 @@ except Exception :
 from publisher.ui.publisher_ui import PublisherDialog
 import sys
 
+
 def run():
     #app = QApplication()
     save_dialog = PublisherDialog()

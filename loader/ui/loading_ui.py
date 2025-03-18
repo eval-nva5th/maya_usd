@@ -1,7 +1,7 @@
 
 try :
-    from PySide2.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
-    from PySide2.QtCore import Qt, QTimer
+    from PySide2.QtWidgets import QDialog, QVBoxLayout, QLabel
+    from PySide2.QtCore import Qt, QTimer, QMetaObject
 except Exception :
     from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
     from PySide6.QtCore import Qt, QTimer
@@ -10,15 +10,10 @@ from loader.core.video_player import VideoPlayer
 from systempath import SystemPath
 root_path = SystemPath().get_root_path()
 
-try:
-    import maya.utils
-    IN_MAYA = True
-except ImportError:
-    IN_MAYA = False  # Maya가 아닌 환경에서는 False로 설정
-
 class LoadingDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+        print ("로딩중")
         self.setWindowTitle("Loading...")
         self.setModal(True)
         self.setFixedSize(200, 200)
@@ -38,15 +33,8 @@ class LoadingDialog(QDialog):
 
         self.setLayout(layout)
 
-    def set_loading_text(self, text):
-
-        if IN_MAYA:
-            QTimer.singleShot(0, lambda: self.loading_text.clear())
-            QTimer.singleShot(0, lambda: self.loading_text.setText(text))
-            QTimer.singleShot(0, lambda: self.loading_text.repaint())
-            QTimer.singleShot(0, lambda: self.loading_text.show())  # Maya에서 강제 UI 갱신
-        else:
-            self.loading_text.clear()
-            self.loading_text.setText(text)
-            self.loading_text.repaint()
-            self.loading_text.show()
+    # def set_loading_text(self, text):
+    #     QTimer.singleShot(0, lambda: self.loading_text.clear())
+    #     QTimer.singleShot(0, lambda: self.loading_text.setText(text))
+    #     QTimer.singleShot(0, lambda: self.loading_text.repaint())
+    #     QTimer.singleShot(0, lambda: self.loading_text.show())  # Maya에서 강제 UI 갱신

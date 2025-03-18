@@ -2,21 +2,26 @@ try :
     from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame, QToolButton
     from PySide2.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
     from PySide2.QtWidgets import QHeaderView, QAbstractItemView
+    from PySide2.QtCore import QThread, Signal
     from PySide2.QtCore import Qt
     from shiboken2 import wrapInstance
 except Exception :
     from PySide6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame, QToolButton
     from PySide6.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
+    from PySide6.QtCore import QThread, Signal
     from PySide6.QtCore import Qt
     from shiboken6 import wrapInstance
     
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
-import requests
+import requests, time
+
 from widget.event.widget_event_handler import clicked_get_asset_btn
 from save_as.main import run as save_as_run
 from publisher.main import run as publish_run
+from publisher.ui.publisher_ui import PublisherDialog
+from publisher.core.play_blast import PlayblastManager
 
 import os
 import sys
@@ -42,6 +47,7 @@ class CustomUI(QWidget):
             self.path=path
         
         super().__init__()
+        self.publisher_dialog = PublisherDialog
         print("*"*30)
         self.setFixedWidth(350)
         print("여기서부터 custom UI 생성을 드가자")
@@ -136,7 +142,6 @@ class CustomUI(QWidget):
             thumb_label = QLabel(self)
             thumb_label.setFixedSize(30, 30)
             thumb_label.setScaledContents(True)
-        
             pixmap = QPixmap()
             image_data = requests.get(item[3]).content if item[3] else None # url 이미지 유효성 확인. 아니면 None 리턴
 
@@ -241,6 +246,7 @@ class CustomUI(QWidget):
 
         self.button1.clicked.connect(self.on_click_saveas)
         self.button2.clicked.connect(self.on_click_publish)
+        # self.button2.clicked.connect(self.show_publish_ui)
 
     def on_toggle(self, checked):
         if checked :
@@ -395,7 +401,84 @@ class CustomUI(QWidget):
         save_as_run()
 
     def on_click_publish(self):
-        publish_run()
+        print ("위젯 퍼블리쉬 버튼이 눌리고 있음")
+
+        file_path = cmds.file(q=True, sceneName=True)
+        file_name_with_ext = os.path.basename(file_path)
+        file_name, _ = os.path.splitext(file_name_with_ext)
+
+        print ("플레이 블라스트 실행")
+        output_file = PlayblastManager(file_path, file_name).run_playblast()
+        print ("생성된 파일", output_file)
+
+        print ("생성되었는지 안되었는지 파일 확인 중")
+        self.worker = PlayblastChecker(output_file)
+        self.worker.file_found.connect(lambda: self.show_publish_ui(output_file))
+        # self.worker.file_found.connect(lambda: self.on_playblast_complete(output_file))
+        self.worker.start()
+        print ("생성완룡?")
+
+    def show_publish_ui(self, video_path):
+        """ Playblast 완료 후 `PublisherDialog` 띄우기 """
+        print(f"Playblast 완료! 파일 경로: {video_path}")
+        self.publish_dialog = PublisherDialog(video_path)  # 파일 경로를 전달
+        self.publish_dialog.show()
+
+class PlayblastChecker(QThread): # 플레이 블라스트 체크 클래스.
+    file_found = Signal(str)
+
+    def __init__(self, file_path):
+        super().__init__()
+        self.output_file = file_path
+    def run(self):
+        while not os.path.exists(self.output_file):
+            time.sleep(0.5) # 0.5초마다 확인
+            # QtCore.QThread.msleep(500)  # 0.5초마다 확인
+
+        self.file_found.emit(self.output_file)
+
+class PublishDialog(QDialog):
+    def __init__(self, parent=None):
+        super(PublishDialog, self).__init__(parent)
+        
+        self.setWindowTitle("Publish")
+        
+        # Create Labels and LineEdits for Publish
+        self.label1 = QLabel("Publish Name 1:")
+        self.line_edit1 = QLineEdit()
+        
+        self.label2 = QLabel("Publish Name 2:")
+        self.line_edit2 = QLineEdit()
+
+        # Button
+        self.publish_button = QPushButton("Publish")
+        self.cancel_button = QPushButton("Cancel")
+        
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(self.label1)
+        layout.addWidget(self.line_edit1)
+        layout.addWidget(self.label2)
+        layout.addWidget(self.line_edit2)
+        
+        # Button layout
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.publish_button)
+        button_layout.addWidget(self.cancel_button)
+        
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+        # Connect buttons to actions
+        self.publish_button.clicked.connect(self.publish)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def publish(self):
+        """Handle publish button action."""
+        name1 = self.line_edit1.text()
+        name2 = self.line_edit2.text()
+        print(f"Publish - Name 1: {name1}, Name 2: {name2}")
+        self.accept()  # 다이얼로그 닫기
 
 def add_custom_ui_to_tab(path, ct=None):
     workspace_control_name = "CustomTabUIWorkspaceControl"

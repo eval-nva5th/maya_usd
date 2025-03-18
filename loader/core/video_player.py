@@ -8,12 +8,7 @@ except Exception :
     from PySide6.QtGui import QPixmap, QImage
     
 import cv2
-
-try:
-    import maya.utils
-    IN_MAYA = True
-except ImportError:
-    IN_MAYA = False  # Maya가 아닌 환경에서는 False로 설정
+import maya.utils
 
 class VideoThread(QThread):
     """ 백그라운드에서 비디오 프레임을 가져오는 스레드 """
@@ -38,11 +33,7 @@ class VideoThread(QThread):
             bytes_per_line = ch * w
             q_img = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(q_img)
-
-            if IN_MAYA:
-                maya.utils.executeDeferred(lambda: self.frame_signal.emit(pixmap))  # executeDeferred 유지
-            else:
-                self.frame_signal.emit(pixmap)
+            maya.utils.executeDeferred(lambda: self.frame_signal.emit(pixmap))  # executeDeferred 유지
 
             self.msleep(33)  # 30FPS로 유지
 
@@ -66,10 +57,9 @@ class VideoPlayer(QLabel):
         self.video_thread.start()
 
         # Maya에서 UI 업데이트 속도를 맞추기 위해 QTimer 사용
-        if IN_MAYA:
-            self.timer = QTimer(self)
-            self.timer.timeout.connect(self.force_update)
-            self.timer.start(33)  # Maya 이벤트 루프와 동기화
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.force_update)
+        self.timer.start(33)  # Maya 이벤트 루프와 동기화
 
     def update_frame(self, pixmap):
         """ 메인 스레드에서 비디오 프레임 업데이트 """
