@@ -2,21 +2,19 @@ from shotgun_api3 import Shotgun
 import os
 import sys
 import socket
-#import maya.cmds as cmds
+import maya.cmds as cmds
 from systempath import DefaultConfig
 
 default_config = DefaultConfig()
 sg = default_config.shotgrid_connector()
 
 maya_usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../loader"))
-print(f"maya_usd 경로: {maya_usd_path}")
 sys.path.append(maya_usd_path)
 
 from loader.shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
 
 class PublishManager:
     def __init__(self):
-
         self.clicked_task = clicked_task
         self.project_id = clicked_task.proj_id
         self.task_id = clicked_task.id
@@ -32,6 +30,7 @@ class PublishManager:
     def get_entity_type(self, entity_type):
         return "Shot" if entity_type == "seq" else "Asset"
     
+    # 자신의 내부망 주소 get
     def get_internal_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -43,16 +42,14 @@ class PublishManager:
             s.close()
         return internal_ip
     
+    # ip로 Shotgrid HumanUser find
     def get_assignee(self):
-        # hostname = socket.gethostname()
-        # internal_ip = socket.gethostbyname(hostname)
         internal_ip = self.get_internal_ip()
         last_ip = int(internal_ip.split(".")[-1])
         return sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
     
     def set_file_path(self,file_path):
-        # file_path = cmds.file(q=True, sn=True)
-        #file_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/scenes/bike_model_v001.usd"
+        # file_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/scenes/bike_model_v001.usd"
         self.file_path = file_path
 
     def set_file_name(self, file_path):
@@ -90,6 +87,7 @@ class PublishManager:
         }
 
         published_file = sg.create("PublishedFile", published_file_data)
+        print(f"Published File successfully created!")
         print(published_file)
         return published_file
 
@@ -105,10 +103,13 @@ class PublishManager:
         }
         created_version = sg.create("Version", version_data)
         sg.upload("Version", created_version["id"], self.mov_path, field_name="sg_uploaded_movie")
+        print(f"Version successfully created")
+        print(created_version)
         return created_version
     
     def link_version_to_published_file(self, pub_id, version_id):
         sg.update("PublishedFile", pub_id, {"version":{"type":"Version", "id":version_id}})
+        print(f"Created Version : {created_version}\nLinked to\nPublishedFile : {published_file}")
         
 
 if __name__ == "__main__":
@@ -174,5 +175,3 @@ if __name__ == "__main__":
     created_version = publish_manager.create_versions()
     published_file = publish_manager.create_published_file()
     publish_manager.link_version_to_published_file(published_file["id"], created_version["id"])
-    
-
