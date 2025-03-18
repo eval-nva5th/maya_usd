@@ -69,10 +69,9 @@ class PlayblastManager:
             raise RuntimeError("플레이블라스트 실행 실패!")
 
         print(f"플레이블라스트 완료! 저장된 파일: {output_file}")
-        # 스크린샷 캡쳐 2개
-        versioned_jpg = f"{self.new_path}/{self.version_filename}.jpg"
+
+        # 스크린샷 캡쳐 1개
         master_jpg = f"{self.new_path}/{self.filename}.jpg"
-        self.capture_frame(self.start_frame, versioned_jpg)
         self.capture_frame(self.start_frame, master_jpg)
 
         if self.mode == "asset":
@@ -249,7 +248,6 @@ class PlayblastManager:
         cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 10)  # 기존 5에서 10으로 확대
         cmds.setAttr(f"{camera_shape}.nearClipPlane", 0.01)  # 작은 오브젝트가 잘리지 않도록 설정
 
-
         cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 5)
 
         # Aim Constraint 추가 (삭제하지 않음)
@@ -314,19 +312,24 @@ class PlayblastManager:
         print(f"찾은 에셋 리스트: {matched_assets}")
         return matched_assets[0]  # 첫 번째 에셋 반환
 
-    def save_playblast_files(self):
+    def save_playblast_files(self, version):
         """플레이블라스트 파일 저장 (MOV버전 포함)"""
         # 저장할 파일명 정리
         playblast_mov = f"{self.new_path}/playblast.mov"
-        versioned_mov = f"{self.new_path}/{self.version_filename}.mov"
+        versioned_mov = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.mov"
         master_mov = f"{self.new_path}/{self.filename}.mov"
         codec = playblast_mov[-3:]
 
+        print ("versioned_mov 저장경로오오오오오오오오오 ",versioned_mov)
+
         # 마스터 MOV 파일 저장
         encoder = EncodeProcess()
-        encoder.run(playblast_mov, master_mov, codec, self.entity_name, self.project_name, self.task_name, self.clean_version, self.start_frame, self.end_frame)
+        encoder.run(playblast_mov, master_mov, codec, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
         #버전 포함 MOV 파일 저장 (슬레이트 추가)
-        encoder.run(playblast_mov, versioned_mov, codec, self.entity_name, self.project_name, self.task_name, self.clean_version, self.start_frame, self.end_frame)
+        encoder.run(playblast_mov, versioned_mov, codec, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
+
+        versioned_jpg = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.jpg"
+        self.capture_frame(self.start_frame, versioned_jpg)
         print(f"저장 완료: {master_mov}, {versioned_mov}")
 
     def check_playblast_file(self, file_path):
