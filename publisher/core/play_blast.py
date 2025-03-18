@@ -242,7 +242,7 @@ class PlayblastManager:
 
         # 카메라 위치 조정
         cmds.xform(camera_group, worldSpace=True, translation=[center_x, center_y, center_z])
-        cmds.xform(camera, relative=True, translation=[0, 0, distance])
+        cmds.xform(camera, relative=True, translation=[0, 0, distance * 1.1])
 
         # Near/Far Clipping Plane 조정 : 16:57 추가
         cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 10)  # 기존 5에서 10으로 확대

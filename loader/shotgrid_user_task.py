@@ -24,29 +24,10 @@ class TaskInfoThread(QThread):
 
     def run(self):
         task_info = TaskInfo()
-        print(f"쓰레드 클래스 내 타입 {type(task_info)}")
         task_info.get_user_task(self.user_id)
-        print("A")
         task_dict = task_info.get_task_dict()  # Task 데이터 가져오기
-        print(f"로딩 쓰레드에서 딕트 받아짐 !!!!!! {task_dict}")
         self.finished_signal.emit(task_info)  # 완료 신호 전달 ######## 이게 문제같음
-        print ("테스크 데이터 가져오기 완룡!!!!!!!!!!!!!!!!!!!!!!!!")
-
-# class TaskThread(QThread):
-#     progress_signal = Signal(str)
-
-#     def run(self):
-#         """ 진행 상태를 실시간으로 업데이트 """
-#         for i, task in enumerate(self.tasks, start=1):
-#             progress_text = f"처리 중: {i}/{self.total_tasks} ({(i/self.total_tasks)*100:.2f}%) 완료"
-
-#             # UI 스레드에서 안전하게 실행
-#             QMetaObject.invokeMethod(self, "emit_progress", Qt.QueuedConnection, progress_text)
-
-#             self.msleep(50)  # 속도 조절
-
-#     def emit_progress(self, text):
-#         self.progress_signal.emit(text)
+        print ("테스크 데이터 가져오기 완료")
 
 class UserInfo : 
     def __init__(self) :
@@ -120,15 +101,9 @@ class TaskInfo :
         total_tasks = len(tasks)
         print(f"할당된 태스크 정보를 가져오는 중입니다 ... 총 {total_tasks}개")
 
-        # self.task_thread = TaskThread(tasks, total_tasks)
-        # self.task_thread.progress_signal.connect(self.loading_window.set_loading_text)  # 로딩창 업데이트
-        # print("Thread Started")
-        # self.task_thread.start()
-
         for i, task in enumerate(tasks, start=1) :
             progress_text = (f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
             print (progress_text)
-            # self.task_thread.progress_signal.emit(progress_text)
 
             current_task_id = task['id']
             proj_name = task['project']['name']

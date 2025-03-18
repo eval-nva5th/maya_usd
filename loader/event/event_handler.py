@@ -42,17 +42,6 @@ def on_login_clicked(ui_instance):                        # 1번 실행중
             popup.setText("아이디 또는 이메일이 일치하지 않습니다")
             popup.exec()
 
-        # else: # 로그인 성공!
-        #     ui_instance.close()
-        #     main_window = loader_ui.UI()
-        #     main_window.user = user
-        #     main_window.user_name = name
-        #     main_window.input_name = name
-        #     main_window.setFixedSize(1100, 800)
-        #     main_window.setCentralWidget(main_window.setup_layout()) # 로그인 창을 메인화면으로 변경
-        #     main_window.center_window()
-        #     main_window.show()
-
         else:  # 로그인 성공!
             ui_instance.close()
 
@@ -63,7 +52,6 @@ def on_login_clicked(ui_instance):                        # 1번 실행중
 
             ui_instance.task_thread = TaskInfoThread(user.id)
             ui_instance.task_thread.start()
-            print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             ui_instance.task_thread.finished_signal.connect(
                 lambda task_info: show_loader_ui(user, name, ui_instance.loading_window, task_info)
             )
@@ -79,7 +67,6 @@ def show_loader_ui(user, name, loading_window, task_info):
     """
     로딩이 끝나면 로더 UI 실행
     """
-    print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~qqqq")
     loader_window = loader_ui.UI(task_info)
     loader_window.user = user
     loader_window.user_name = name
@@ -88,12 +75,8 @@ def show_loader_ui(user, name, loading_window, task_info):
     loader_window.setCentralWidget(loader_window.setup_layout())
     loader_window.center_window()
 
-    # TaskInfo 설정
-    #loader_window.set_task_info(task_info)
-    # 로딩창 닫기
-    loading_window.close()
-    # 로더 UI 실행
-    loader_window.show()
+    loading_window.close() # 로딩창 닫기
+    loader_window.show() # 로더 UI 실행
 
 def on_cell_clicked(ui_instance, row, _):
     if not ui_instance:
@@ -175,14 +158,14 @@ def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
     print(f"Clicked item: {item.text()} at row {row}, column {col}")
 
     if item.text() == "No Dir No File":
-       print(f"Open directory or create a new file at path")
-       print(ct.set_file_name())
-       is_dir, is_created = False, False
-       if not is_created :
-        dialog = CustomDialog(path, is_dir, is_created, ct)
-        dialog.exec()
-        # mainwindow 종료
-        ui_instance.close()
+        print(f"Open directory or create a new file at path")
+        print(ct.set_file_name())
+        is_dir, is_created = False, False
+        if not is_created :
+            dialog = CustomDialog(path, is_dir, is_created, ct)
+            dialog.exec()
+            # mainwindow 종료
+            ui_instance.close()
 
     elif item.text() ==  "No File" :
         print("o directory x file")
