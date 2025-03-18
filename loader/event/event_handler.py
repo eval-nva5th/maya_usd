@@ -5,7 +5,6 @@ except Exception :
     from PySide6.QtWidgets import QLabel, QMessageBox, QWidget, QHBoxLayout, QTableWidgetItem, QAbstractItemView
     from PySide6.QtGui import QPixmap, QPainter, QColor, Qt
     
-from functools import partial
 import maya.cmds as cmds
 import maya.utils as mu
 import os, sys
