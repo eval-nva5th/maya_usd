@@ -314,6 +314,7 @@ class ClickedTask:
         self.entity_name = id_dict["entity_name"]
         self.entity_parent = id_dict['entity_parent']
         self.step = id_dict['step'].lower()
+        self.status = id_dict['status']
         self.root_path = f"{root_path}/show"
 
     def __repr__(self):

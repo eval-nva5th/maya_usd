@@ -1,11 +1,11 @@
 try :
-    from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame
+    from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame, QToolButton
     from PySide2.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
     from PySide2.QtWidgets import QHeaderView, QAbstractItemView
     from PySide2.QtCore import Qt
     from shiboken2 import wrapInstance
 except Exception :
-    from PySide6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame
+    from PySide6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame, QToolButton
     from PySide6.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
     from PySide6.QtCore import Qt
@@ -57,6 +57,7 @@ class CustomUI(QWidget):
                 self.entity_name = ct.entity_name
                 self.entity_parent = ct.entity_parent
                 self.step = ct.step
+                self.status = ct.status
             else:
                 print("ct attribute issues")
         else:
@@ -89,15 +90,36 @@ class CustomUI(QWidget):
             parent_label = QLabel(f"Asset type : {self.entity_parent}")
             child_label = QLabel(f"Asset : {self.entity_name}")
 
-        if self.entity_type == "seq" :
+        elif self.entity_type == "seq" :
             self.entity_type = "Shot"
             parent_label = QLabel(f"Seq : {self.entity_parent}")
             child_label = QLabel(f"Shot : {self.entity_name}")
-
         else : 
             parent_label = QLabel(f"parent : {self.entity_parent}")
             child_label = QLabel(f"baby : {self.entity_name}")
-
+            
+        
+        # ct 받아오기가 필요함
+        self.toggle_button = QPushButton(self.status, self)
+        self.toggle_button.setStyleSheet("right-padding: 5px;")
+        self.toggle_button.setFixedSize(40, 20)
+        self.toggle_button.setCheckable(True)  # 버튼을 체크 가능하게 설정
+        self.toggle_button.setChecked(False)# 초기 상태를 False로 설정
+        
+        self.toggle_button_color()
+        
+        if self.status == "wtg" :
+            self.change_status = "ip"
+        elif self.status == "ip" :
+            self.change_status = "wtg"
+ 
+        # 토글 버튼이 눌리면 상태 변경
+        self.toggle_button.toggled.connect(self.on_toggle)
+        
+        pb_layout = QHBoxLayout()
+        pb_layout.addWidget(contentname_label)
+        pb_layout.addWidget(self.toggle_button)
+        
         h_line1 = QFrame() # 구분선1
         h_line1.setFrameShape(QFrame.HLine)
         h_line1.setFrameShadow(QFrame.Sunken)
@@ -112,7 +134,7 @@ class CustomUI(QWidget):
         
         for row, item in enumerate(colleague_list):
             thumb_label = QLabel(self)
-            thumb_label.setFixedSize(20, 20)
+            thumb_label.setFixedSize(30, 30)
             thumb_label.setScaledContents(True)
         
             pixmap = QPixmap()
@@ -129,12 +151,12 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
-            pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            #pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             
             #pixmap = pixmap.copy((pixmap.width()-20)//2, (pixmap.height()-20)//2, 20, 20)
             
-            #pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            pixmap = self.circular_pixmap(pixmap, 20)
+            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            pixmap = self.circular_pixmap(pixmap, 30)
 
             thumb_label.setPixmap(pixmap) 
             thumb_label.setStyleSheet('padding-left : 5px')
@@ -192,10 +214,10 @@ class CustomUI(QWidget):
         label_layout = QVBoxLayout()
         label_layout.addWidget(taskinfo_label)
         label_layout.addWidget(projectname_label)
-        label_layout.addWidget(contentname_label)
         label_layout.addWidget(step_label)
         label_layout.addWidget(parent_label)
         label_layout.addWidget(child_label)
+        label_layout.addLayout(pb_layout)
         label_layout.addWidget(h_line0)
         label_layout.addWidget(get_asset_label)
         label_layout.addWidget(get_asset_button)
@@ -220,6 +242,22 @@ class CustomUI(QWidget):
         self.button1.clicked.connect(self.on_click_saveas)
         self.button2.clicked.connect(self.on_click_publish)
 
+    def on_toggle(self, checked):
+        if checked :
+            self.toggle_button.setText(self.change_status)
+            sg.update("Task", self.id, {"sg_status_list": self.change_status})
+        else:
+            self.toggle_button.setText(self.status)
+            sg.update("Task", self.id, {"sg_status_list": self.status})
+            
+        self.toggle_button_color()
+    
+    def toggle_button_color(self) :
+        if self.toggle_button.text() == "wtg" :
+            self.toggle_button.setStyleSheet("color : skyblue;")
+        elif self.toggle_button.text() == "ip" :
+            self.toggle_button.setStyleSheet("color : pink;")
+    
     def circular_pixmap(self, pixmap, size):
         pixmap = pixmap.scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
 
@@ -335,6 +373,9 @@ class CustomUI(QWidget):
 
         return note_title, note_body, creator_kor_name, version_name, attachment_url
     
+    def on_click_statuschange(self) :
+        print("changechange")
+        
     def getClickedTaskObject(self, ct) :
         self.ct = ct
         return self.ct
