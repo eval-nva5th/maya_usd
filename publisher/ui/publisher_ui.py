@@ -16,11 +16,9 @@ except Exception :
 import sys, os, re
 import maya.cmds as cmds
 from publisher.core.play_blast import PlayblastManager
-# from publisher.event.event_handler import publish
-# from save_as.event.event_handler import open_file_browser, save_file_as, on_version_click
-from publisher.event.event_handler import save_file_as, on_version_click
+from publisher.event.event_handler import *
+from save_as.event.event_handler import open_file_browser, save_file_as, on_version_click
 from loader.core.video_player import VideoPlayer
-# from widget.ui.widget_ui import CustomUI
 
 class PublisherDialog(QMainWindow):
     def __init__(self, video_path):

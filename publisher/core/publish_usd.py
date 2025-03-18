@@ -35,7 +35,8 @@ class ModelExportUSD(USDExporter):
             "exportInstances": 0,
             "exportBlendShapes": 0,
             "exportSkels": "none",
-            "exportSkin": "none"
+            "exportSkin": "none",
+            "excludeExportTypes": ["Cameras", "Lights"],
         }
 
     def export(self):
@@ -51,20 +52,20 @@ class LookdevExportUSD(USDExporter):
         return{
             "selection": True,
             "defaultUSDFormat":"usda",
-            "rootPrimType": "Scope",
+            "defaultPrim" : f"{self.task_name}_{self.dept}",
+            "rootPrimType": "scope",
             "defaultMeshScheme": "catmullClark",
             "exportVisibility": 0,
-            "exportUVs": 0,
+            "exportUVs": 1,
             "exportDisplayColor": 0,
             "exportBlendShapes": 0,
             "exportMaterialCollections": 1,
             "exportAssignedMaterials":1,
-            "excludeExportTypes": ["Meshes"],
-            "convertMaterialsTo":["UsdPreviewSurface","MaterialX"],
+            "excludeExportTypes": ["Meshes", "Cameras", "Lights"],
+            "convertMaterialsTo":["UsdPreviewSurface", "MaterialX"],
             "exportInstances": 1,
             "exportSkels": "none",
-            "exportSkin": "none",
-            "materialsScopeName": f"{self.task_name}_{self.dept}"
+            "exportSkin": "none"
         }
 
     def export(self):
@@ -74,21 +75,22 @@ class LookdevExportUSD(USDExporter):
             **options
         )
 
-class LayoutExportUSD(USDExporter):
-    """layout export 시 필요한 옵션들"""
+class ShotExportUSD(USDExporter):
+    """shot 작업자들 export 시 필요한 옵션들"""
     def get_export_options(self):
         return{
             "selection": True,
             "defaultUSDFormat":"usda",
-            "rootPrimType": "Scope",
+            "rootPrimType": "scope",
             "defaultMeshScheme": "catmullClark",
             "exportVisibility": 1,
             "exportUVs": 1,
+            "exportLights": 1,
             "exportDisplayColor": 1,
             "exportBlendShapes": 1,
             "exportMaterialCollections": 1,
             "exportAssignedMaterials":1,
-            "convertMaterialsTo":["UsdPreviewSurface","MaterialX"],
+            "convertMaterialsTo":["UsdPreviewSurface", "MaterialX"],
             "exportInstances": 1,
             "exportSkels": "auto",
             "exportSkin": "auto",
@@ -97,35 +99,6 @@ class LayoutExportUSD(USDExporter):
                 cmds.playbackOptions(q=True, minTime=True),
                 cmds.playbackOptions(q=True, maxTime=True)
             ),
-            "frameStride":1.0
-        }
-    
-    def export(self):
-        options = self.get_export_options()
-        cmds.mayaUSDExport(
-            file=self.usd_publish_path,
-            **options
-        )
-
-class AnimationExportUSD(USDExporter):
-    def get_export_options(self):
-        return{
-            "selection": True,
-            "defaultUSDFormat":"usda",
-            "rootPrimType": "Scope",
-            "defaultMeshScheme": "catmullClark",
-            "exportVisibility": 1,
-            "exportUVs": 1,
-            "exportDisplayColor": 1,
-            "exportBlendShapes": 1,
-            "exportMaterialCollections": 1,
-            "exportAssignedMaterials":1,
-            "convertMaterialsTo":["UsdPreviewSurface","MaterialX"],
-            "exportInstances": 1,
-            "exportSkels": "auto",
-            "exportSkin": "auto",
-            "frameRange": (cmds.playbackOptions(q=True, minTime=True),
-                        cmds.playbackOptions(q=True, maxTime=True)),
             "frameStride":1.0
         }
 

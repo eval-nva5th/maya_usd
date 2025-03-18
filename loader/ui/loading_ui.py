@@ -4,8 +4,8 @@ try :
     from PySide2.QtCore import Qt, QTimer, QMetaObject
 except Exception :
     from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication
-    from PySide6.QtCore import Qt, QTimer, QMetaObject
-from shotgrid_user_task import UserInfo, TaskInfo
+    from PySide6.QtCore import Qt, QTimer
+    
 from loader.core.video_player import VideoPlayer
 from systempath import SystemPath
 root_path = SystemPath().get_root_path()
