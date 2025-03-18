@@ -4,7 +4,7 @@ except Exception :
     from PySide6.QtWidgets import QToolButton, QLineEdit, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
 import maya.cmds as cmds
 import os, sys
-from core.add_new_task import *
+from loader.core.add_new_task import UsdLoader
 
 class CustomDialog(QDialog):
     def __init__(self, path, is_dir, is_created, ct):
@@ -12,15 +12,12 @@ class CustomDialog(QDialog):
 
         self.is_dir = is_dir
         self.is_created = is_created
-        #self.ct = ct
         self.entity_type = ct.entity_type
         self.entity_name = ct.entity_name
         self.base_path = ct.set_base_path()
         self.file_name = ct.set_file_name()
-        self.project_name = ct.project_name()
-        self.shallow_path = ct.set_shallow_path()
+        self.project_name = ct.project_name
         self.dept = ct.step
-        # Set up the dialog layout
         # Create two LineEdits
         self.line_edit = QLineEdit(self)
         self.line_edit.setText(self.file_name)
@@ -78,8 +75,6 @@ class CustomDialog(QDialog):
     def on_click_create(self, path):
         self.file_name = self.line_edit.text()
         ext = self.switch.text()
-        # run_path = f"{path}/{self.file_name}{ext}"
-        # print(run_path)
 
         if self.is_dir :
             pass
@@ -88,17 +83,18 @@ class CustomDialog(QDialog):
             UsdLoader.create_folders(self.base_path, self.dept) 
             self.is_dir = True
         
-        if self.entity_type == "Asset" :
+        if self.entity_type == "assets" :
             UsdLoader.load_model_reference(self.base_path, self.dept, self.file_name, ext, self.entity_name)
             
-        elif self.entity_type == "Shot" :
+        elif self.entity_type == "seq" :
             UsdLoader.load_shot_reference(self.base_path, self.dept, self.file_name, ext, self.entity_name, self.project_name)
             
         else :
-            print("뭐임?")
+            print(f"SOMETHING WENT WRONG {self.entity_type}")
 
         self.dialog_flag = False # 필수
         self.accept() # 필수
+        
         ######## main window 창도 꺼져야함.
 
     def on_click_exit(self) :

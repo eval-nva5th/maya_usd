@@ -1,6 +1,6 @@
 import os, shutil, re
 import maya.cmds as cmds
-from publish_usd import LayoutExportUSD
+from publisher.core.publish_usd import LayoutExportUSD
 
 from systempath import SystemPath
 root_path = SystemPath().get_root_path()

@@ -6,8 +6,9 @@ except Exception :
     from PySide6.QtCore import QThread, Signal, QMetaObject, Qt
     
 from shotgun_api3 import Shotgun 
+
 import os, sys, time
-from ui import loading_ui
+from loader.ui.loading_ui import LoadingDialog
 from systempath import SystemPath
 from shotgridapi import ShotgridAPI
 
@@ -349,6 +350,7 @@ class ClickedTask:
         self.entity_name = id_dict["entity_name"]
         self.entity_parent = id_dict['entity_parent']
         self.step = id_dict['step'].lower()
+        self.status = id_dict['status']
         self.root_path = f"{root_path}/show"
 
     def __repr__(self):
@@ -411,8 +413,8 @@ if __name__ == "__main__":
     script_name = "sy_key"
     api_key = "vkcuovEbxhdoaqp9juqodux^x"
 
-    user = UserInfo(sg_url, script_name, api_key)
-    task = TaskInfo(sg_url, script_name, api_key)
+    user = UserInfo()
+    task = TaskInfo()
 
     email = "f8d783@kw.ac.kr" #"p2xch@naver.com" 
     name = "장순우"

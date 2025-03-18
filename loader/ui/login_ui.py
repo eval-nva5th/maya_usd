@@ -4,7 +4,7 @@ except Exception :
     from PySide6.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QApplication
 import maya.cmds as cmds
 
-from loader.event.event_handler import on_login_clicked
+from loader.event.event_handler import LoaderEvent
 
 class LoginWidget(QWidget):
     def __init__(self):
@@ -26,12 +26,12 @@ class LoginWidget(QWidget):
         # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
 
         # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작
-        self.email_input.returnPressed.connect(lambda:on_login_clicked(self))
-        self.name_input.returnPressed.connect(lambda:on_login_clicked(self))
+        self.email_input.returnPressed.connect(lambda:LoaderEvent.on_login_clicked(self))
+        self.name_input.returnPressed.connect(lambda:LoaderEvent.on_login_clicked(self))
 
         # 로그인 버튼
         self.login_btn = QPushButton("LOGIN")
-        self.login_btn.clicked.connect(lambda:on_login_clicked(self))
+        self.login_btn.clicked.connect(lambda:LoaderEvent.on_login_clicked(self))
 
         # 레이아웃 설정
         layout.addWidget(self.name_input)

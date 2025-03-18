@@ -1,7 +1,7 @@
-try: 
-    from PySide2.QtWidgets import QApplication
-except Exception :
-    from PySide6.QtWidgets import QApplication
+# try: 
+#     from PySide2.QtWidgets import QApplication
+# except Exception :
+#     from PySide6.QtWidgets import QApplication
 
 from loader.ui.login_ui import LoginWidget
 

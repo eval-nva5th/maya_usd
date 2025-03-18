@@ -2,10 +2,12 @@ import os
 import re
 import shutil
 import maya.cmds as cmds
+from publisher.core.publish_usd import ModelExportUSD
 from pxr import Usd
-from publish_usd import ModelExportUSD
+from systempath import SystemPath 
+root_path = SystemPath().get_root_path()
 
-root_directory = '/Volumes/TD_VFX/eval/show'
+root_directory = f'{root_path}/show'
 
 def model_publish(project_name, asset_name, asset_type, dept):
     """model publish 실행 함수"""

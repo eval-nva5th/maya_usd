@@ -35,12 +35,8 @@ class ModelExportUSD(USDExporter):
             "exportInstances": 0,
             "exportBlendShapes": 0,
             "exportSkels": "none",
-<<<<<<< HEAD
             "exportSkin": "none",
             "excludeExportTypes": ["Cameras", "Lights"],
-=======
-            "exportSkin": "none"
->>>>>>> 5a6ae0e1741dd843f1d46a06403a97460a5dfad1
         }
 
     def export(self):

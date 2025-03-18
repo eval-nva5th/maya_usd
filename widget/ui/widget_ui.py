@@ -1,12 +1,12 @@
 try :
-    from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame
+    from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame, QToolButton
     from PySide2.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
     from PySide2.QtWidgets import QHeaderView, QAbstractItemView
     from PySide2.QtCore import QThread, Signal
     from PySide2.QtCore import Qt
     from shiboken2 import wrapInstance
 except Exception :
-    from PySide6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame
+    from PySide6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame, QToolButton
     from PySide6.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
     from PySide6.QtCore import QThread, Signal
@@ -19,6 +19,7 @@ import requests, time
 
 from widget.event.widget_event_handler import clicked_get_asset_btn
 from save_as.main import run as save_as_run
+from publisher.main import run as publish_run
 from publisher.ui.publisher_ui import PublisherDialog
 from publisher.core.play_blast import PlayblastManager
 
@@ -31,7 +32,7 @@ from shotgridapi import ShotgridAPI
 root_path = SystemPath().get_root_path()
 sg = ShotgridAPI().shotgrid_connector()
 
-path = ""
+#path = ""
 
 def get_maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
@@ -62,6 +63,7 @@ class CustomUI(QWidget):
                 self.entity_name = ct.entity_name
                 self.entity_parent = ct.entity_parent
                 self.step = ct.step
+                self.status = ct.status
             else:
                 print("ct attribute issues")
         else:
@@ -82,26 +84,48 @@ class CustomUI(QWidget):
         h_line0 = QFrame() # 구분선0
         h_line0.setFrameShape(QFrame.HLine)
         h_line0.setFrameShadow(QFrame.Sunken)
-        get_asset_label = QLabel("[Get Assets]")
+        get_asset_label = QLabel("[ASSET LIBRARY]")
         get_asset_label.setStyleSheet("font-size: 11pt;padding-bottom: 5px;")
-        get_asset_button = QPushButton("Get Assets")
+        get_asset_button = QPushButton("GET ASSETS")
         get_asset_button.setMaximumWidth(320)
         get_asset_button.clicked.connect(clicked_get_asset_btn)
-
+        
+        print(f"*** {self.entity_type}")
         if self.entity_type == "assets" :
             self.entity_type = "Asset"
             parent_label = QLabel(f"Asset type : {self.entity_parent}")
             child_label = QLabel(f"Asset : {self.entity_name}")
 
-        if self.entity_type == "seq" :
+        elif self.entity_type == "seq" :
             self.entity_type = "Shot"
             parent_label = QLabel(f"Seq : {self.entity_parent}")
             child_label = QLabel(f"Shot : {self.entity_name}")
-
         else : 
             parent_label = QLabel(f"parent : {self.entity_parent}")
             child_label = QLabel(f"baby : {self.entity_name}")
-
+            
+        
+        # ct 받아오기가 필요함
+        self.toggle_button = QPushButton(self.status, self)
+        self.toggle_button.setStyleSheet("right-padding: 5px;")
+        self.toggle_button.setFixedSize(40, 20)
+        self.toggle_button.setCheckable(True)  # 버튼을 체크 가능하게 설정
+        self.toggle_button.setChecked(False)# 초기 상태를 False로 설정
+        
+        self.toggle_button_color()
+        
+        if self.status == "wtg" :
+            self.change_status = "ip"
+        elif self.status == "ip" :
+            self.change_status = "wtg"
+ 
+        # 토글 버튼이 눌리면 상태 변경
+        self.toggle_button.toggled.connect(self.on_toggle)
+        
+        pb_layout = QHBoxLayout()
+        pb_layout.addWidget(contentname_label)
+        pb_layout.addWidget(self.toggle_button)
+        
         h_line1 = QFrame() # 구분선1
         h_line1.setFrameShape(QFrame.HLine)
         h_line1.setFrameShadow(QFrame.Sunken)
@@ -116,7 +140,7 @@ class CustomUI(QWidget):
         
         for row, item in enumerate(colleague_list):
             thumb_label = QLabel(self)
-            thumb_label.setFixedSize(20, 20)
+            thumb_label.setFixedSize(30, 30)
             thumb_label.setScaledContents(True)
             pixmap = QPixmap()
             image_data = requests.get(item[3]).content if item[3] else None # url 이미지 유효성 확인. 아니면 None 리턴
@@ -132,13 +156,15 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
-            pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            pixmap = pixmap.copy((pixmap.width()-20)//2, (pixmap.height()-20)//2, 20, 20)
-            pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            pixmap = self.circular_pixmap(pixmap, 20)
+            #pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            
+            #pixmap = pixmap.copy((pixmap.width()-20)//2, (pixmap.height()-20)//2, 20, 20)
+            
+            pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            pixmap = self.circular_pixmap(pixmap, 30)
 
             thumb_label.setPixmap(pixmap) 
-            thumb_label.setStyleSheet('padding-left : 5px') #border-radius: 15px; border: white;
+            thumb_label.setStyleSheet('padding-left : 5px')
 
             text_label = QLabel(f"{str(item[0])} : {str(item[1])}")
 
@@ -149,23 +175,10 @@ class CustomUI(QWidget):
         h_line2.setFrameShape(QFrame.HLine)
         h_line2.setFrameShadow(QFrame.Sunken)
         
-        note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url = self.get_notes_infos()
+        note_title, note_body, creator_kor_name, version_name, attachment_url = self.get_notes_infos()
 
         noteinfo_label = QLabel("[RECENT NOTE]")
         noteinfo_label.setStyleSheet("font-size: 11pt;")
-
-        # notecreator_layout = QGridLayout()
-        # notecreator_layout.setSpacing(0)
-        # notecreator_layout.setContentsMargins(0, 0, 0, 0)
-
-        creatorthumb_label = QLabel()
-        pixmap1 = self.load_pixmap_from_url(creatorthumb_label, "human") 
-        pixmap1 = pixmap1.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        pixmap1 = pixmap1.copy((pixmap1.width()-30)//2, (pixmap1.height()-30)//2, 30, 30)
-        pixmap1= pixmap1.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        pixmap1 = self.circular_pixmap(pixmap1, 30)
-        creatorthumb_label.setPixmap(pixmap1)
-
         notedetail_layout = QVBoxLayout()
         creatorname_label = QLabel(f"Note from {creator_kor_name}")
         versionname_label = QLabel(f"version : {version_name}")
@@ -181,7 +194,7 @@ class CustomUI(QWidget):
         
         # 세 번째 줄 (100x100 QPixmap)
         noteimage_label = QLabel()
-        pixmap2 = self.load_pixmap_from_url(attachment_url, "note")
+        pixmap2 = self.load_pixmap_from_url(attachment_url)
         pixmap2 = pixmap2.scaled(320, 180, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         #noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
         noteimage_label.setPixmap(pixmap2)
@@ -206,10 +219,10 @@ class CustomUI(QWidget):
         label_layout = QVBoxLayout()
         label_layout.addWidget(taskinfo_label)
         label_layout.addWidget(projectname_label)
-        label_layout.addWidget(contentname_label)
         label_layout.addWidget(step_label)
         label_layout.addWidget(parent_label)
         label_layout.addWidget(child_label)
+        label_layout.addLayout(pb_layout)
         label_layout.addWidget(h_line0)
         label_layout.addWidget(get_asset_label)
         label_layout.addWidget(get_asset_button)
@@ -235,6 +248,22 @@ class CustomUI(QWidget):
         self.button2.clicked.connect(self.on_click_publish)
         # self.button2.clicked.connect(self.show_publish_ui)
 
+    def on_toggle(self, checked):
+        if checked :
+            self.toggle_button.setText(self.change_status)
+            sg.update("Task", self.id, {"sg_status_list": self.change_status})
+        else:
+            self.toggle_button.setText(self.status)
+            sg.update("Task", self.id, {"sg_status_list": self.status})
+            
+        self.toggle_button_color()
+    
+    def toggle_button_color(self) :
+        if self.toggle_button.text() == "wtg" :
+            self.toggle_button.setStyleSheet("color : skyblue;")
+        elif self.toggle_button.text() == "ip" :
+            self.toggle_button.setStyleSheet("color : pink;")
+    
     def circular_pixmap(self, pixmap, size):
         pixmap = pixmap.scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
 
@@ -251,7 +280,7 @@ class CustomUI(QWidget):
 
         return masked_pixmap
     
-    def load_pixmap_from_url(self, url, type):
+    def load_pixmap_from_url(self, url):
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -259,10 +288,11 @@ class CustomUI(QWidget):
             image.loadFromData(BytesIO(response.content).read())
             return image
         except Exception as e:
-            if type == "human" :
-                image = QPixmap(f"{root_path}/elements/no_assignee.png")
-            elif type == "note" :
-                image = QPixmap(f"{root_path}/elements/no_image.jpg")
+            image = QPixmap(f"{root_path}/elements/no_image.jpg")
+            # if type == "human" :
+            #     image = QPixmap(f"{root_path}/elements/no_assignee.png")
+            # elif type == "note" :
+            #     image = QPixmap(f"{root_path}/elements/no_image.jpg")
             return image
 
     def get_colleague_info(self) :
@@ -325,9 +355,8 @@ class CustomUI(QWidget):
             note_body = note['content']
             #creator_name = note['created_by']['name']
             creator_id = note['created_by']['id']
-            creator_info = sg.find_one("HumanUser", [["id", "is", creator_id]], ["sg_korean_name", "image"])
-            creator_kor_name = creator_info['sg_korean_name']
-            creator_thumb = creator_info['image']
+            creator_kor_name = sg.find_one("HumanUser", [["id", "is", creator_id]], ["sg_korean_name"])['sg_korean_name']
+            #creator_kor_name = creator_info['sg_korean_name']
             linked_infos = note['note_links']
             for link in linked_infos :
                 if link['type'] == 'Version' :
@@ -346,11 +375,13 @@ class CustomUI(QWidget):
             if attachment_data :
                 attachment_url = attachment_data['this_file']['url']
 
-
         #print(f"note id : {note_id}\nnote_title : {note_title}\nnote_body : {note_body}\ncreator_kor_name : {creator_kor_name}\nversion_name = {version_name}\ncreator_thumb = {creator_thumb}\nattachment_url : {attachment_url}")
 
-        return note_title, note_body, creator_kor_name, version_name, creator_thumb, attachment_url
+        return note_title, note_body, creator_kor_name, version_name, attachment_url
     
+    def on_click_statuschange(self) :
+        print("changechange")
+        
     def getClickedTaskObject(self, ct) :
         self.ct = ct
         return self.ct

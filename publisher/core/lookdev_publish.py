@@ -3,10 +3,12 @@ import os
 import re
 import shutil
 import maya.cmds as cmds
+from publisher.core.publish_usd import LookdevExportUSD
 from pxr import Usd, UsdShade
-from publish_usd import LookdevExportUSD
+from systempath import SystemPath
+root_path = SystemPath().get_root_path()
 
-root_directory = '/Volumes/TD_VFX/eval/show'
+root_directory = f'{root_path}/show'
 
 def lookdev_publish(project_name, asset_name, asset_type, dept):
     """lookdev publish 실행 함수"""
