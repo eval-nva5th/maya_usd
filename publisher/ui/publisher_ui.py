@@ -244,6 +244,8 @@ class PublisherDialog(QMainWindow):
         description_text = self.plain_text_edit.toPlainText().strip()
         usd_file_path = self.ct.set_shallow_path()
         usd_file_path = os.path.abspath(os.path.join(usd_file_path, "pub/usd"))
+        usd_file_path = usd_file_path.split("/show")[-1]
+        usd_file_path = f"/show{usd_file_path}"
         #mb_file_path = f"{local_path_text}/{file_name_text}"
         clean_name = re.sub(r"_v\d{3}$", "", file_name_text)
         usd_file_name = f"{clean_name}.usda"
@@ -256,7 +258,7 @@ class PublisherDialog(QMainWindow):
         print(f"usda 파일 이름 : {usd_file_name}")
 
         mov_name = f"{file_name_text}.mov"
-        local_path = self.ct.set_deep_path("pub", "data")
+        local_path = self.ct.set_deep_path("pub", "maya", "data")
         mov_path = os.path.abspath(os.path.join(local_path, mov_name))
         print(mov_path)
 
