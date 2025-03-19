@@ -3,18 +3,19 @@ import os
 import sys
 import socket
 import maya.cmds as cmds
-from systempath import DefaultConfig
 
-default_config = DefaultConfig()
-sg = default_config.shotgrid_connector()
-
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
 maya_usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../loader"))
 sys.path.append(maya_usd_path)
 
 from loader.shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
 
 class PublishManager:
-    def __init__(self):
+    def __init__(self,clicked_task):
+        print(f"여기는 PublishManager : {clicked_task}")
         self.clicked_task = clicked_task
         self.project_id = clicked_task.proj_id
         self.task_id = clicked_task.id
@@ -26,6 +27,22 @@ class PublishManager:
         self.description = ""
         self.thumbnail_path = ""
         self.mov_path = ""
+
+    def __repr__(self):
+        return (
+            f"PublishManager(\n"
+            f"  project_id={self.project_id},\n"
+            f"  task_id={self.task_id},\n"
+            f"  entity_id={self.entity_id},\n"
+            f"  entity_type={self.entity_type},\n"
+            f"  assignee={self.assignee},\n"
+            f"  file_name={self.file_name},\n"
+            f"  file_path={self.file_path},\n"
+            f"  description={self.description},\n"
+            f"  thumbnail_path={self.thumbnail_path},\n"
+            f"  mov_path={self.mov_path}\n"
+            f")"
+        )
 
     def get_entity_type(self, entity_type):
         return "Shot" if entity_type == "seq" else "Asset"
@@ -49,24 +66,24 @@ class PublishManager:
         return sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
     
     def set_file_path(self,file_path):
-        # file_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/scenes/bike_model_v001.usd"
+        # file_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/usd/bike_model.usda"
         self.file_path = file_path
 
-    def set_file_name(self, file_path):
-        file_name = file_path.split("/")[-1]
+    def set_file_name(self, file_name):
+        # file_name = self.file_path.split("/")[-1]
         self.file_name = file_name
 
     def set_description(self, description):
         self.description = description
 
-    def set_thumbnail_path(self, file_path, ext):
-        thumb_path = os.path.abspath(os.path.join(file_path, f"../../data/{file_name}"))
-        thumb_path = self.change_ext(thumb_path, ext)
+    def set_thumbnail_path(self, thumb_path):
+        # thumb_path = os.path.abspath(os.path.join(file_path, f"../data/{file_name}"))
+        # thumb_path = self.change_ext(thumb_path, ext)
         self.thumbnail_path = thumb_path
     
-    def set_mov_path(self, file_path, ext):
-        mov_path = os.path.abspath(os.path.join(file_path, f"../../data/{file_name}"))
-        mov_path = self.change_ext(mov_path, ext)
+    def set_mov_path(self, mov_path):
+        # mov_path = os.path.abspath(os.path.join(file_path, f"../../data/{file_name}"))
+        # mov_path = self.change_ext(mov_path, ext)
         self.mov_path = mov_path
 
     def change_ext(self, file_path, ext):
@@ -92,6 +109,7 @@ class PublishManager:
         return published_file
 
     def create_versions(self):
+        print(f"Try create version")
         version_data = {
             "project" : {'type': 'Project', 'id': self.project_id}, 
             "code" : self.file_name,
@@ -109,7 +127,6 @@ class PublishManager:
     
     def link_version_to_published_file(self, pub_id, version_id):
         sg.update("PublishedFile", pub_id, {"version":{"type":"Version", "id":version_id}})
-        print(f"Created Version : {created_version}\nLinked to\nPublishedFile : {published_file}")
         
 
 if __name__ == "__main__":
@@ -151,7 +168,7 @@ if __name__ == "__main__":
         "step": "Model"
         }
     clicked_task = ClickedTask(my_dict)
-    publish_manager = PublishManager(sg_url, script_name, api_key, clicked_task)
+    publish_manager = PublishManager(clicked_task)
 
     # file_name = "AAB_0010_light_v001.usd"
     # local_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/scenes/AAB_0010_light_v001.usd"

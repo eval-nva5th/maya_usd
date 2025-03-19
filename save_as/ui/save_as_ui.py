@@ -16,8 +16,9 @@ import os
 from save_as.event.event_handler import open_file_browser, save_file_as, on_version_click
 
 class SaveAsDialog(QMainWindow):
-    def __init__(self):
+    def __init__(self, ct):
         super().__init__()
+        self.ct = ct
         self.setWindowTitle("Save As")
         self.setGeometry(100, 100, 650, 200)
 
@@ -28,10 +29,10 @@ class SaveAsDialog(QMainWindow):
         layout = QVBoxLayout()
 
         # maya open파일경로, 폴더이름, 파일이름
-        file_path = cmds.file(q=True, sceneName=True) 
-        folder_path = os.path.dirname(file_path)
-        file_name_with_ext = os.path.basename(file_path)
-        file_name, _ = os.path.splitext(file_name_with_ext)
+        full_path = cmds.file(q=True, sceneName=True)
+        file_name_version = os.path.basename(full_path)
+        work_path = ct.set_deep_path("work")
+        file_name, _ = os.path.splitext(file_name_version)
 
         # 파일명 Label + LineEdit
         filename_container = QHBoxLayout()
@@ -46,7 +47,7 @@ class SaveAsDialog(QMainWindow):
         # 파일 경로 Label + LineEdit
         filepath_container = QHBoxLayout()
         self.filepath_label = QLabel("File path:")
-        self.filepath_input = QLineEdit(folder_path)
+        self.filepath_input = QLineEdit(work_path)
         self.browse_btn = QPushButton("Browse")
         self.filepath_input.setDisabled(True)
 

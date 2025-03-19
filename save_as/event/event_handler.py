@@ -17,7 +17,7 @@ def open_file_browser(ui_instance):
             ui_instance.filepath_input.setText(filepath)
 
 def save_file_as(ui_instance):
-        
+
         filename = ui_instance.filename_input.text().strip()
         filepath = ui_instance.filepath_input.text().strip()
         format_type = ui_instance.format_combo.currentText()

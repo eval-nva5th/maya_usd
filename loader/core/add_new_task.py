@@ -45,49 +45,49 @@ class UsdLoader :
 
     @staticmethod
     def load_model_reference(base_path, dept, file_name, ext, entity_name):
-        UsdLoader.open_new_file(base_path, dept, file_name, ext)
-        """
-        첫 작업 시, task의 할당된 directory들(작업 환경)을 만들어주고, Open scene해준다. 또한 선수작업을 reference로 불러온다.
-        ex) Ironman_lookdev_v001.mb 생성. Ironman_model.usd파일을 reference로 불러온다.
-        """
+            UsdLoader.open_new_file(base_path, dept, file_name, ext)
+            """
+            첫 작업 시, task의 할당된 directory들(작업 환경)을 만들어주고, Open scene해준다. 또한 선수작업을 reference로 불러온다.
+            ex) Ironman_lookdev_v001.mb 생성. Ironman_model.usd파일을 reference로 불러온다.
+            """
 
-        if dept == "model" :
-            pass
+            if dept == "model" :
+                pass
 
-        elif dept == "lookdev":
-            sourceimages_path = os.path.join(base_path, dept, "work", "maya", "sourceimages")
-            os.makedirs(sourceimages_path, exist_ok=True)
-            for usd_type in usd_type_list:
-                model_usd_filename = f"{entity_name}_model.{usd_type}"
-                model_reference_path = os.path.join(base_path, "model", "pub", "usd", model_usd_filename)
-                if os.path.exists(model_reference_path):
-                    cmds.file(model_reference_path, reference=True, defaultNamespace=True)
-                    break
+            elif dept == "lookdev":
+                sourceimages_path = os.path.join(base_path, dept, "work", "maya", "sourceimages")
+                os.makedirs(sourceimages_path, exist_ok=True)
+                for usd_type in usd_type_list:
+                    model_usd_filename = f"{entity_name}_model.{usd_type}"
+                    model_reference_path = os.path.join(base_path, "model", "pub", "usd", model_usd_filename)
+                    if os.path.exists(model_reference_path):
+                        cmds.file(model_reference_path, reference=True, defaultNamespace=True)
+                        break
 
-    # rig 작업파일은 추후에 animation 작업자가 layout에서 넘어온 asset데이터들을 rig.ma파일로 변경시켜줘야 하기 때문에,
-    # rig에는 lookdev데이터도 포함이 되어있어야 한다.
-    # 그래서 rig는 Ironman_model.usd이 아닌, 루트스테이지 즉,Ironman.usd를 reference로 불러와서 작업을 한다.
+        # rig 작업파일은 추후에 animation 작업자가 layout에서 넘어온 asset데이터들을 rig.ma파일로 변경시켜줘야 하기 때문에,
+        # rig에는 lookdev데이터도 포함이 되어있어야 한다.
+        # 그래서 rig는 Ironman_model.usd이 아닌, 루트스테이지 즉,Ironman.usd를 reference로 불러와서 작업을 한다.
 
-        elif dept == "rig":
-            for usd_type in usd_type_list:
-                root_usd_filename = f"{entity_name}.{usd_type}"
-                root_usd_reference_path = os.path.join(base_path, root_usd_filename)
-                if os.path.exists(root_usd_reference_path):
-                    cmds.file(root_usd_reference_path, reference=True, defaultNamespace=True)
-                    break
+            elif dept == "rig":
+                for usd_type in usd_type_list:
+                    root_usd_filename = f"{entity_name}.{usd_type}"
+                    root_usd_reference_path = os.path.join(base_path, root_usd_filename)
+                    if os.path.exists(root_usd_reference_path):
+                        cmds.file(root_usd_reference_path, reference=True, defaultNamespace=True)
+                        break
 
-        # except Exception as e:
-        #     print(f"오류: {e}")
+            # except Exception as e:
+            #     print(f"오류: {e}")
 
     @staticmethod
     def load_shot_reference(base_path, dept, file_name, ext, entity_name, project_name):
         UsdLoader.open_new_file(base_path, dept, file_name, ext)
- 
+
         """
         첫 작업 시, task의 할당된 directory들(작업 환경)을 만들어주고, Open scene해준다. 또한 선수작업을 reference로 불러온다.
         ex) OPN_0010_animation_v001.mb 생성. OPN_0010_layout.usd파일을 reference로 불러온다.
         """
- 
+
         if dept == "animation":
             for usd_type in usd_type_list:
                 usd_reference_path = os.path.join(base_path, "layout", "pub", "usd", f"{entity_name}_layout.{usd_type}")

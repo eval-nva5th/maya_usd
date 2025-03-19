@@ -36,7 +36,6 @@ class ModelExportUSD(USDExporter):
             "exportBlendShapes": 0,
             "exportSkels": "none",
             "exportSkin": "none",
-            "excludeExportTypes": ["Cameras", "Lights"],
         }
 
     def export(self):
@@ -85,7 +84,6 @@ class ShotExportUSD(USDExporter):
             "defaultMeshScheme": "catmullClark",
             "exportVisibility": 1,
             "exportUVs": 1,
-            "exportLights": 1,
             "exportDisplayColor": 1,
             "exportBlendShapes": 1,
             "exportMaterialCollections": 1,
