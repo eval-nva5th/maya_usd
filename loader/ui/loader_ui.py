@@ -349,7 +349,6 @@ class UI(QMainWindow):
             task_thumb = QLabel()
             task_thumb.setFixedWidth(192)
             task_thumb.setFixedHeight(108)
-            print(f"if thumb is null : {thumb}")
             pixmap = QPixmap(thumb)  # 이미지 파일 경로
             task_thumb.setPixmap(pixmap.scaled(192, 108))  # 크기 조절
             task_thumb.setAlignment(Qt.AlignCenter)  # 이미지를 중앙 정렬
