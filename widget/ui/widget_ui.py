@@ -55,6 +55,7 @@ class CustomUI(QWidget):
         if ct is not None:
             if hasattr(ct, 'id') and hasattr(ct, 'entity_id'):
                 print(f"ct.id: {ct.id}, ct.entity_id: {ct.entity_id}, ct.proj_name = {ct.project_name}, {ct.content}, {ct.entity_type}, {ct.entity_name}")
+                self.ct = ct
                 self.id = ct.id
                 self.entity_id = ct.entity_id
                 self.project_name = ct.project_name
@@ -421,7 +422,7 @@ class CustomUI(QWidget):
     def show_publish_ui(self, video_path):
         """ Playblast 완료 후 `PublisherDialog` 띄우기 """
         print(f"Playblast 완료! 파일 경로: {video_path}")
-        self.publish_dialog = PublisherDialog(video_path)  # 파일 경로를 전달
+        self.publish_dialog = PublisherDialog(video_path, self.ct)  # 파일 경로를 전달
         self.publish_dialog.show()
 
 class PlayblastChecker(QThread): # 플레이 블라스트 체크 클래스.

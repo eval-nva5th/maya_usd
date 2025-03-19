@@ -364,8 +364,8 @@ class ClickedTask:
         shallow_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}"
         return shallow_path
     
-    def set_deep_path(self, pub_or_work, export_type="scenes") :
-        deep_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}/{pub_or_work}/maya/{export_type}"
+    def set_deep_path(self, pub_or_work, dcc_type = "maya", export_type="scenes") :
+        deep_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}/{pub_or_work}/{dcc_type}/{export_type}"
         return deep_path
 
     def set_file_name(self) :
