@@ -2,26 +2,24 @@ try :
     from PySide2.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame, QToolButton
     from PySide2.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
     from PySide2.QtWidgets import QHeaderView, QAbstractItemView
-    from PySide2.QtCore import QThread, Signal
     from PySide2.QtCore import Qt
     from shiboken2 import wrapInstance
 except Exception :
     from PySide6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog, QLineEdit, QFrame, QToolButton
     from PySide6.QtGui import QPixmap, QBitmap, QPainter, QPainterPath, QPainterPath, QPainter, QPainterPath
     from PySide6.QtWidgets import QHeaderView, QAbstractItemView
-    from PySide6.QtCore import QThread, Signal
     from PySide6.QtCore import Qt
     from shiboken6 import wrapInstance
     
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
-import requests, time
+import requests
 
 from widget.event.widget_event_handler import clicked_get_asset_btn
 from save_as.main import run as save_as_run
-from publisher.main import run as publish_run
+# from publisher.main import run as publish_run
+from widget.event.widget_event_handler import publish_playblast_run
 from publisher.ui.publisher_ui import PublisherDialog
-from publisher.core.play_blast import PlayblastManager
 
 import os
 import sys
@@ -47,7 +45,7 @@ class CustomUI(QWidget):
             self.path=path
         
         super().__init__()
-        self.publisher_dialog = PublisherDialog
+        # self.publisher_dialog = PublisherDialog
         print("*"*30)
         self.setFixedWidth(350)
         print("여기서부터 custom UI 생성을 드가자")
@@ -402,41 +400,7 @@ class CustomUI(QWidget):
         save_as_run(self.ct)
 
     def on_click_publish(self):
-        print ("위젯 퍼블리쉬 버튼이 눌리고 있음")
-
-        file_path = cmds.file(q=True, sceneName=True)
-        file_name_with_ext = os.path.basename(file_path)
-        file_name, _ = os.path.splitext(file_name_with_ext)
-
-        print ("플레이 블라스트 실행")
-        output_file = PlayblastManager(file_path, file_name).run_playblast()
-        print ("생성된 파일", output_file)
-
-        print ("생성되었는지 안되었는지 파일 확인 중")
-        self.worker = PlayblastChecker(output_file)
-        self.worker.file_found.connect(lambda: self.show_publish_ui(output_file))
-        # self.worker.file_found.connect(lambda: self.on_playblast_complete(output_file))
-        self.worker.start()
-        print ("생성완룡?")
-
-    def show_publish_ui(self, video_path):
-        """ Playblast 완료 후 `PublisherDialog` 띄우기 """
-        print(f"Playblast 완료! 파일 경로: {video_path}")
-        self.publish_dialog = PublisherDialog(video_path)  # 파일 경로를 전달
-        self.publish_dialog.show()
-
-class PlayblastChecker(QThread): # 플레이 블라스트 체크 클래스.
-    file_found = Signal(str)
-
-    def __init__(self, file_path):
-        super().__init__()
-        self.output_file = file_path
-    def run(self):
-        while not os.path.exists(self.output_file):
-            time.sleep(0.5) # 0.5초마다 확인
-            # QtCore.QThread.msleep(500)  # 0.5초마다 확인
-
-        self.file_found.emit(self.output_file)
+        publish_playblast_run(self)
 
 class PublishDialog(QDialog):
     def __init__(self, parent=None):

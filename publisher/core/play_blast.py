@@ -25,7 +25,6 @@ class PlayblastManager:
         output_file = f"{self.new_path}/playblast.mov"
 
         cmds.lookThru(self.camera_name) # 선택된 카메라 활성화
-        cmds.select(clear=True) # 오브젝트 선택 해제
 
         # 해상도 설정
         scale_factor = 0.7
@@ -39,7 +38,7 @@ class PlayblastManager:
             cmds.lookThru(self.camera_name)
         else:
             raise RuntimeError("카메라를 찾을 수 없어 플레이블라스트를 실행할 수 없습니다.")
-
+        cmds.modelEditor("modelPanel4", edit=True, selectionHiliteDisplay=False)
         # 플레이블라스트 실행
         result = cmds.playblast(
             startTime=self.start_frame,
@@ -67,6 +66,7 @@ class PlayblastManager:
         # 스크린샷 캡쳐 1개
         master_jpg = f"{self.new_path}/{self.filename}.jpg"
         self.capture_frame(self.start_frame, master_jpg)
+        cmds.modelEditor("modelPanel4", edit=True, selectionHiliteDisplay=True)
 
         if self.mode == "asset":
                 self.delete_turntable_camera()

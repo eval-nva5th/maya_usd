@@ -3,17 +3,15 @@ try :
     from PySide2.QtWidgets import QVBoxLayout, QLabel, QLineEdit
     from PySide2.QtWidgets import QHBoxLayout
     from PySide2.QtWidgets import QComboBox
-    from PySide2.QtCore import Qt
 except Exception :
     from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton, QToolButton
     from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit
     from PySide6.QtWidgets import QHBoxLayout
     from PySide6.QtWidgets import QComboBox
-    from PySide6.QtCore import Qt
 
+from save_as.event import event_handler
 import maya.cmds as cmds
 import os
-from save_as.event.event_handler import open_file_browser, save_file_as, on_version_click
 
 class SaveAsDialog(QMainWindow):
     def __init__(self, ct):
@@ -31,8 +29,8 @@ class SaveAsDialog(QMainWindow):
         # maya open파일경로, 폴더이름, 파일이름
         full_path = cmds.file(q=True, sceneName=True)
         file_name_version = os.path.basename(full_path)
-        work_path = ct.set_deep_path("work")
         file_name, _ = os.path.splitext(file_name_version)
+        work_path = ct.set_deep_path("work")
 
         # 파일명 Label + LineEdit
         filename_container = QHBoxLayout()
@@ -80,9 +78,9 @@ class SaveAsDialog(QMainWindow):
         self.filepath_input.setStyleSheet(style)
 
         # 이벤트 처리
-        self.browse_btn.clicked.connect(lambda: open_file_browser(self))
-        self.save_as_btn.clicked.connect(lambda: save_file_as(self))
-        self.version_btn.clicked.connect(lambda: on_version_click(self, file_name))
+        self.browse_btn.clicked.connect(lambda: event_handler.open_file_browser(self))
+        self.save_as_btn.clicked.connect(lambda: event_handler.save_file_as(self))
+        self.version_btn.clicked.connect(lambda: event_handler.on_version_click(self, file_name))
         self.cancel_btn.clicked.connect(self.close)
 
         # 레이아웃에 위젯 추가
