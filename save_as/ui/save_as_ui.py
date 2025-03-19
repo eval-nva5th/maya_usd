@@ -81,7 +81,7 @@ class SaveAsDialog(QMainWindow):
 
         # 이벤트 처리
         self.browse_btn.clicked.connect(lambda: open_file_browser(self))
-        self.save_as_btn.clicked.connect(lambda: save_file_as(self, ct))
+        self.save_as_btn.clicked.connect(lambda: save_file_as(self))
         self.version_btn.clicked.connect(lambda: on_version_click(self, file_name))
         self.cancel_btn.clicked.connect(self.close)
 

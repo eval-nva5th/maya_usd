@@ -16,11 +16,7 @@ def open_file_browser(ui_instance):
         if filepath:
             ui_instance.filepath_input.setText(filepath)
 
-def save_file_as(ui_instance, ct):
-        print ("save as!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(ct)
-        print(ct.project_name)
-        print(ct.entity_name)
+def save_file_as(ui_instance):
 
         filename = ui_instance.filename_input.text().strip()
         filepath = ui_instance.filepath_input.text().strip()

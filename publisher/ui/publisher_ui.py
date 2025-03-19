@@ -184,12 +184,9 @@ class PublisherDialog(QMainWindow):
         4. 원본 Playblast 삭제
         5. UI 닫기
         """
-
-        print("'Publish' 버튼 클릭됨 - 최종 퍼블리싱 시작")
         version = self.version_name()
 
         save_file_as(self, version)
-        print ("저장 완료!")
 
         # 슬레이트 mov 3개 저장
         PlayblastManager(self.file_path, self.file_name).save_playblast_files(version)
@@ -208,48 +205,10 @@ class PublisherDialog(QMainWindow):
                 print("파일이 아직 사용 중이라 삭제할 수 없습니다.")
                 return
         else:
-            print("원본 Playblast 파일이 이미 삭제되었거나 존재하지 않습니당~.")
+            print("원본 Playblast 파일이 이미 삭제되었거나 존재하지 않습니다.")
 
         # UI 닫기
         self.close_event()
-        print("퍼블리셔 UI 종료")
-
-    # def publish_final_output(self):
-    #     """ 
-    #     1. 파일 저장 (save_file_as)
-    #     2. 슬레이트 mov 2개 저장 (save_playblast_files)
-    #     3. 비디오 플레이어 종료
-    #     4. 원본 Playblast 삭제
-    #     5. UI 닫기
-    #     """
-
-    #     print("'Publish' 버튼 클릭됨 - 최종 퍼블리싱 시작")
-
-    #     # 파일 저장
-    #     save_file_as(self)
-
-    #     # 슬레이트 mov 2개 저장
-    #     PlayblastManager(self.file_path, self.file_name).save_playblast_files()
-
-    #     # 비디오 플레이어 종료 (중복 코드 제거하고 함수 호출)
-    #     self.cleanup_video_player()
-
-    #     # 원본 Playblast .mov 삭제
-    #     playblast_path = f"{self.filepath_input.text()}/playblast.mov"
-
-    #     if os.path.exists(playblast_path):
-    #         try:
-    #             os.remove(playblast_path)
-    #             print(f"원본 Playblast 파일 삭제 완료: {playblast_path}")
-    #         except PermissionError:
-    #             print("파일이 아직 사용 중이라 삭제할 수 없습니다.")
-    #             return
-    #     else:
-    #         print("원본 Playblast 파일이 이미 삭제되었거나 존재하지 않습니당~.")
-
-    #     # UI 닫기
-    #     self.close_event()
-    #     print("퍼블리셔 UI 종료")
 
     def center_window(self):
         screen_geometry = self.screen().geometry()  # 현재 창이 표시되는 화면의 전체 크기
