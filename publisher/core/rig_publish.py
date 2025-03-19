@@ -3,17 +3,14 @@ import re
 import shutil
 import maya.cmds as cmds
 
-root_directory = '/Users/junsu/Desktop'
-
-def rig_publish(project_name, asset_name, asset_type, dept):
+def rig_publish(root_path, project_name, asset_name, asset_type, dept):
     """rig publish 실행 함수"""
 
     if dept != "rig":
-        print("해당 dept는 사용할 수 없습니다.")
         return
     
     asset_root_path = os.path.join(
-        root_directory, project_name, "assets", asset_type, asset_name
+        root_path, project_name, "assets", asset_type, asset_name
     )
     pub_path = os.path.join(
         asset_root_path, dept, "pub", "maya", "scenes"
