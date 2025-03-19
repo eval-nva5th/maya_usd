@@ -5,6 +5,9 @@ try :
     from PySide2.QtCore import QTimer
 except Exception:
     from PySide6.QtCore import QTimer
+    
+from systempath import SystemPath
+ffmpeg_path = SystemPath().get_ffempg_path()
 
 class PlayblastManager:
     def __init__(self, file_path, filename_input):
@@ -63,11 +66,6 @@ class PlayblastManager:
 
         print(f"플레이블라스트 완료! 저장된 파일: {output_file}")
 
-        # 스크린샷 캡쳐 1개
-        master_jpg = f"{self.new_path}/{self.filename}.jpg"
-        self.capture_frame(self.start_frame, master_jpg)
-        cmds.modelEditor("modelPanel4", edit=True, selectionHiliteDisplay=True)
-
         if self.mode == "asset":
                 self.delete_turntable_camera()
 
@@ -76,6 +74,7 @@ class PlayblastManager:
     def capture_frame(self, frame_number, path):
         """플레이블라스트 이미지 저장""" 
         cmds.grid(toggle=False)
+        cmds.modelEditor("modelPanel4", edit=True, selectionHiliteDisplay=False)
         cmds.playblast(
             startTime=frame_number,
             endTime=frame_number,
@@ -88,6 +87,7 @@ class PlayblastManager:
             widthHeight=[1920, 1080]
         )
         cmds.grid(toggle=True)
+        cmds.modelEditor("modelPanel4", edit=True, selectionHiliteDisplay=True)
         print(f"프레임 {frame_number} 저장 완료: {self.filename}")
 
     def setup(self):
@@ -118,12 +118,18 @@ class PlayblastManager:
     def extract_folders_from_path(self) :
         """파일 이름"""
         path_parts = self.new_path.strip("/").split("/")
-        if len(path_parts) >= 8:  
+        if len(path_parts) == 11:  
             self.project_name = path_parts[3]
             self.entity_name = path_parts[6]
             self.task_name = path_parts[7]
-            return f"{self.entity_name}_{self.task_name}"
-        return "unknown_filename"
+        elif len(path_parts) == 12 :
+            self.project_name = path_parts[4]
+            self.entity_name = path_parts[7]
+            self.task_name = path_parts[8]
+        else :
+            return "unknown_filename"
+        
+        return f"{self.entity_name}_{self.task_name}"
     
     def extract_asset_name(self):
         """파일명에서 에셋 이름을 추출 (_v001, _geo, _rig 등의 접미사를 제거)"""
@@ -297,15 +303,26 @@ class PlayblastManager:
         master_mov = f"{self.new_path}/{self.filename}.mov"
         #codec = playblast_mov[-3:]
         print ("versioned_mov 저장경로",versioned_mov)
-
+        print(f"{playblast_mov} | {versioned_mov} | {master_mov} \n{self.entity_name} | {self.project_name} | {self.task_name} | {version} | {self.start_frame} | {self.end_frame} | {self.filename}")
         # 마스터 MOV 파일 저장
-        encoder = EncodeProcess()
+        
+        encoder = EncodeProcess(ffmpeg_path)
         encoder.run(playblast_mov, master_mov, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
-        #버전 포함 MOV 파일 저장 (슬레이트 추가)
-        encoder.run(playblast_mov, versioned_mov, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
-
+        if not os.path.exists(master_mov) :
+            encoder.run(playblast_mov, versioned_mov, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
+        else :
+            shutil.copy(master_mov, versioned_mov)
+        
         versioned_jpg = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.jpg"
-        self.capture_frame(self.start_frame, versioned_jpg)
+        master_jpg = f"{self.new_path}/{self.filename}.jpg"
+        
+        self.capture_frame(self.start_frame, master_jpg)
+        if not os.path.exists(master_jpg) :
+            self.capture_frame(self.start_frame, versioned_jpg)
+        else :
+            shutil.copy(master_jpg, versioned_jpg)
+        
+        cmds.modelEditor("modelPanel4", edit=True, selectionHiliteDisplay=True)
         print(f"저장 완료: {master_mov}, {versioned_mov}")
 
     def check_playblast_file(self, file_path):

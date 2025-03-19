@@ -45,7 +45,7 @@ class UsdLoader :
 
     @staticmethod
     def load_model_reference(base_path, dept, file_name, ext, entity_name):
-            UsdLoader.open_new_file(base_path, dept, file_name, ext)
+            open_path = UsdLoader.open_new_file(base_path, dept, file_name, ext)
             """
             첫 작업 시, task의 할당된 directory들(작업 환경)을 만들어주고, Open scene해준다. 또한 선수작업을 reference로 불러온다.
             ex) Ironman_lookdev_v001.mb 생성. Ironman_model.usd파일을 reference로 불러온다.
@@ -78,10 +78,11 @@ class UsdLoader :
 
             # except Exception as e:
             #     print(f"오류: {e}")
+            return open_path
 
     @staticmethod
     def load_shot_reference(base_path, dept, file_name, ext, entity_name, project_name):
-        UsdLoader.open_new_file(base_path, dept, file_name, ext)
+        open_path = UsdLoader.open_new_file(base_path, dept, file_name, ext)
 
         """
         첫 작업 시, task의 할당된 directory들(작업 환경)을 만들어주고, Open scene해준다. 또한 선수작업을 reference로 불러온다.
@@ -95,6 +96,7 @@ class UsdLoader :
                     proxy_node = cmds.createNode("mayaUsdProxyShape", name=f"{entity_name}_layout")
                     cmds.setAttr(f"{proxy_node}.filePath", usd_reference_path, type="string")
                     cmds.connectAttr("time1.outTime", f"{proxy_node}.time", force=True)
+                    print("일단 켜지긴 불러는 왔음")
 
                     layout_stage = Usd.Stage.Open(usd_reference_path)
                     layout_prim = layout_stage.GetDefaultPrim()
@@ -103,12 +105,15 @@ class UsdLoader :
                         prim_names.append(prim.GetName())
                     # layout은 rig가 되지 않은 usd파일을 사용했기 때문에, 이름과 동일한 rig.ma파일이 있다면 같이 불러와준다.
                     rig_files_list = []
-                    assets_types = ["character", "environment", "prop", "vehicle"]
+                    assets_types = ["Character", "Environment", "Prop", "Vehicle"]
                     for asset_type in assets_types:
                         assets_path = os.path.join(root_directory, project_name, "assets", asset_type) 
+                        print(f"에셋패스:{assets_path}")
                         for asset_name in prim_names:
+                            print(f"에셋네임:{asset_name}")
                             assets_rig_path = os.path.join(assets_path, asset_name, "rig", "pub", "maya", "scenes")
                             if not os.path.exists(assets_rig_path):
+                                print("해당 asset에 rig파일이 없습니다.")
                                 continue
                             version_nums = []
                             assets_rig_paths = os.listdir(assets_rig_path)
@@ -118,10 +123,14 @@ class UsdLoader :
                                     version_nums.append(int(match.group(1)))
 
                             last_version = max(version_nums)
-
+                            maya_exr = ["ma", "mb"]
                             if last_version > 0:
-                                rig_last_file = os.path.join(assets_rig_path, f"{asset_name}_rig_v{last_version:03d}.ma")
-                                rig_files_list.append(rig_last_file)
+                                for ext in maya_exr:
+                                    rig_last_file = os.path.join(assets_rig_path, f"{asset_name}_rig_v{last_version:03d}.{ext}")
+                                    if os.path.exists(rig_last_file) :
+                                        rig_files_list.append(rig_last_file)
+                                        break
+
                     for rig_file in rig_files_list:
                         cmds.file(rig_file, reference=True, defaultNamespace=True) 
 
@@ -136,6 +145,8 @@ class UsdLoader :
 
         else :
             pass
+        
+        return open_path
 
 def load_work(project_name, task_name, task_type, dept, work_ver):
     """

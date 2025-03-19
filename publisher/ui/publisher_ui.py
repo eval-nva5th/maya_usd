@@ -212,6 +212,7 @@ class PublisherDialog(QMainWindow):
         5. UI 닫기
         """
         version = self.version_name()
+        print(f"publish 버튼 눌렷음! {version}")
 
         publish(self, self.work_path, self.pub_path, self.project_name, self.entity_parent, self.entity_name, self.dept)
         print ("저장 완료!")

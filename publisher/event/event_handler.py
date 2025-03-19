@@ -20,6 +20,7 @@ def publish(ui_instance, work_path, pub_path, project_name, entity_parent, entit
             return
 
         model_publish (project_name, entity_parent, entity_name, dept)
+        print("model_publish 완료")
         lookdev_publish (project_name, entity_parent, entity_name, dept)
         shot_publish (project_name, entity_parent, entity_name, dept)
 

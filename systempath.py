@@ -18,16 +18,19 @@ class SystemPath:
 
         if system == 'Linux':  # 리눅스
             self.root_path = "/nas/eval"
-            self.file_root_path = ""
+            self.ffmpeg_path = "/usr/bin/ffmpeg"
         elif system == 'Darwin':  # 맥
             self.root_path = '/Volumes/TD_VFX/eval'
-            self.file_root_path = ""
+            self.ffmpeg_path = "/opt/homebrew/bin/ffmpeg"
         else:
             self.root_path = ""
             self.file_root_path = ""
             
     def get_root_path(self):
         return self.root_path
+    
+    def get_ffempg_path(self) :
+        return self.ffmpeg_path
     
     # def get_file_root_path(self):
     #     return self.file_root_path

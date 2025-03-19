@@ -9,6 +9,7 @@ def rig_publish(root_path, project_name, asset_name, asset_type, dept):
     if dept != "rig":
         return
     
+    
     asset_root_path = os.path.join(
         root_path, project_name, "assets", asset_type, asset_name
     )

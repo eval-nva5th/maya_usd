@@ -38,7 +38,7 @@ def get_maya_main_window():
 
 class CustomUI(QWidget):
     def __init__(self, path=None, ct=None):
-
+        print("CustomUI Start")
         self.current_widget = None  
 
         if path !=None :
@@ -46,9 +46,7 @@ class CustomUI(QWidget):
         
         super().__init__()
         # self.publisher_dialog = PublisherDialog
-        print("*"*30)
         self.setFixedWidth(350)
-        print("여기서부터 custom UI 생성을 드가자")
         
         if ct is not None:
             if hasattr(ct, 'id') and hasattr(ct, 'entity_id'):
@@ -66,7 +64,6 @@ class CustomUI(QWidget):
             else:
                 print("ct attribute issues")
         else:
-            print("ct가 nonetype임")
             self.project_name = ""
             self.content = ""
             self.entity_type = ""
@@ -290,10 +287,6 @@ class CustomUI(QWidget):
             return image
         except Exception as e:
             image = QPixmap(f"{root_path}/elements/no_image.jpg")
-            # if type == "human" :
-            #     image = QPixmap(f"{root_path}/elements/no_assignee.png")
-            # elif type == "note" :
-            #     image = QPixmap(f"{root_path}/elements/no_image.jpg")
             return image
 
     def get_colleague_info(self) :
@@ -354,10 +347,8 @@ class CustomUI(QWidget):
             note_id = note['id']
             note_title = note['subject']
             note_body = note['content']
-            #creator_name = note['created_by']['name']
             creator_id = note['created_by']['id']
             creator_kor_name = sg.find_one("HumanUser", [["id", "is", creator_id]], ["sg_korean_name"])['sg_korean_name']
-            #creator_kor_name = creator_info['sg_korean_name']
             linked_infos = note['note_links']
             for link in linked_infos :
                 if link['type'] == 'Version' :

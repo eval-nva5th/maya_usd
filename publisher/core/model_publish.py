@@ -7,13 +7,15 @@ from pxr import Usd
 from systempath import SystemPath 
 root_path = SystemPath().get_root_path()
 
-def model_publish(project_name, asset_name, asset_type, dept):
+def model_publish(project_name, asset_type, asset_name, dept):
     """model publish 실행 함수"""
     
     # 모델러가 아니라면 함수 종료
     if dept != "model":
+        print(f"여기에 리턴이 찍힘 {dept}")
         return
-
+    
+    print(project_name, asset_name, asset_type, dept)
     # 파일 경로 설정
     root_directory =  f"{root_path}/show"
 
@@ -54,7 +56,7 @@ def model_publish(project_name, asset_name, asset_type, dept):
         asset_stage.SetDefaultPrim(root_prim)
 
         sub_prim_path = f"/{asset_name}/{asset_name}_{dept}"
-        is_sub_prim = asset_stage.GetGetPrimAtPath(sub_prim_path)
+        is_sub_prim = asset_stage.GetPrimAtPath(sub_prim_path)
         if not is_sub_prim:
             is_sub_prim = asset_stage.DefinePrim(sub_prim_path, "Xform")
             is_sub_prim.GetReferences().AddReference(relative_model_pub_path)

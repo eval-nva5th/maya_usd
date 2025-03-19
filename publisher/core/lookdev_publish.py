@@ -8,7 +8,7 @@ from pxr import Usd, UsdShade
 from systempath import SystemPath
 root_path = SystemPath().get_root_path()
 
-def lookdev_publish(project_name, asset_name, asset_type, dept):
+def lookdev_publish(project_name, asset_type, asset_name, dept):
     """lookdev publish 실행 함수"""
 
     # 룩뎁이 아니라면 함수 종료

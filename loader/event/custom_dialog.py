@@ -5,6 +5,7 @@ except Exception :
 import maya.cmds as cmds
 import os, sys
 from loader.core.add_new_task import UsdLoader
+from widget.ui.widget_ui import add_custom_ui_to_tab
 
 class CustomDialog(QDialog):
     def __init__(self, path, is_dir, is_created, ct):
@@ -12,6 +13,7 @@ class CustomDialog(QDialog):
 
         self.is_dir = is_dir
         self.is_created = is_created
+        self.ct = ct
         self.entity_type = ct.entity_type
         self.entity_name = ct.entity_name
         self.base_path = ct.set_base_path()
@@ -75,22 +77,27 @@ class CustomDialog(QDialog):
     def on_click_create(self, path):
         self.file_name = self.line_edit.text()
         ext = self.switch.text()
+        
 
         if self.is_dir :
             pass
         
         else :
-            UsdLoader.create_folders(self.base_path, self.dept) 
+            open_path = UsdLoader.create_folders(self.base_path, self.dept) 
             self.is_dir = True
+            add_custom_ui_to_tab(open_path, self.ct)
         
         if self.entity_type == "assets" :
-            UsdLoader.load_model_reference(self.base_path, self.dept, self.file_name, ext, self.entity_name)
+            open_path = UsdLoader.load_model_reference(self.base_path, self.dept, self.file_name, ext, self.entity_name)
+            add_custom_ui_to_tab(open_path, self.ct)
             
         elif self.entity_type == "seq" :
-            UsdLoader.load_shot_reference(self.base_path, self.dept, self.file_name, ext, self.entity_name, self.project_name)
+            open_path = UsdLoader.load_shot_reference(self.base_path, self.dept, self.file_name, ext, self.entity_name, self.project_name)
+            add_custom_ui_to_tab(open_path, self.ct)
             
         else :
             print(f"SOMETHING WENT WRONG {self.entity_type}")
+            
 
         self.dialog_flag = False # 필수
         self.accept() # 필수
