@@ -206,12 +206,14 @@ class PublisherDialog(QMainWindow):
         4. 원본 Playblast 삭제
         5. UI 닫기
         """
-
-        print("'Publish' 버튼 클릭됨 - 최종 퍼블리싱 시작")
         version = self.version_name()
 
+<<<<<<< HEAD
         publish(self, self.work_path, self.pub_path, self.project_name, self.entity_parent, self.entity_name, self.dept)
         print ("저장 완료!")
+=======
+        save_file_as(self, version)
+>>>>>>> e4aa7cc8f08c354681b68136afd74718df64b69a
 
         # 슬레이트 mov 3개 저장
         PlayblastManager(self.file_path, self.file_name).save_playblast_files(version)
@@ -230,12 +232,15 @@ class PublisherDialog(QMainWindow):
                 print("파일이 아직 사용 중이라 삭제할 수 없습니다.")
                 return
         else:
-            print("원본 Playblast 파일이 이미 삭제되었거나 존재하지 않습니당~.")
+            print("원본 Playblast 파일이 이미 삭제되었거나 존재하지 않습니다.")
 
         
         # UI 닫기
         self.close_event()
+<<<<<<< HEAD
         print("퍼블리셔 UI 종료")
+=======
+>>>>>>> e4aa7cc8f08c354681b68136afd74718df64b69a
 
     def center_window(self):
         screen_geometry = self.screen().geometry()  # 현재 창이 표시되는 화면의 전체 크기

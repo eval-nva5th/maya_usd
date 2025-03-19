@@ -65,7 +65,6 @@ class LoaderEvent :
 
                 ui_instance.task_thread = TaskInfoThread(user.id)
                 ui_instance.task_thread.start()
-                print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 ui_instance.task_thread.finished_signal.connect(
                     lambda task_info: LoaderEvent.show_loader_ui(user, name, ui_instance.loading_window, task_info)
                 )
@@ -81,7 +80,6 @@ class LoaderEvent :
         """
         로딩이 끝나면 로더 UI 실행
         """
-        print("case~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~qqqq")
         loader_window = loaderUIClass(task_info)
         loader_window.user = user
         loader_window.user_name = name
@@ -89,9 +87,6 @@ class LoaderEvent :
         loader_window.setFixedSize(1100, 800)
         loader_window.setCentralWidget(loader_window.setup_layout())
         loader_window.center_window()
-
-        # TaskInfo 설정
-        #loader_window.set_task_info(task_info)
         # 로딩창 닫기
         loading_window.close()
         # 로더 UI 실행

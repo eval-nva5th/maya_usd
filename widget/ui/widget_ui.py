@@ -119,7 +119,7 @@ class CustomUI(QWidget):
             self.change_status = "ip"
         elif self.status == "ip" :
             self.change_status = "wtg"
- 
+
         # 토글 버튼이 눌리면 상태 변경
         self.toggle_button.toggled.connect(self.on_toggle)
         
@@ -399,7 +399,7 @@ class CustomUI(QWidget):
             self.step = ct.step
 
     def on_click_saveas(self):
-        save_as_run()
+        save_as_run(self.ct)
 
     def on_click_publish(self):
         print ("위젯 퍼블리쉬 버튼이 눌리고 있음")
