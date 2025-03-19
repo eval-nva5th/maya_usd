@@ -404,6 +404,7 @@ class CustomUI(QWidget):
         save_as_run()
 
     def on_click_publish(self):
+        
         print ("위젯 퍼블리쉬 버튼이 눌리고 있음")
 
         file_path = cmds.file(q=True, sceneName=True)

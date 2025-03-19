@@ -21,13 +21,8 @@ class EncodeProcess:
         command = f'ffmpeg -y -i "{input_file}"'
         return command
 
-    def output_codec_command(self, output_file, codec):
-        
-        # 파일 포맷에 따른 포맷 변환 커맨드. mov는 그대로 mp4는 mov 포맷으로 변환
-        if codec == "mov":
-            command = f'-c:a copy "{output_file}"'
-        elif codec == "mp4":
-            command = f'-c:v libx264 -preset fast -crf 23 -pix_fmt yuv420p "{output_file}"'
+    def output_codec_command(self, output_file):
+        command = f'-c:a copy "{output_file}"'
         return command
 
     def padding_command(self):

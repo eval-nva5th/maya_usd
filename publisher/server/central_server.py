@@ -6,7 +6,9 @@ import threading
 import socketio
 import eventlet
 from shotgridapi import ShotgridAPI
+from systempath import SystemPath
 sg = ShotgridAPI().shotgrid_connector()
+root_path = SystemPath().get_root_path()
 
 app = Flask(__name__)
 sio = socketio.Server(cors_allowed_origins="*")  # 내부망에서 클라이언트 연결 허용
@@ -32,7 +34,7 @@ def notify_maya():
         if not published_file_id:
             return jsonify({"error": "Invalid published file data"}), 400
 
-        fields = ["code", "project", "created_by", "entity", "task"]
+        fields = ["code", "project", "created_by", "entity", "task", "sg_local_path"]
         published_file = sg.find_one("PublishedFile", [["id", "is", published_file_id]], fields)
 
         if not published_file:
@@ -40,7 +42,7 @@ def notify_maya():
 
         project_name = published_file["project"]["name"]
         task_data = published_file.get("task")
-
+        
         if not task_data:
             return jsonify({"error": "No task linked to this file"}), 400
 
@@ -53,6 +55,7 @@ def notify_maya():
             "published_file_name": published_file["code"],
             "created_by": published_file["created_by"]["name"],
             "created_at": created_at,
+            "local_path" : published_file["sg_local_path"]
         }
 
         message_text = f"{message_dict['project_name']}  |  {message_dict['published_file_name']}  |  {message_dict['created_by']}  |  {message_dict['created_at']}"

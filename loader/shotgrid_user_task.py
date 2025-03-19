@@ -28,22 +28,6 @@ class TaskInfoThread(QThread):
         task_dict = task_info.get_task_dict()  # Task 데이터 가져오기
         self.finished_signal.emit(task_info)  # 완료 신호 전달 ######## 이게 문제같음
 
-# class TaskThread(QThread):
-#     progress_signal = Signal(str)
-
-#     def run(self):
-#         """ 진행 상태를 실시간으로 업데이트 """
-#         for i, task in enumerate(self.tasks, start=1):
-#             progress_text = f"처리 중: {i}/{self.total_tasks} ({(i/self.total_tasks)*100:.2f}%) 완료"
-
-#             # UI 스레드에서 안전하게 실행
-#             QMetaObject.invokeMethod(self, "emit_progress", Qt.QueuedConnection, progress_text)
-
-#             self.msleep(50)  # 속도 조절
-
-#     def emit_progress(self, text):
-#         self.progress_signal.emit(text)
-
 class UserInfo : 
     def __init__(self) :
         
@@ -151,7 +135,12 @@ class TaskInfo :
                 filters = [["task", "is", {"type": "Task", "id": prev_task_id}]]
 
                 published_file = sg.find_one("PublishedFile", filters, fields)
-                comment = published_file.get('description', 'No Description')
+                if not published_file :
+                    print("뭔문제가잇다!!!")
+                    comment = "None"
+                else : 
+                    comment = published_file.get('description') #, 'No Description')
+                #comment = comment['description']
 
                 # ShotGrid에서 Previous Task data 가져오기
                 prev_task_data = sg.find_one(

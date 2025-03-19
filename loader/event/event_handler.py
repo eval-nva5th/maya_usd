@@ -170,7 +170,7 @@ class LoaderEvent :
     def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
         from widget.ui.widget_ui import add_custom_ui_to_tab
 
-        item = table_widget.item(row, col)
+        item = table_widget.item(row, 1)
         print(f"Clicked item: {item.text()} at row {row}, column {col}")
 
         if item.text() == "No Dir No File":
@@ -191,16 +191,15 @@ class LoaderEvent :
                 print(ct.entity_name, ct.content) 
                 dialog = CustomDialog(path, is_dir,is_created, ct)
                 dialog.exec()
-                #### mainwindow 종료
                 ui_instance.close()
 
         else :
             full_path = f"{path}/{item.text()}"
+            print(full_path)
             cmds.file(full_path, open=True, force=True)
-            #### mainwindow 종료 
             ui_instance.close()
 
-            add_custom_ui_to_tab(path, ct) ##### 위젯 넣는 함수
+            add_custom_ui_to_tab(path, ct)
         
     @staticmethod
     def update_prev_work(ui_instance, prev_task_data):

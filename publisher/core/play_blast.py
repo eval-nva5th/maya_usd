@@ -318,15 +318,15 @@ class PlayblastManager:
         playblast_mov = f"{self.new_path}/playblast.mov"
         versioned_mov = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.mov"
         master_mov = f"{self.new_path}/{self.filename}.mov"
-        codec = playblast_mov[-3:]
+        #codec = playblast_mov[-3:]
 
         print ("versioned_mov 저장경로오오오오오오오오오 ",versioned_mov)
 
         # 마스터 MOV 파일 저장
         encoder = EncodeProcess()
-        encoder.run(playblast_mov, master_mov, codec, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
+        encoder.run(playblast_mov, master_mov, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
         #버전 포함 MOV 파일 저장 (슬레이트 추가)
-        encoder.run(playblast_mov, versioned_mov, codec, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
+        encoder.run(playblast_mov, versioned_mov, self.entity_name, self.project_name, self.task_name, version, self.start_frame, self.end_frame)
 
         versioned_jpg = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.jpg"
         self.capture_frame(self.start_frame, versioned_jpg)
