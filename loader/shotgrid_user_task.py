@@ -88,15 +88,9 @@ class TaskInfo :
         total_tasks = len(tasks)
         print(f"할당된 태스크 정보를 가져오는 중입니다 ... 총 {total_tasks}개")
 
-        # self.task_thread = TaskThread(tasks, total_tasks)
-        # self.task_thread.progress_signal.connect(self.loading_window.set_loading_text)  # 로딩창 업데이트
-        # print("Thread Started")
-        # self.task_thread.start()
-
         for i, task in enumerate(tasks, start=1) :
             progress_text = (f"처리 중: {i}/{total_tasks} ({(i/total_tasks)*100:.2f}%) 완료")
             print (progress_text)
-            # self.task_thread.progress_signal.emit(progress_text)
 
             current_task_id = task['id']
             proj_name = task['project']['name']
@@ -340,8 +334,8 @@ class ClickedTask:
         shallow_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}"
         return shallow_path
     
-    def set_deep_path(self, pub_or_work, export_type="scenes") :
-        deep_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}/{pub_or_work}/maya/{export_type}"
+    def set_deep_path(self, pub_or_work, dcc_type = "maya", export_type="scenes") :
+        deep_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}/{pub_or_work}/{dcc_type}/{export_type}"
         return deep_path
 
     def set_file_name(self) :

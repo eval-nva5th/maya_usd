@@ -2,21 +2,20 @@ from shotgun_api3 import Shotgun
 import os
 import sys
 import socket
-#import maya.cmds as cmds
-from systempath import DefaultConfig
+import maya.cmds as cmds
 
-default_config = DefaultConfig()
-sg = default_config.shotgrid_connector()
-
+from systempath import SystemPath
+from shotgridapi import ShotgridAPI
+root_path = SystemPath().get_root_path()
+sg = ShotgridAPI().shotgrid_connector()
 maya_usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../loader"))
-print(f"maya_usd 경로: {maya_usd_path}")
 sys.path.append(maya_usd_path)
 
 from loader.shotgrid_user_task import TaskInfo, UserInfo, ClickedTask
 
 class PublishManager:
-    def __init__(self):
-
+    def __init__(self,clicked_task):
+        print(f"여기는 PublishManager : {clicked_task}")
         self.clicked_task = clicked_task
         self.project_id = clicked_task.proj_id
         self.task_id = clicked_task.id
@@ -29,9 +28,26 @@ class PublishManager:
         self.thumbnail_path = ""
         self.mov_path = ""
 
+    def __repr__(self):
+        return (
+            f"PublishManager(\n"
+            f"  project_id={self.project_id},\n"
+            f"  task_id={self.task_id},\n"
+            f"  entity_id={self.entity_id},\n"
+            f"  entity_type={self.entity_type},\n"
+            f"  assignee={self.assignee},\n"
+            f"  file_name={self.file_name},\n"
+            f"  file_path={self.file_path},\n"
+            f"  description={self.description},\n"
+            f"  thumbnail_path={self.thumbnail_path},\n"
+            f"  mov_path={self.mov_path}\n"
+            f")"
+        )
+
     def get_entity_type(self, entity_type):
         return "Shot" if entity_type == "seq" else "Asset"
     
+    # 자신의 내부망 주소 get
     def get_internal_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -43,33 +59,31 @@ class PublishManager:
             s.close()
         return internal_ip
     
+    # ip로 Shotgrid HumanUser find
     def get_assignee(self):
-        # hostname = socket.gethostname()
-        # internal_ip = socket.gethostbyname(hostname)
         internal_ip = self.get_internal_ip()
         last_ip = int(internal_ip.split(".")[-1])
         return sg.find_one("HumanUser", [["sg_ip", "is", last_ip]])
     
     def set_file_path(self,file_path):
-        # file_path = cmds.file(q=True, sn=True)
-        #file_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/maya/scenes/bike_model_v001.usd"
+        # file_path = "/nas/eval/show/eval/assets/vehicle/bike/model/pub/usd/bike_model.usda"
         self.file_path = file_path
 
-    def set_file_name(self, file_path):
-        file_name = file_path.split("/")[-1]
+    def set_file_name(self, file_name):
+        # file_name = self.file_path.split("/")[-1]
         self.file_name = file_name
 
     def set_description(self, description):
         self.description = description
 
-    def set_thumbnail_path(self, file_path, ext):
-        thumb_path = os.path.abspath(os.path.join(file_path, f"../../data/{file_name}"))
-        thumb_path = self.change_ext(thumb_path, ext)
+    def set_thumbnail_path(self, thumb_path):
+        # thumb_path = os.path.abspath(os.path.join(file_path, f"../data/{file_name}"))
+        # thumb_path = self.change_ext(thumb_path, ext)
         self.thumbnail_path = thumb_path
     
-    def set_mov_path(self, file_path, ext):
-        mov_path = os.path.abspath(os.path.join(file_path, f"../../data/{file_name}"))
-        mov_path = self.change_ext(mov_path, ext)
+    def set_mov_path(self, mov_path):
+        # mov_path = os.path.abspath(os.path.join(file_path, f"../../data/{file_name}"))
+        # mov_path = self.change_ext(mov_path, ext)
         self.mov_path = mov_path
 
     def change_ext(self, file_path, ext):
@@ -90,10 +104,12 @@ class PublishManager:
         }
 
         published_file = sg.create("PublishedFile", published_file_data)
+        print(f"Published File successfully created!")
         print(published_file)
         return published_file
 
     def create_versions(self):
+        print(f"Try create version")
         version_data = {
             "project" : {'type': 'Project', 'id': self.project_id}, 
             "code" : self.file_name,
@@ -105,6 +121,8 @@ class PublishManager:
         }
         created_version = sg.create("Version", version_data)
         sg.upload("Version", created_version["id"], self.mov_path, field_name="sg_uploaded_movie")
+        print(f"Version successfully created")
+        print(created_version)
         return created_version
     
     def link_version_to_published_file(self, pub_id, version_id):
@@ -150,7 +168,7 @@ if __name__ == "__main__":
         "step": "Model"
         }
     clicked_task = ClickedTask(my_dict)
-    publish_manager = PublishManager(sg_url, script_name, api_key, clicked_task)
+    publish_manager = PublishManager(clicked_task)
 
     # file_name = "AAB_0010_light_v001.usd"
     # local_path = "/nas/eval/show/eval/seq/AAB/AAB_0010/light/pub/maya/scenes/AAB_0010_light_v001.usd"
@@ -174,5 +192,3 @@ if __name__ == "__main__":
     created_version = publish_manager.create_versions()
     published_file = publish_manager.create_published_file()
     publish_manager.link_version_to_published_file(published_file["id"], created_version["id"])
-    
-

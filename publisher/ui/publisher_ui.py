@@ -15,30 +15,42 @@ except Exception :
 
 import sys, os, re
 import maya.cmds as cmds
+
 from publisher.core.play_blast import PlayblastManager
 from publisher.event.event_handler import *
-from save_as.event.event_handler import open_file_browser, save_file_as, on_version_click
 from loader.core.video_player import VideoPlayer
+from publisher.core.publish import PublishManager
 
 class PublisherDialog(QMainWindow):
     def __init__(self, video_path, ct):
         super().__init__()
+        self.ct = ct
+        print(f"여긴 Publisher Dialog : {self.ct}")
         self.setWindowTitle("Publish")
         self.setGeometry(100, 100, 650, 1000)
         print(f"** 퍼블리시에 드디어 clickedtask가 들어오다 {ct}")
         print(f"task id : {ct.id}")
 
+        self.dept = ct.step
+        self.work_path = ct.set_deep_path("work")
+        self.pub_path = ct.set_deep_path("pub")
+        ct.set_deep_path("pub", "data")
+        self.root_path = ct.root_path
+        self.project_name = ct.project_name #entityname shotname assetname, #entity parent seq asset type
+        self.entity_name = ct.entity_name
+        self.entity_parent = ct.entity_parent
+        self.dept = ct.step
         self.center_window()
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout()
 
-        # maya open파일경로, 폴더이름, 파일이름
-        self.file_path = cmds.file(q=True, sceneName=True) 
-        folder_path = os.path.dirname(self.file_path)
-        file_name_with_ext = os.path.basename(self.file_path)
-        self.file_name, _ = os.path.splitext(file_name_with_ext)
+        full_path = cmds.file(q=True, sceneName=True)
+        self.file_name, ext = os.path.basename(full_path).split('.')
+        self.file_path = cmds.file(q=True, sceneName=True)
+        # print(folder_path, file_name_with_ext)
+        # work -> pub으로 경로변경
 
         # 파일명 Label + LineEdit
         filename_container = QHBoxLayout()
@@ -53,7 +65,7 @@ class PublisherDialog(QMainWindow):
         # 파일 경로 Label + LineEdit
         filepath_container = QHBoxLayout()
         filepath_label = QLabel("File path:")
-        self.filepath_input = QLineEdit(folder_path)
+        self.filepath_input = QLineEdit(self.pub_path)
         self.filepath_input.setDisabled(True)
         #self.filepath_input = QLineEdit("/nas/eval/show")
 
@@ -64,7 +76,7 @@ class PublisherDialog(QMainWindow):
         self.format_combo.addItems([".mb", ".ma"])  # 옵션 추가
         self.format_combo.setCurrentText(".mb")  # 기본값 설정
         self.usd_format_combo = QComboBox()
-        self.usd_format_combo.addItems([".usd"])
+        self.usd_format_combo.addItems([".usda"])
 
         # Comment
         comment_container = QVBoxLayout()   
@@ -168,6 +180,18 @@ class PublisherDialog(QMainWindow):
             self.preview_frame = None
             print("비디오 플레이어 객체 제거 완료")
 
+    def convert_to_save_path(file_path):
+        """새로 저장할 경로"""
+        directory_path = os.path.dirname(file_path)
+        path_parts = directory_path.strip("/").split("/")
+
+        if "work" in path_parts:
+            work_index = path_parts.index("work")
+            path_parts[work_index] = "pub"
+
+        new_path = "/" + "/".join(path_parts)
+        return new_path
+
     def close_event(self, event=None):
         """ UI 창이 닫힐 때 비디오 플레이어 종료 및 정리 """
         # 비디오 플레이어 종료 함수 호출
@@ -187,11 +211,9 @@ class PublisherDialog(QMainWindow):
         4. 원본 Playblast 삭제
         5. UI 닫기
         """
-
-        print("'Publish' 버튼 클릭됨 - 최종 퍼블리싱 시작")
         version = self.version_name()
 
-        save_file_as(self, version)
+        publish(self, self.work_path, self.pub_path, self.project_name, self.entity_parent, self.entity_name, self.dept)
         print ("저장 완료!")
 
         # 슬레이트 mov 3개 저장
@@ -211,48 +233,54 @@ class PublisherDialog(QMainWindow):
                 print("파일이 아직 사용 중이라 삭제할 수 없습니다.")
                 return
         else:
-            print("원본 Playblast 파일이 이미 삭제되었거나 존재하지 않습니당~.")
-
+            print("원본 Playblast 파일이 이미 삭제되었거나 존재하지 않습니다.")
         # UI 닫기
         self.close_event()
         print("퍼블리셔 UI 종료")
 
-    # def publish_final_output(self):
-    #     """ 
-    #     1. 파일 저장 (save_file_as)
-    #     2. 슬레이트 mov 2개 저장 (save_playblast_files)
-    #     3. 비디오 플레이어 종료
-    #     4. 원본 Playblast 삭제
-    #     5. UI 닫기
-    #     """
+        clicked_task = self.ct
+        publish_manager = PublishManager(clicked_task)
+        
+        file_name_text = self.filename_input.text().strip()
+        local_path_text = self.filepath_input.text().strip()
+        description_text = self.plain_text_edit.toPlainText().strip()
+        usd_file_path = self.ct.set_shallow_path()
+        usd_file_path = os.path.abspath(os.path.join(usd_file_path, "pub/usd"))
+        #mb_file_path = f"{local_path_text}/{file_name_text}"
+        clean_name = re.sub(r"_v\d{3}$", "", file_name_text)
+        usd_file_name = f"{clean_name}.usda"
 
-    #     print("'Publish' 버튼 클릭됨 - 최종 퍼블리싱 시작")
+        # print(f"line edit 에서 가져온 file name{file_name_text}")
+        # print(f"line edit 에서 가져온 local path{local_path_text}")
+        # print(f"line edit 에서 가져온 description{description_text}")
+        print(f"usd 파일이 있는 경로 : {usd_file_path}")
+        # print(f"mb file path : {mb_file_path}")
+        print(f"usda 파일 이름 : {usd_file_name}")
 
-    #     # 파일 저장
-    #     save_file_as(self)
+        mov_name = f"{file_name_text}.mov"
+        local_path = self.ct.set_deep_path("pub", "data")
+        mov_path = os.path.abspath(os.path.join(local_path, mov_name))
+        print(mov_path)
 
-    #     # 슬레이트 mov 2개 저장
-    #     PlayblastManager(self.file_path, self.file_name).save_playblast_files()
+        jpg_name = f"{file_name_text}.jpg"
+        jpg_path = os.path.abspath(os.path.join(local_path, jpg_name))
+        print(jpg_path)
 
-    #     # 비디오 플레이어 종료 (중복 코드 제거하고 함수 호출)
-    #     self.cleanup_video_player()
+        publish_manager.set_file_path(usd_file_path)
+        publish_manager.set_file_name(usd_file_name)
+        publish_manager.set_description(description_text)
+        publish_manager.set_thumbnail_path(jpg_path)
+        publish_manager.set_mov_path(mov_path)
+        # print(publish_manager)
 
-    #     # 원본 Playblast .mov 삭제
-    #     playblast_path = f"{self.filepath_input.text()}/playblast.mov"
 
-    #     if os.path.exists(playblast_path):
-    #         try:
-    #             os.remove(playblast_path)
-    #             print(f"원본 Playblast 파일 삭제 완료: {playblast_path}")
-    #         except PermissionError:
-    #             print("파일이 아직 사용 중이라 삭제할 수 없습니다.")
-    #             return
-    #     else:
-    #         print("원본 Playblast 파일이 이미 삭제되었거나 존재하지 않습니당~.")
+        created_version = publish_manager.create_versions()
+        published_file = publish_manager.create_published_file()
+        publish_manager.link_version_to_published_file(published_file["id"], created_version["id"])
+        # UI 닫기
+        self.close_event()
 
-    #     # UI 닫기
-    #     self.close_event()
-    #     print("퍼블리셔 UI 종료")
+        print("퍼블리셔 UI 종료")
 
     def center_window(self):
         screen_geometry = self.screen().geometry()  # 현재 창이 표시되는 화면의 전체 크기

@@ -7,17 +7,16 @@ from pxr import Usd
 from systempath import SystemPath 
 root_path = SystemPath().get_root_path()
 
-root_directory = f'{root_path}/show'
-
 def model_publish(project_name, asset_name, asset_type, dept):
     """model publish 실행 함수"""
-
+    
     # 모델러가 아니라면 함수 종료
     if dept != "model":
-        print("해당 dept는 사용할 수 없습니다.")
         return
 
     # 파일 경로 설정
+    root_directory =  f"{root_path}/show"
+
     asset_root_path = os.path.join(
         root_directory, project_name, "assets", asset_type, asset_name
     )
@@ -60,35 +59,4 @@ def model_publish(project_name, asset_name, asset_type, dept):
             is_sub_prim = asset_stage.DefinePrim(sub_prim_path, "Xform")
             is_sub_prim.GetReferences().AddReference(relative_model_pub_path)
     asset_stage.GetRootLayer().Save()
-
-    # 퍼블리시 경로 설정
-    pub_path = os.path.join(
-        asset_root_path, dept, "pub", "maya", "scenes"
-    )
-    work_path = os.path.join(
-        asset_root_path, dept, "work", "maya", "scenes"
-    )
-
-    # 최신 버전 확인
-    version_nums = []
-    work_files = os.listdir(work_path)
-    for file_name in work_files:
-        match = re.search(r"v(\d{3})", file_name)
-        if match:
-            version_nums.append(int(match.group(1)))
-
-    last_version = max(version_nums, default=0) + 1
-
-    maya_ascii_work_path = os.path.join(
-        work_path, f"{asset_name}_{dept}_v{last_version:03d}.ma"
-    )
-    maya_ascii_pub_path = os.path.join(
-        pub_path, f"{asset_name}_{dept}_v{last_version:03d}.ma"
-    )
-
-    # Maya파일을 work path에 저장 후 pub path에 메타데이터 까지 전부 복사
-    cmds.file(rename=maya_ascii_work_path)
-    cmds.file(save=True, type="mayaAscii")
-    shutil.copy2(maya_ascii_work_path, maya_ascii_pub_path)
-    print("퍼블리시가 완료되었습니다!")
-
+    print("퍼블리시가 완료되었습니다.")

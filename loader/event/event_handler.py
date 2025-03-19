@@ -87,9 +87,6 @@ class LoaderEvent :
         loader_window.setFixedSize(1100, 800)
         loader_window.setCentralWidget(loader_window.setup_layout())
         loader_window.center_window()
-
-        # TaskInfo 설정
-        #loader_window.set_task_info(task_info)
         # 로딩창 닫기
         loading_window.close()
         # 로더 UI 실행

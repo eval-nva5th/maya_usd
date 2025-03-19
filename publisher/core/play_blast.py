@@ -8,12 +8,7 @@ except Exception:
 
 class PlayblastManager:
     def __init__(self, file_path, filename_input):
-        """
-        플레이블라스트 관리 클래스
-        :param file_path: 저장 경로
-        :param mode: "asset" (턴테이블) 또는 "seq" (샷 카메라)
-        """
-        print ("플레이 블라스트 실행")
+        """플레이블라스트 관리 클래스"""
         self.file_path = file_path # 현재 파일 경로
         self.version_filename = filename_input # 버전 파일 이름
         self.new_path = self.convert_to_save_path() # playblast 저장되는 경로
@@ -29,9 +24,7 @@ class PlayblastManager:
         self.setup()
         output_file = f"{self.new_path}/playblast.mov"
 
-        print ("플레이 블라스트 시작~~~~~~~~~~~~~.")
         cmds.lookThru(self.camera_name) # 선택된 카메라 활성화
-        cmds.select(clear=True) # 오브젝트 선택 해제
 
         # 해상도 설정
         scale_factor = 0.7
@@ -45,7 +38,7 @@ class PlayblastManager:
             cmds.lookThru(self.camera_name)
         else:
             raise RuntimeError("카메라를 찾을 수 없어 플레이블라스트를 실행할 수 없습니다.")
-
+        cmds.modelEditor("modelPanel4", edit=True, selectionHiliteDisplay=False)
         # 플레이블라스트 실행
         result = cmds.playblast(
             startTime=self.start_frame,
@@ -73,6 +66,7 @@ class PlayblastManager:
         # 스크린샷 캡쳐 1개
         master_jpg = f"{self.new_path}/{self.filename}.jpg"
         self.capture_frame(self.start_frame, master_jpg)
+        cmds.modelEditor("modelPanel4", edit=True, selectionHiliteDisplay=True)
 
         if self.mode == "asset":
                 self.delete_turntable_camera()
@@ -80,7 +74,7 @@ class PlayblastManager:
         return output_file
 
     def capture_frame(self, frame_number, path):
-        """특정 프레임을 이미지 1장으로 저장""" 
+        """플레이블라스트 이미지 저장""" 
         cmds.grid(toggle=False)
         cmds.playblast(
             startTime=frame_number,
@@ -126,7 +120,7 @@ class PlayblastManager:
         path_parts = self.new_path.strip("/").split("/")
         if len(path_parts) >= 8:  
             self.project_name = path_parts[3]
-            self.entity_name = path_parts[6]  # 원래 리스트로 가져와야 오류 방지됨
+            self.entity_name = path_parts[6]
             self.task_name = path_parts[7]
             return f"{self.entity_name}_{self.task_name}"
         return "unknown_filename"
@@ -173,13 +167,10 @@ class PlayblastManager:
 
     def delete_turntable_camera(self):
         """생성된 턴테이블 카메라와 그룹을 삭제"""
-        if self.camera_group and cmds.objExists(self.camera_group):
+        if self.camera_group and cmds.objExists(self.camera_group): # 카메라 그룹 삭제
             cmds.delete(self.camera_group)
-            print(f"카메라 그룹 삭제 완료: {self.camera_group}")
-
-        if self.camera_name and cmds.objExists(self.camera_name):
+        if self.camera_name and cmds.objExists(self.camera_name): # 카메라 삭제
             cmds.delete(self.camera_name)
-            print(f"카메라 삭제 완료: {self.camera_name}")
 
     def find_seq_camera(self):
         """샷 카메라를 찾아 반환 (없으면 기본 persp 카메라 사용)"""
@@ -199,12 +190,11 @@ class PlayblastManager:
         print(f"선택된 샷 카메라: {shot_cameras[0]}")
         return shot_cameras[0]
 
-    def get_seq_frame_range(self): # 셀프 빼도 상관이 없을까?
+    def get_seq_frame_range(self):
         """샷의 시작 및 종료 프레임 가져오기"""
         print("get_seq_frame_range() 실행")
         start_frame = int(cmds.playbackOptions(query=True, minTime=True))
         end_frame = int(cmds.playbackOptions(query=True, maxTime=True))
-        print(f"샷 프레임 범위: {start_frame} ~ {end_frame}")
         return start_frame, end_frame
 
     def create_turntable_camera(self):
@@ -214,8 +204,7 @@ class PlayblastManager:
         if cmds.objExists("turntable_camera"):
             cmds.delete("turntable_camera")
 
-        asset = self.find_assets()
-        print("asset:", asset)
+        asset = self.find_assets() # 찾은 에셋
 
         if not asset:
             raise RuntimeError("유효한 에셋이 없어 카메라를 생성할 수 없습니다.")
@@ -234,7 +223,7 @@ class PlayblastManager:
         if max_size < 1:
             max_size = 10
 
-        distance = max_size * 3.0
+        distance = max_size * 5.0
 
         # 카메라 생성
         camera, camera_shape = cmds.camera(name="turntable_camera")
@@ -242,13 +231,11 @@ class PlayblastManager:
 
         # 카메라 위치 조정
         cmds.xform(camera_group, worldSpace=True, translation=[center_x, center_y, center_z])
-        cmds.xform(camera, relative=True, translation=[0, 0, distance])
+        cmds.xform(camera, relative=True, translation=[0, 0, distance * 3.0])
 
         # Near/Far Clipping Plane 조정 : 16:57 추가
-        cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 10)  # 기존 5에서 10으로 확대
+        cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 15)  # 기존 5에서 10으로 확대
         cmds.setAttr(f"{camera_shape}.nearClipPlane", 0.01)  # 작은 오브젝트가 잘리지 않도록 설정
-
-        cmds.setAttr(f"{camera_shape}.farClipPlane", max_size * 5)
 
         # Aim Constraint 추가 (삭제하지 않음)
         cmds.aimConstraint(asset, camera, aimVector=[0, 0, -1], upVector=[0, 1, 0], worldUpType="scene")
@@ -257,14 +244,6 @@ class PlayblastManager:
         cmds.select(asset)
         cmds.xform(asset, cp=True)
         cmds.viewFit(camera, fitFactor=1.6)
-
-        # 디버깅: 카메라 위치 & 방향 확인
-        camera_pos = cmds.xform(camera, query=True, worldSpace=True, translation=True)
-        camera_rotation = cmds.xform(camera, query=True, worldSpace=True, rotation=True)
-        print(f"Camera Position: {camera_pos}")
-        print(f"Camera Rotation: {camera_rotation}")
-
-        print(f"카메라 생성 완료: {camera}")
 
         return camera_group, camera
 
@@ -279,8 +258,6 @@ class PlayblastManager:
         cmds.setKeyframe(self.camera_group, attribute="rotateY", time=120, value=360)
         cmds.selectKey(self.camera_group, attribute="rotateY", time=(1, 120))
         cmds.keyTangent(inTangentType="linear", outTangentType="linear")
-
-        print(f"턴테이블 애니메이션 적용 완료: {self.camera_group}")
 
     def find_assets(self):
         """씬에서 에셋 찾기 (카메라, 라이트, 컨트롤러 등 불필요한 요소 제외)"""
@@ -319,8 +296,7 @@ class PlayblastManager:
         versioned_mov = f"{self.new_path}/{self.entity_name}_{self.task_name}_{version}.mov"
         master_mov = f"{self.new_path}/{self.filename}.mov"
         #codec = playblast_mov[-3:]
-
-        print ("versioned_mov 저장경로오오오오오오오오오 ",versioned_mov)
+        print ("versioned_mov 저장경로",versioned_mov)
 
         # 마스터 MOV 파일 저장
         encoder = EncodeProcess()
@@ -333,7 +309,7 @@ class PlayblastManager:
         print(f"저장 완료: {master_mov}, {versioned_mov}")
 
     def check_playblast_file(self, file_path):
-        """파일이 존재할 때까지 반복 확인 (비동기 방식)"""
+        """파일이 존재할 때까지 반복 확인"""
         if os.path.exists(file_path):
             if not self.file_checked: # 중복 실행 방지
                 self.file_checked = True
@@ -342,4 +318,4 @@ class PlayblastManager:
             return
         else:
             print(f"플레이블라스트 파일 대기 중... {file_path}")
-            QTimer.singleShot(500, lambda: self.check_playblast_file(file_path))  # 500ms 후 다시 체크
+            QTimer.singleShot(500, lambda: self.check_playblast_file(file_path))

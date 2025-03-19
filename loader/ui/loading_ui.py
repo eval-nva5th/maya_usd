@@ -31,9 +31,3 @@ class LoadingDialog(QDialog):
         layout.addWidget(self.loading_text, alignment=Qt.AlignCenter)
 
         self.setLayout(layout)
-
-    # def set_loading_text(self, text):
-    #     QTimer.singleShot(0, lambda: self.loading_text.clear())
-    #     QTimer.singleShot(0, lambda: self.loading_text.setText(text))
-    #     QTimer.singleShot(0, lambda: self.loading_text.repaint())
-    #     QTimer.singleShot(0, lambda: self.loading_text.show())  # Maya에서 강제 UI 갱신
