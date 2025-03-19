@@ -402,50 +402,7 @@ class CustomUI(QWidget):
         save_as_run(self.ct)
 
     def on_click_publish(self):
-        publish_playblast_run(self)
-
-class PublishDialog(QDialog):
-    def __init__(self, parent=None):
-        super(PublishDialog, self).__init__(parent)
-        
-        self.setWindowTitle("Publish")
-        
-        # Create Labels and LineEdits for Publish
-        self.label1 = QLabel("Publish Name 1:")
-        self.line_edit1 = QLineEdit()
-        
-        self.label2 = QLabel("Publish Name 2:")
-        self.line_edit2 = QLineEdit()
-
-        # Button
-        self.publish_button = QPushButton("Publish")
-        self.cancel_button = QPushButton("Cancel")
-        
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(self.label1)
-        layout.addWidget(self.line_edit1)
-        layout.addWidget(self.label2)
-        layout.addWidget(self.line_edit2)
-        
-        # Button layout
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(self.publish_button)
-        button_layout.addWidget(self.cancel_button)
-        
-        layout.addLayout(button_layout)
-        self.setLayout(layout)
-
-        # Connect buttons to actions
-        self.publish_button.clicked.connect(self.publish)
-        self.cancel_button.clicked.connect(self.reject)
-
-    def publish(self):
-        """Handle publish button action."""
-        name1 = self.line_edit1.text()
-        name2 = self.line_edit2.text()
-        print(f"Publish - Name 1: {name1}, Name 2: {name2}")
-        self.accept()  # 다이얼로그 닫기
+        publish_playblast_run(self, self.ct)
 
 def add_custom_ui_to_tab(path, ct=None):
     workspace_control_name = "CustomTabUIWorkspaceControl"
