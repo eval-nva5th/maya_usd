@@ -118,15 +118,19 @@ class PlayblastManager:
     def extract_folders_from_path(self) :
         """파일 이름"""
         path_parts = self.new_path.strip("/").split("/")
-        if len(path_parts) == 11:  
+        if len(path_parts) == 11: #in linux
             self.project_name = path_parts[3]
             self.entity_name = path_parts[6]
             self.task_name = path_parts[7]
-        elif len(path_parts) == 12 :
+        elif len(path_parts) == 12 : #i nas mac
             self.project_name = path_parts[4]
             self.entity_name = path_parts[7]
             self.task_name = path_parts[8]
-        else :
+        elif len(path_parts) == 13 : # in sy mac
+            self.project_name = path_parts[5]
+            self.entity_name = path_parts[8]
+            self.task_name = path_parts[9]
+        else : 
             return "unknown_filename"
         
         return f"{self.entity_name}_{self.task_name}"

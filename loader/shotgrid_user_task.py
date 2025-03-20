@@ -26,7 +26,7 @@ class TaskInfoThread(QThread):
         task_info = TaskInfo()
         task_info.get_user_task(self.user_id)
         task_dict = task_info.get_task_dict()  # Task 데이터 가져오기
-        self.finished_signal.emit(task_info)  # 완료 신호 전달 ######## 이게 문제같음
+        self.finished_signal.emit(task_info)  # 완료 신호 전달 
 
 class UserInfo : 
     def __init__(self) :
@@ -37,10 +37,12 @@ class UserInfo :
         self.pos = ""
         
     def is_validate(self, email, name) :
+        '''
+        샷그리드에서 받아온 두 값과 내부 데이터를 비교
+        '''
         self.email = email
         self.name = name
         kname_filter = ['sg_korean_name', 'is', self.name]
-        #name_filter = ['name', 'is', self.name]
         email_filter = ['email', 'is', self.email]
         self.userinfo = sg.find('HumanUser', [kname_filter, email_filter], ["id", "name", "department", "groups"])
         
@@ -48,30 +50,11 @@ class UserInfo :
             self.id = self.userinfo[0]['id'] # id 받기
             self.dept = self.userinfo[0]['department']['name'] # DEPT 받기
             self.pos = self.userinfo[0]['groups'][0]['name'] # 포지션 받기 
-            self.show_loading()
             return 1
 
         else :
-            print("틀림!")
-            self.show_error()
             return 0
         
-    # return 해줄 때는 get_userid가 더 맞을거같아서 바꿉니다
-    def get_userid(self) :
-        return self.id
-    
-    def show_loading(self) :
-        pass
-
-    def show_error(self) :
-        # print("에러창 실행")
-        self.name = "" # 새 이름 받기
-        self.email = "" # 새 이메일 받기
-        #self.is_validate(email, name)
-
-    def create_local_path(self) :
-        pass
-
 class TaskInfo :
     def __init__(self):
         self.task_thread = None
@@ -195,7 +178,6 @@ class TaskInfo :
             asset_category_name = asset_contents[0]['sg_asset_type']
             self.task_dict[task_id]['entity_type'] = "assets"
             self.task_dict[task_id]['entity_parent'] = asset_category_name
-            #self.task_dict[task_id]['entity_id'] = entity_id
 
     def get_task_dict(self) :
         return self.task_dict
@@ -203,7 +185,6 @@ class TaskInfo :
     def get_prev_task(self, task_id) :
         # 현재 태스크 정보
         current_task = self.task_dict[task_id]
-        # something went wrong
         if not current_task:
             return None
         
@@ -308,8 +289,10 @@ class TaskInfo :
 class ClickedTask:
 
     def __init__(self, id_dict):
-        #{'proj_name': 'eval', 'content': 'bike_rig', 'entity_id': 1414, 'entity_type': 'assets', 'entity_name': 'bike', 'start_date': '2025-02-17', 'due_date': '2025-02-19', 'status': 'fin', 'step': 'Rig', 'entity_parent': 'Vehicle', 'prev_task_id': 5827, 'id': 5828}
-        self.assignee_id = id_dict["assignee_id"]
+        '''
+        태스크 테이블을 클릭 시 이 클래스 객체가 생성됨.
+        하나의 태스크 딕트형식을 파라미터로 갖고오며 그 값을 바탕으로 클래스 변수와 함수를 생성하였음. 
+        '''
         self.id = id_dict["id"]
         self.assignee_id = id_dict["assignee_id"]
         self.content = id_dict["content"]
@@ -335,6 +318,9 @@ class ClickedTask:
         return shallow_path
     
     def set_deep_path(self, pub_or_work, dcc_type = "maya", export_type="scenes") :
+        '''
+        파라미터에 따라 필요한 패스를 쉽게 만들 수 있음. 
+        '''
         deep_path = f"{self.root_path}/{self.project_name}/{self.entity_type}/{self.entity_parent}/{self.entity_name}/{self.step}/{pub_or_work}/{dcc_type}/{export_type}"
         return deep_path
 
@@ -343,21 +329,30 @@ class ClickedTask:
         return file_name
 
     def get_dir_items(self, deep_path) :
+        '''
+        파라미터로 받아온 패스에 파일이 없을 시 테이블에 위 상황을 출력한다.
+        그리고 파일이 존재하는 경우는 내림차순 형식으로 파일을 저장하고 이중리스트 형식으로 리턴. 
+        '''
         data_list = []
 
-        #full_path = f"{deep_path}/{self.set_file_name()}"
         if not os.path.exists(deep_path) :
             full_path = f"{deep_path}/{self.set_file_name()}"
             data_list.append([f"{root_path}/elements/null.png", "No Dir No File", "", full_path])
         else : 
             data_list = self.set_file_list(deep_path)
             full_path = f"{deep_path}/{self.set_file_name()}"
-            if len(data_list) == 0 :
+            if  len(data_list) > 1 :
+                sorted_list = sorted(data_list, key=lambda x: int(x[1].split('_v')[-1].split('.')[0]) if '_v' in x[1] and '.' in x[1] else 0, reverse=True) # 버전 내림차순 정렬 (+예외처리 )
+                data_list = sorted_list
+            elif len(data_list) == 0 :
                 data_list.append([f"{root_path}/elements/null.png", "No File", "", full_path])
-
+        
         return data_list
     
     def set_file_list(self, path) :
+        '''
+        생성한 패스를 순회하며 각 파일에 관한 정보를 리스트의 형식으로 만들고, 그 묶음을 리스트로 저장한다.
+        '''
         data_list = []
 
         for file in os.listdir(path):
@@ -376,42 +371,3 @@ class ClickedTask:
             data_list.append([ext_image, file, last_time_str, file_path]) 
 
         return data_list
-
-# 실행
-if __name__ == "__main__":
-    sg_url = "https://5thacademy.shotgrid.autodesk.com/"
-    script_name = "sy_key"
-    api_key = "vkcuovEbxhdoaqp9juqodux^x"
-
-    user = UserInfo()
-    task = TaskInfo()
-
-    email = "f8d783@kw.ac.kr" #"p2xch@naver.com" 
-    name = "장순우"
-
-    user.is_validate(email, name)
-    user_id = user.get_userid()
-    print(f"user info : {user.name} | {user.email} | {user.id} | {user.dept} | {user.pos}")
-    task.get_user_task(user_id)
-    prev_task_dict, current_dict = task.on_click_task(6192) 
-
-    c = ClickedTask(current_dict) # how to make clicked_task Object
-
-    print(c.id, c.proj_id, c.entity_id, c.entity_type, c.entity_parent, c.step, c. root_path)
-    shallow_path = c.set_shallow_path()
-    print(shallow_path)
-
-    #export_type = "scenes"
-    pub_deep_path = c.set_deep_path("pub")
-    print(f"pub path : {pub_deep_path}")
-
-    work_deep_path = c.set_deep_path("work")
-    print(f"work path : {work_deep_path}")
-
-    pub_list = c.get_dir_items(pub_deep_path)
-    print(f"pub list : {pub_list}")
-
-    work_list = c.get_dir_items(work_deep_path)
-    print(f"work list : {work_list}")
-
-#clicked task를 받아와. 

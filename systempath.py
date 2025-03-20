@@ -31,8 +31,5 @@ class SystemPath:
     
     def get_ffempg_path(self) :
         return self.ffmpeg_path
-    
-    # def get_file_root_path(self):
-    #     return self.file_root_path
-    
+
     

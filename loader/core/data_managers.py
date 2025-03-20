@@ -5,7 +5,6 @@ import os
 # self.task_dict 순회 하면서 data 가공 후 add_task_to_table()
 
 def task_data(ui_instance, task_table):
-    #ui_instance.task_info.get_user_task(ui_instance.user.get_userid())
     task_dict = ui_instance.task_info.get_task_dict()
 
     ui_instance.color_map = {"ip": "#00CC66", "fin": "#868e96", "wtg": "#FF4C4C"}

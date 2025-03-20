@@ -9,7 +9,7 @@ import maya.cmds as cmds
 import maya.utils as mu
 import os, sys
 from loader.shotgrid_user_task import ClickedTask
-from loader.event.custom_dialog import CustomDialog
+from loader.event.custom_dialog import NewFileDialog
 from loader.shotgrid_user_task import UserInfo
 from loader.ui.loader_ui import UI as loaderUIClass
 from loader.core.add_new_task import *
@@ -28,7 +28,7 @@ class LoaderEvent :
     @staticmethod
     def on_login_clicked(ui_instance):                        # 1번 실행중
         """
-        로그인 버튼 실행
+        로그인 버튼 실행 시 발생하는 이벤트 처리
         """
         user = UserInfo()
 
@@ -43,17 +43,6 @@ class LoaderEvent :
                 popup.setWindowTitle("Failure")
                 popup.setText("아이디 또는 이메일이 일치하지 않습니다")
                 popup.exec()
-
-            # else: # 로그인 성공!
-        #     ui_instance.close()
-        #     main_window = loader_ui.UI()
-        #     main_window.user = user
-        #     main_window.user_name = name
-        #     main_window.input_name = name
-        #     main_window.setFixedSize(1100, 800)
-        #     main_window.setCentralWidget(main_window.setup_layout()) # 로그인 창을 메인화면으로 변경
-        #     main_window.center_window()
-        #     main_window.show()
 
             else:  # 로그인 성공!
                 ui_instance.close()
@@ -94,21 +83,23 @@ class LoaderEvent :
             
     @staticmethod
     def on_cell_clicked(ui_instance, row, _):
+        '''
+        task table cell 클릭 발생하는 이벤트 처리 
+        '''
         if not ui_instance:
             return
-        clicked_task_id = int(ui_instance.task_table.item(row, 2).text())
+        clicked_task_id = int(ui_instance.task_table.item(row, 2).text()) # SG task id
         
         prev_task_data, current_task_data = ui_instance.task_info.on_click_task(clicked_task_id)
         LoaderEvent.update_prev_work(ui_instance, prev_task_data)
 
-        ct = ClickedTask(current_task_data)
+        ct = ClickedTask(current_task_data) # Clicked Task 객체 생성. (클릭 시 마다 갱신)
         pub_path = ct.set_deep_path("pub")
         work_path = ct.set_deep_path("work")
-        print(f"pub path : {pub_path} work path : {work_path}")
         pub_list = ct.get_dir_items(pub_path)
         work_list = ct.get_dir_items(work_path)
-        LoaderEvent.update_pub_table(ui_instance, pub_list)
-        LoaderEvent.update_work_table(ui_instance, work_list)
+        LoaderEvent.update_pub_table(ui_instance, pub_list) # pub table 업데이트
+        LoaderEvent.update_work_table(ui_instance, work_list) # work table 업데이트 
         
         try:
             ui_instance.work_table.cellDoubleClicked.disconnect()
@@ -120,14 +111,18 @@ class LoaderEvent :
         
     @staticmethod
     def update_pub_table(ui_instance, pub_list):
-        ui_instance.pub_table.setRowCount(0)
+        '''
+        pub table 값 업데이트 함수
+        '''
+        ui_instance.pub_table.setRowCount(0) # 초기화
         
         for file_info in pub_list:
-            # Example of file_info: ["/nas/eval/elements/null.png", "Click for new dir and file", "", path]
             LoaderEvent.add_file_to_table(ui_instance.pub_table, file_info)
             
     def update_work_table(ui_instance, work_list):
-
+        '''
+        work table 값 업데이트 함수
+        '''
         ui_instance.work_table.setRowCount(0)  # Clear existing rows
 
         for file_info in work_list:
@@ -135,68 +130,67 @@ class LoaderEvent :
 
     @staticmethod
     def add_file_to_table(table_widget, file_info):
-
+        
+        '''
+        각 테이블 위젯에 파일의 정보를 추가하는 함수
+        '''
         row = table_widget.rowCount()
         table_widget.insertRow(row)
         
         table_widget.setHorizontalHeaderLabels(["", "파일 이름", "최근 수정일"])
-        table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 전체 행 선택
-        table_widget.setColumnWidth(0, 30)  # 로고 열 (좁게 설정)
-        table_widget.setColumnWidth(1, 330)  # 파일명 열 (길게 설정)
-        table_widget.setColumnWidth(2,130)
+        table_widget.setSelectionBehavior(QAbstractItemView.SelectRows) 
+        table_widget.setColumnWidth(0, 30) 
+        table_widget.setColumnWidth(1, 330)  
+        table_widget.setColumnWidth(2,150)
         table_widget.verticalHeader().setDefaultSectionSize(30)
         table_widget.horizontalHeader().setVisible(True) 
         table_widget.verticalHeader().setVisible(False)
 
-        # 로고
         image_label = QLabel()
         pixmap = QPixmap(file_info[0]).scaled(25, 25)
-        image_label.setPixmap(pixmap)
+        image_label.setPixmap(pixmap) # DCC 아이콘
         image_label.setAlignment(Qt.AlignCenter)
         table_widget.setCellWidget(row, 0, image_label)
 
         # File name or message
-        file_item = QTableWidgetItem(file_info[1])
+        file_item = QTableWidgetItem(file_info[1]) # 파일이름
         table_widget.setItem(row, 1, file_item)
 
-        # Edited time 
-        time_item = QTableWidgetItem(file_info[2]) #if file_info[2] else "Unknown")
+        time_item = QTableWidgetItem(file_info[2]) # 최근 수정일
         table_widget.setItem(row, 2, time_item)
 
     @staticmethod
     def on_work_cell_clicked(ui_instance, table_widget, row, col, ct, path):
-        from widget.ui.widget_ui import add_custom_ui_to_tab
+        '''
+        work table cell 클릭 발생하는 이벤트 처리.
+        파일이 없을 시 NewFileDialog 호출 , 있을 시 파일을 열고 SideWidget를 실행하는 함수가 실행됨.
+        '''
+        from widget.ui.widget_ui import add_widget_to_tab
 
         item = table_widget.item(row, 1)
-        print(f"Clicked item: {item.text()} at row {row}, column {col}")
 
         if item.text() == "No Dir No File":
-            print(f"Open directory or create a new file at path")
-            print(ct.set_file_name())
             is_dir, is_created = False, False
             if not is_created :
-                dialog = CustomDialog(path, is_dir, is_created, ct)
+                dialog = NewFileDialog(path, is_dir, is_created, ct)
                 dialog.exec()
                 # mainwindow 종료
                 ui_instance.close()
 
         elif item.text() ==  "No File" :
-            print("o directory x file")
-            print(ct.set_file_name())
             is_dir, is_created = True, False
             if not is_created :
                 print(ct.entity_name, ct.content) 
-                dialog = CustomDialog(path, is_dir,is_created, ct)
+                dialog = NewFileDialog(path, is_dir,is_created, ct)
                 dialog.exec()
                 ui_instance.close()
 
         else :
             full_path = f"{path}/{item.text()}"
-            print(full_path)
             cmds.file(full_path, open=True, force=True)
             ui_instance.close()
 
-            add_custom_ui_to_tab(path, ct)
+            add_widget_to_tab(path, ct)
         
     @staticmethod
     def update_prev_work(ui_instance, prev_task_data):

@@ -1,9 +1,12 @@
 import subprocess
 import os
-# 영상 슬레이트 인코딩 프로그램입니다. 실행 전 ffmpeg 설치 필수.
 
 class EncodeProcess:
-    
+    '''
+    플레이블라스트 위에 입힐 슬레이트를 위한 인코딩 클래스
+    실행을 위해 ffmpeg 라이브러리가 요구됨.
+    maya 내에서 ffmpeg이 import 되지않는 오류가 발생해 ffmpeg path를 따로 지정해줌.
+    '''
     def __init__(self, ffmpeg_path = None):
         self.ffmpeg_path = ffmpeg_path
         pass

@@ -17,9 +17,7 @@ import requests
 
 from widget.event.widget_event_handler import clicked_get_asset_btn
 from save_as.main import run as save_as_run
-# from publisher.main import run as publish_run
 from widget.event.widget_event_handler import publish_playblast_run
-from publisher.ui.publisher_ui import PublisherDialog
 
 import os
 import sys
@@ -30,28 +28,33 @@ from shotgridapi import ShotgridAPI
 root_path = SystemPath().get_root_path()
 sg = ShotgridAPI().shotgrid_connector()
 
-#path = ""
-
 def get_maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(int(main_window_ptr), QWidget)
 
-class CustomUI(QWidget):
+class SideWidget(QWidget):
+    
     def __init__(self, path=None, ct=None):
-        print("CustomUI Start")
-        self.current_widget = None  
+        '''
+        사이드 위젯 UI 생성
+        1. 태스크 정보 : 프로젝트 이름, 디파트먼트, ([에셋 타입, 에셋이름] || [시퀀스, 샷이름]),  태스크이름, status(실시간 변경 가능)
+        2. 에셋 라이브러리
+        3. Entity에 연관된 아티스트 정보 (이름, 디파트먼트, 이미지)
+        4. 해당 Task에 붙은 최신 Note 정보 (제목, 내용, 작성자, 버전이름, 이미지) 
+        '''
 
         if path !=None :
             self.path=path
         
         super().__init__()
-        # self.publisher_dialog = PublisherDialog
         self.setFixedWidth(350)
         
         if ct is not None:
+            '''
+            ct : CustomTask 객체
+            해당 객체가 파라미터로 잘 들어왔다면 이 객체의 속성을 이용하여 값을 구성한다. 
+            '''
             if hasattr(ct, 'id') and hasattr(ct, 'entity_id'):
-                print(f"ct.id: {ct.id}, ct.entity_id: {ct.entity_id}, ct.proj_name = {ct.project_name}, {ct.content}, {ct.entity_type}, {ct.entity_name}")
-                self.ct = ct
                 self.id = ct.id
                 self.entity_id = ct.entity_id
                 self.project_name = ct.project_name
@@ -77,7 +80,8 @@ class CustomUI(QWidget):
         projectname_label = QLabel(f"Project : {self.project_name}")
         contentname_label = QLabel(f"Task : {self.content}")
         step_label = QLabel(f"Dept : {self.step}")
-        h_line0 = QFrame() # 구분선0
+        
+        h_line0 = QFrame()
         h_line0.setFrameShape(QFrame.HLine)
         h_line0.setFrameShadow(QFrame.Sunken)
         get_asset_label = QLabel("[ASSET LIBRARY]")
@@ -99,13 +103,10 @@ class CustomUI(QWidget):
             parent_label = QLabel(f"parent : {self.entity_parent}")
             child_label = QLabel(f"baby : {self.entity_name}")
             
-        
-        # ct 받아오기가 필요함
         self.toggle_button = QPushButton(self.status, self)
-        self.toggle_button.setStyleSheet("padding-right: 5px;")
         self.toggle_button.setFixedSize(40, 20)
-        self.toggle_button.setCheckable(True)  # 버튼을 체크 가능하게 설정
-        self.toggle_button.setChecked(False)# 초기 상태를 False로 설정
+        self.toggle_button.setCheckable(True)  
+        self.toggle_button.setChecked(False)
         self.toggle_button.setEnabled(True)
         if self.toggle_button.text() == "fin" :
             self.toggle_button.setEnabled(False)
@@ -117,14 +118,13 @@ class CustomUI(QWidget):
         elif self.status == "ip" :
             self.change_status = "wtg"
 
-        # 토글 버튼이 눌리면 상태 변경
         self.toggle_button.toggled.connect(self.on_toggle)
         
         pb_layout = QHBoxLayout()
         pb_layout.addWidget(contentname_label)
         pb_layout.addWidget(self.toggle_button)
         
-        h_line1 = QFrame() # 구분선1
+        h_line1 = QFrame()
         h_line1.setFrameShape(QFrame.HLine)
         h_line1.setFrameShadow(QFrame.Sunken)
 
@@ -154,12 +154,8 @@ class CustomUI(QWidget):
                     thumb_label.setAlignment(Qt.AlignCenter)
 
             thumb_label.setPixmap(pixmap)
-            #pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            
-            #pixmap = pixmap.copy((pixmap.width()-20)//2, (pixmap.height()-20)//2, 20, 20)
-            
             pixmap = pixmap.scaled(30, 30, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            pixmap = self.circular_pixmap(pixmap, 30)
+            pixmap = self.circular_pixmap(pixmap, 30) # 원형 이미지로 변환
 
             thumb_label.setPixmap(pixmap) 
             thumb_label.setStyleSheet('padding-left : 5px')
@@ -173,15 +169,16 @@ class CustomUI(QWidget):
         h_line2.setFrameShape(QFrame.HLine)
         h_line2.setFrameShadow(QFrame.Sunken)
         
+        # 노트의 정보를 가져옴
         note_title, note_body, creator_kor_name, version_name, attachment_url = self.get_notes_infos()
 
         noteinfo_label = QLabel("[RECENT NOTE]")
         noteinfo_label.setStyleSheet("font-size: 11pt;")
         notedetail_layout = QVBoxLayout()
-        creatorname_label = QLabel(f"Note from {creator_kor_name}")
-        versionname_label = QLabel(f"version : {version_name}")
-        notetitle_label = QLabel(f"title : {note_title}")
-        notebody_label = QLabel(f"context : {note_body}")
+        creatorname_label = QLabel(f"from {creator_kor_name}")
+        versionname_label = QLabel(f"file info : {version_name}")
+        notetitle_label = QLabel(f"<{note_title}>")
+        notebody_label = QLabel(f"note : {note_body}")
         notebody_label.setWordWrap(True)
         notebody_label.setMaximumWidth(320)
         notedetail_layout.addWidget(creatorname_label)
@@ -190,25 +187,20 @@ class CustomUI(QWidget):
         notedetail_layout.addWidget(notebody_label)
         notebody_label.setStyleSheet("border-bottom:5px")
         
-        # 세 번째 줄 (100x100 QPixmap)
         noteimage_label = QLabel()
         pixmap2 = self.load_pixmap_from_url(attachment_url)
         pixmap2 = pixmap2.scaled(320, 180, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        #noteimage_label.setStyleSheet('border-style: solid; border-width: 2px; border-color: white; padding-left : 5px') # stylesheet
         noteimage_label.setPixmap(pixmap2)
         
         # 메인 레이아웃
         note_layout = QVBoxLayout()
-        # note_layout.addWidget(noteinfo_label)
-        # note_layout.addWidget(creatorthumb_label)
-        # note_layout.addWidget(creatorname_label)
         note_layout.addLayout(notedetail_layout)
         note_layout.addWidget(noteimage_label)
 
-        h_line3 = QFrame() # 구분선 
+        h_line3 = QFrame() 
         h_line3.setFrameShape(QFrame.HLine)
         h_line3.setFrameShadow(QFrame.Sunken)
-        # h_line3.setStyleSheet("padding-bottom: 10px;")
+        
         self.button1 = QPushButton("Save As")
         self.button2 = QPushButton("Publish")
         
@@ -236,7 +228,6 @@ class CustomUI(QWidget):
         layout.addWidget(h_line2)
         layout.addWidget(noteinfo_label)
         layout.addLayout(note_layout)
-        #layout.addLayout(commentBox_layout)
         layout.addWidget(h_line3)
         layout.addLayout(button_layout)
         
@@ -244,9 +235,11 @@ class CustomUI(QWidget):
 
         self.button1.clicked.connect(self.on_click_saveas)
         self.button2.clicked.connect(self.on_click_publish)
-        # self.button2.clicked.connect(self.show_publish_ui)
 
     def on_toggle(self, checked):
+        '''
+        버튼 클릭시 status 실시간 변경기능. ip - wtg 대응
+        '''
         if checked :
             self.toggle_button.setText(self.change_status)
             sg.update("Task", self.id, {"sg_status_list": self.change_status})
@@ -263,6 +256,7 @@ class CustomUI(QWidget):
             self.toggle_button.setStyleSheet("color : pink;")
     
     def circular_pixmap(self, pixmap, size):
+        # 이미지 원형으로 만들기
         pixmap = pixmap.scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
 
         masked_pixmap = QPixmap(size, size)
@@ -279,6 +273,9 @@ class CustomUI(QWidget):
         return masked_pixmap
     
     def load_pixmap_from_url(self, url):
+        '''
+        샷그리드 내 이미지들을 받아올 때 사용하는 함수. url의 유효성을 검사 후 존재할 시 이미지 반환, 없을시 no_image 출력. 
+        '''
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -290,7 +287,10 @@ class CustomUI(QWidget):
             return image
 
     def get_colleague_info(self) :
-
+        '''
+        SG 내 태스크에 할당된 아티스트 정보를 가져오는 함수
+        리스트 형식으로 반환
+        '''
         colleague_list = []
         if self.entity_type == "seq" :
             self.entity_type = "Shot"
@@ -327,6 +327,11 @@ class CustomUI(QWidget):
     
 
     def get_notes_infos(self) :
+        '''
+        SG 내 태스크에 붙은 노트 정보를 가져오는 함수. 제일 최신순으로 하나를 가져옴.
+        제목, 내용, 작성자, 버전이름, 이미지 url을 반환
+        '''
+        
         self.id  # task id 
         note = sg.find_one(
             "Note",
@@ -340,7 +345,6 @@ class CustomUI(QWidget):
             note_body = ""
             creator_kor_name = ""
             version_name = ""
-            creator_thumb = ""
             attachment_url = ""
 
         else : 
@@ -367,35 +371,22 @@ class CustomUI(QWidget):
             if attachment_data :
                 attachment_url = attachment_data['this_file']['url']
 
-        #print(f"note id : {note_id}\nnote_title : {note_title}\nnote_body : {note_body}\ncreator_kor_name : {creator_kor_name}\nversion_name = {version_name}\ncreator_thumb = {creator_thumb}\nattachment_url : {attachment_url}")
-
         return note_title, note_body, creator_kor_name, version_name, attachment_url
-    
-    def on_click_statuschange(self) :
-        print("changechange")
-        
-    def getClickedTaskObject(self, ct) :
-        self.ct = ct
-        return self.ct
-    
-    def update(self) :
-        ct = self.ct
-        if hasattr(ct, 'id') and hasattr(ct, 'entity_id'):
-            print(f"ct.id: {ct.id}, ct.entity_id: {ct.entity_id}, ct.proj_name = {ct.project_name}, {ct.content}, {ct.entity_type}, {ct.entity_name}")
-            self.project_name = ct.project_name
-            self.content = ct.content
-            self.entity_type = ct.entity_type
-            self.entity_name = ct.entity_name
-            self.entity_parent = ct.entity_parent
-            self.step = ct.step
 
     def on_click_saveas(self):
+        # save_as 실행 함수
         save_as_run(self.ct)
 
     def on_click_publish(self):
+        #playblast 실행 함수 -> 그 후 퍼블리시 진행
         publish_playblast_run(self, self.ct)
 
-def add_custom_ui_to_tab(path, ct=None):
+def add_widget_to_tab(path, ct=None):
+    '''
+    마야 내 탭 위젯 추가 실행 함수. 위치는 AttributeEditor 오른쪽에 고정
+    로더에서 파일을 열면 관련 태스크 정보들이 붙은 위젯이 생성됨.
+    파일을 열 때마다 탭 위젯이 생성되어, 기존에 있는지 탐색하고 있다면 삭제 후 새로 생성함.
+    '''
     workspace_control_name = "CustomTabUIWorkspaceControl"
     
     if cmds.workspaceControl(workspace_control_name, query=True, exists=True):
@@ -407,18 +398,15 @@ def add_custom_ui_to_tab(path, ct=None):
     control_ptr = omui.MQtUtil.findControl(workspace_control_name)
     control_widget = wrapInstance(int(control_ptr), QWidget)
 
-    if "custom_ui" not in locals() or custom_ui is None:
-        custom_ui = CustomUI(path, ct)
-        control_widget.layout().addWidget(custom_ui)
+    if "side_widget" not in locals() or side_widget is None:
+        side_widget = SideWidget(path, ct)
+        control_widget.layout().addWidget(side_widget)
         cmds.evalDeferred(lambda: cmds.workspaceControl(workspace_control_name, edit=True, collapse=False))
     else :
-        if custom_ui.current_widget is not None:
-            custom_ui.current_widget.close()
-            custom_ui.current_widget.deleteLater()
-            custom_ui.current_widget = None  
+        if side_widget.current_widget is not None:
+            side_widget.current_widget.close()
+            side_widget.current_widget.deleteLater()
+            side_widget.current_widget = None  
 
-            custom_ui = CustomUI(path, ct)
-            control_widget.layout().addWidget(custom_ui)
-
-# Call the function to add the custom UI
-#add_custom_ui_to_tab(path)
+            side_widget = SideWidget(path, ct)
+            control_widget.layout().addWidget(side_widget)

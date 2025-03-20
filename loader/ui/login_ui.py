@@ -18,12 +18,12 @@ class LoginWidget(QWidget):
         layout = QVBoxLayout(self)
 
         # 네임 입력
-        self.name_input = QLineEdit("장순우")  # 말풍선 제거 (기본값 설정)
-        # self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
+        self.name_input = QLineEdit("")  # 말풍선 제거 (기본값 설정)
+        self.name_input.setPlaceholderText("NAME") # 흐릿한 글씨
         
         # 이메일 입력
-        self.email_input = QLineEdit("f8d783@kw.ac.kr")  # 말풍선 제거
-        # self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
+        self.email_input = QLineEdit("")  # 말풍선 제거
+        self.email_input.setPlaceholderText("EMAIL") # 흐릿한 글씨
 
         # 엔터(RETURN) 키를 누르면 로그인 버튼 클릭과 동일하게 동작
         self.email_input.returnPressed.connect(lambda:LoaderEvent.on_login_clicked(self))
