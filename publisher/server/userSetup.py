@@ -43,7 +43,6 @@ class ReloadUI(QtWidgets.QWidget):
         self.button.clicked.connect(self.on_reload_clicked)
 
     def on_reload_clicked(self):
-        print(self.local_path)
         self.reload_file()
         
     def reload_file(self):
@@ -60,12 +59,12 @@ class ReloadUI(QtWidgets.QWidget):
                     cmds.file(self.file_path, loadReference=ref)
                     return
             except RuntimeError as e:
-                print(f"참조 파일 쿼리 중 오류 발생: {e}")
+                print(e)
         
         print("해당 경로에 맞는 참조 파일을 찾을 수 없습니다.")
 
 def create_workspace_with_ui(message, local_path):
-    """ 메인 스레드에서 실행되도록 보장해야 함 """ # 이게 중요하네...
+    """ 메인 스레드에서 실행되도록 보장해야 함 """
     if not cmds.workspaceControl(workspace_control_name, query=True, exists=True):
         print(f"'{workspace_control_name}' 없음")
         return
@@ -119,8 +118,6 @@ def on_notification(data):
     local_path = message_dict['local_path']
     
     message_text = f"{created_by} published {project_name} - {published_file_name} ({created_at})"
-    
-    print(message_text)
 
     os.system(f'notify-send "ShotGrid Notice" "{message_text}"')
     maya.utils.executeInMainThreadWithResult(create_workspace_with_ui, message_text, local_path)

@@ -113,7 +113,6 @@ class TaskInfo :
 
                 published_file = sg.find_one("PublishedFile", filters, fields)
                 if not published_file :
-                    print("뭔문제가잇다!!!")
                     comment = "None"
                 else : 
                     comment = published_file.get('description') #, 'No Description')
@@ -191,7 +190,6 @@ class TaskInfo :
         # type_id(shot_id/asset_id)이 같은 태스크들 찾기
         related_tasks = []
         type_id = current_task.get("entity_id") #or current_task.get("asset_id")
-        # print(type_id)
         filters = [
             {
                 "filter_operator": "or",

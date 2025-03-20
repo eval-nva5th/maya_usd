@@ -390,7 +390,7 @@ def add_widget_to_tab(path, ct=None):
     workspace_control_name = "CustomTabUIWorkspaceControl"
     
     if cmds.workspaceControl(workspace_control_name, query=True, exists=True):
-        print(f"WorkspaceControl '{workspace_control_name}' already exists.")
+        print(f"WorkspaceControl '{workspace_control_name}' 이미 존재함")
         cmds.deleteUI(workspace_control_name) # 기존 패널 삭제
     else : 
         pass

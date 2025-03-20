@@ -76,8 +76,6 @@ class UsdLoader :
                         cmds.file(root_usd_reference_path, reference=True, defaultNamespace=True)
                         break
 
-            # except Exception as e:
-            #     print(f"오류: {e}")
             return open_path
 
     @staticmethod

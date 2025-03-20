@@ -180,7 +180,6 @@ class LoaderEvent :
         elif item.text() ==  "No File" :
             is_dir, is_created = True, False
             if not is_created :
-                print(ct.entity_name, ct.content) 
                 dialog = NewFileDialog(path, is_dir,is_created, ct)
                 dialog.exec()
                 ui_instance.close()
@@ -197,7 +196,6 @@ class LoaderEvent :
         prefix_path = f"{root_path}/show"
         file_path_list = []
         if prev_task_data['id'] != 0 :
-            print(prev_task_data)
             prev_task_id = prev_task_data['id']
             prev_task_name = prev_task_data['task_name']
             prev_task_assignee = prev_task_data['assignees']
@@ -289,7 +287,6 @@ class LoaderEvent :
     @staticmethod
     def sort_table_by_due_date(ui_instance, table_widget, ascending=True):
         tuple_list = []
-        print(12345,ui_instance.task_data_dict)
         for index, data in enumerate(ui_instance.task_data_dict):
             due_date = data["due_date"] 
             data_index_tuple = (due_date, index)
