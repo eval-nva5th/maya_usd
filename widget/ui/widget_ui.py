@@ -55,6 +55,7 @@ class SideWidget(QWidget):
             해당 객체가 파라미터로 잘 들어왔다면 이 객체의 속성을 이용하여 값을 구성한다. 
             '''
             if hasattr(ct, 'id') and hasattr(ct, 'entity_id'):
+                self.ct = ct
                 self.id = ct.id
                 self.entity_id = ct.entity_id
                 self.project_name = ct.project_name
